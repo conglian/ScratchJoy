@@ -681,56 +681,63 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 child: Visibility(visible: false, child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
               ),
             ),
-            SizedBox(width: 32,),
-            Padding(
-              padding: EdgeInsets.only(top: 0),
-              child: InkWell(
-                onTap: (){
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (builder) {
-                        return SJScratchA(
-                            type: history_index);
-                      },
-                    ),
-                  );
-                },
-                child: SJImg(name: 'sj_cards_btn', width: 200, height: 75),
+            SizedBox(width: 52,),
+            SizedBox(
+             width: 200, height: 75,
+              child: Padding(
+                padding: EdgeInsets.only(top: 0),
+                child: InkWell(
+                  onTap: (){
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (builder) {
+                          return SJScratchA(
+                              type: history_index);
+                        },
+                      ),
+                    );
+                  },
+                  child: SJImg(name: 'sj_cards_btn', width: 200, height: 75),
+                ),
               ),
             ),
-            Padding(
-              padding: EdgeInsets.only(top: 16),
-              child: InkWell(
-                onTap: (){
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (builder) {
-                        return SJDiceRollWidget();
-                      },
-                    ),
-                  );
-                },
-                child: SizedBox(
-                  width: 65,
-                  height: 65,
-                  child: Stack(
-                    children: [
-                      SJImg(name: 'sj_shai_icon'),
-                      Positioned(right: 0,child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                          image: SJDImg('sj_home_jiao_bg')
-                        ),
-                        child: Center(
-                          child: Consumer<SJLocalProvider>(
-                            builder: (context, provider, child) {
-                              return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
-                            },
+            SizedBox(
+              width: 70,
+              height: 70,
+              child: Padding(
+                padding: EdgeInsets.only(top: 16),
+                child: InkWell(
+                  onTap: (){
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (builder) {
+                          return SJDiceRollWidget();
+                        },
+                      ),
+                    );
+                  },
+                  child: SizedBox(
+                    width: 65,
+                    height: 65,
+                    child: Stack(
+                      children: [
+                        SJImg(name: 'sj_shai_icon'),
+                        Positioned(right: 10,child: Container(
+                          width: 20,
+                          height: 20,
+                          decoration: BoxDecoration(
+                            image: SJDImg('sj_home_jiao_bg')
                           ),
-                        ),
-                      ))
-                    ],
+                          child: Center(
+                            child: Consumer<SJLocalProvider>(
+                              builder: (context, provider, child) {
+                                return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
+                              },
+                            ),
+                          ),
+                        ))
+                      ],
+                    ),
                   ),
                 ),
               ),

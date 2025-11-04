@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 import 'package:scratchjoy/SJDilaog/SJDialog.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
+import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
@@ -47,6 +48,18 @@ class _SJScratchAState extends State<SJScratchA> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作
     });
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+     SJMP3Player().pauseEffect();
+    if (SJLocalProvider.instance.sj_bg_music){
+      SJMP3Player().playBackground();
+    } else {
+      SJMP3Player().pauseBackground();
+    }
+    super.dispose();
   }
 
   @override
@@ -174,6 +187,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
              star_awarad = true;
            });
            Future.delayed(Duration(seconds: 2), () async {
+             if (!mounted) return; // ✅ 页面已经被销毁就直接返回
              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
              if (extra_bonusResult.diceHit){
                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -194,7 +208,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, SJLocalProvider.instance.sj_scrach_end_number_0 + 1);
                  if (SJLocalProvider.instance.sj_scrach_end_number_0 >= 9){
                    await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name,DateTime.now().toIso8601String());
-                   Navigator.pop(context);
+                   popToNextScratch();
                  }
                  if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -216,7 +230,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, SJLocalProvider.instance.sj_scrach_end_number_0 + 1);
                  if (SJLocalProvider.instance.sj_scrach_end_number_0 >= 9){
                    await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name,DateTime.now().toIso8601String());
-                   Navigator.pop(context);
+                   popToNextScratch();
                  }
                  if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -341,6 +355,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (goldRushResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -360,7 +375,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, SJLocalProvider.instance.sj_scrach_end_number_1 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_1 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -382,7 +397,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, SJLocalProvider.instance.sj_scrach_end_number_1 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_1 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -507,6 +522,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (lucku_momentResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -519,13 +535,14 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                     shai_anim = false;
                     star_awarad = false;
                     lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+                    'lucku_momentResult.winIndex=${lucku_momentResult.winIndex}'.log();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, SJLocalProvider.instance.sj_scrach_end_number_2 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_2 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -540,13 +557,14 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                     shai_anim = false;
                     star_awarad = false;
                     lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+                    'lucku_momentResult.winIndex=${lucku_momentResult.winIndex}'.log();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, SJLocalProvider.instance.sj_scrach_end_number_2 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_2 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -618,7 +636,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                                 if(lucku_momentResult.displayNumbers[index] == -2)
                                   SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 50, hs: 50, targetKey: targetimageKey),
                                 if(lucku_momentResult.displayNumbers[index] != -2)
-                                  Positioned(width: 56,child: SJBouncyText(text: '${lucku_momentResult.displayNumbers[index]}', fontSize: 32, color: '#23362B'.color(), enableAnimation: (lucku_momentResult.winNumbers.contains(lucku_momentResult.displayNumbers[index]) && star_awarad == true))),
+                                  Positioned(width: 56,child: SJBouncyText(text: '${lucku_momentResult.displayNumbers[index]}', fontSize: 32, color: lucku_momentResult.winNumbers.contains(lucku_momentResult.displayNumbers[index]) && star_awarad == true ? '#FBE600'.color() : '#23362B'.color(), enableAnimation: (lucku_momentResult.winNumbers.contains(lucku_momentResult.displayNumbers[index]) && star_awarad == true))),
                               ]
                           )
                       );
@@ -693,6 +711,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (secret_stashResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -711,7 +730,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, SJLocalProvider.instance.sj_scrach_end_number_3 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_3 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -732,7 +751,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, SJLocalProvider.instance.sj_scrach_end_number_3 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_3 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -857,6 +876,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (superMultipleResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -875,7 +895,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, SJLocalProvider.instance.sj_scrach_end_number_4 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_4 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -896,7 +916,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, SJLocalProvider.instance.sj_scrach_end_number_4 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_4 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -1006,6 +1026,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (fortuneRushResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -1024,7 +1045,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, SJLocalProvider.instance.sj_scrach_end_number_5 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_5 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -1045,7 +1066,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, SJLocalProvider.instance.sj_scrach_end_number_5 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_5 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -1091,7 +1112,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                                         if(fortuneRushResult.numbers[index] == -1)
                                           Positioned(left: 10.w,child: SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 40, hs: 40, targetKey: targetimageKey)),
                                         if(fortuneRushResult.numbers[index] != -1 && index >= 2)
-                                          Positioned(width: 60.w,child: SJBouncyText(text: '${fortuneRushResult.numbers[index]}', fontSize: 32, color: '#2C302F'.color(), enableAnimation: (fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true))),
+                                          Positioned(width: 60.w,child: SJBouncyText(text: '${fortuneRushResult.numbers[index]}', fontSize: 32, color:fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true ? '#FFDF23'.color() : '#2C302F'.color(), enableAnimation: (fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true))),
                                       ]
                                   )
                               );
@@ -1190,6 +1211,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               star_awarad = true;
             });
             Future.delayed(Duration(seconds: 2), () async {
+              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
               if (sweetTimeResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
@@ -1208,7 +1230,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, SJLocalProvider.instance.sj_scrach_end_number_6 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_6 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -1229,7 +1251,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, SJLocalProvider.instance.sj_scrach_end_number_6 + 1);
                   if (SJLocalProvider.instance.sj_scrach_end_number_6 >= 9){
                     await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name,DateTime.now().toIso8601String());
-                    Navigator.pop(context);
+                    popToNextScratch();
                   }
                   if (SJLocalProvider.instance.sj_Level_inedx >= 5){
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, 0);
@@ -1352,6 +1374,89 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
   }
   void showLevelDialog(){
     context.tipShow(SJPopLevelADialog());
+  }
+  // 进入下一个主题
+  void popToNextScratch(){
+    if (SJLocalProvider.instance.sj_Scratch_timeKey_0.length == 0){
+      Navigator.pop(context);
+      'push==0'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 0);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_1.length == 0){
+      Navigator.pop(context);
+      'push==1'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 1);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_2.length == 0){
+      Navigator.pop(context);
+      'push==2'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 2);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_3.length == 0){
+      Navigator.pop(context);
+      'push==3'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 3);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_4.length == 0){
+      Navigator.pop(context);
+      'push==4'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 4);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_5.length == 0){
+      Navigator.pop(context);
+      'push==5'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 5);
+          },
+        ),
+      );
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_6.length == 0){
+      Navigator.pop(context);
+      'push==6'.log();
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchA(
+                type: 6);
+          },
+        ),
+      );
+    } else {
+      Navigator.pop(context);
+    }
   }
 }
 
@@ -1531,28 +1636,26 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
           // SizedBox(width: 10.w),
-          Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: InkWell(
-              onTap: (){
+           SizedBox(
+           width: 65, height: 65,
+             child: Padding(
+               padding: EdgeInsets.only(top: 8),
+               child: InkWell(
+                  onTap: (){
 
-              },
-              child: Visibility(visible: false, child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
-            ),
-          ),
-          SizedBox(width: 32,),
-          Padding(
-            padding: EdgeInsets.only(top: 0),
-            child: InkWell(
+                  },
+                  child: Visibility(visible: false, child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                ),
+             ),
+           ),
+          SizedBox(width: 0,),
+          InkWell(
               onTap: (){
                 SJScratchUpdateNotificationService.sendToDomandNumberNotification(1);
               },
               child: SJImg(name: 'sj_revall_btn', width: 200, height: 80),
             ),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 16),
-            child: InkWell(
+            InkWell(
               onTap: (){
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -1566,28 +1669,30 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                 width: 65,
                 height: 65,
                 key: targetimageKey,
-                child: Stack(
-                  children: [
-                    SJImg(name: 'sj_shai_icon'),
-                    Positioned(right: 0,child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                          image: SJDImg('sj_home_jiao_bg')
-                      ),
-                      child: Center(
-                        child: Consumer<SJLocalProvider>(
-                          builder: (context, provider, child) {
-                            return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
-                          },
+                child: Padding(
+                  padding: EdgeInsets.only(top: 8),
+                  child: Stack(
+                    children: [
+                      SJImg(name: 'sj_shai_icon'),
+                      Positioned(right: 0,child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                            image: SJDImg('sj_home_jiao_bg')
                         ),
-                      ),
-                    ))
-                  ],
+                        child: Center(
+                          child: Consumer<SJLocalProvider>(
+                            builder: (context, provider, child) {
+                              return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
+                            },
+                          ),
+                        ),
+                      ))
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

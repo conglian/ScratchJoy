@@ -288,12 +288,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isFlipped)
-              Row(
-                children: [
-                  Spacer(),
-                  SJImg(name: 'sj_100top2_icon', width: 323, height: 158)
-                ],
-              ),
+              SJImg(name: 'sj_100top2_icon', width: 323, height: 158),
             if (!_isFlipped)
              SJImg(name: 'sj_hide100_top', width: 273, height: 182),
             SizedBox(height: 52.h),
@@ -305,7 +300,12 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                 child: Stack(alignment: Alignment.center, children: cards),
               ),
             ),
-            SizedBox(height: 70.h),
+            if(_isFlipped && _middleCardIndex != 0)
+              SJImg(name: 'sj_100_bottoms', width: 350, height: 147,),
+            if(_isFlipped && _middleCardIndex != 0)
+              SizedBox(height: 12.h),
+            if(_isFlipped && _middleCardIndex == 0)
+              SizedBox(height: 70.h),
             if(!_isFlipped)
               InkWell(
                onTap: _startShuffle,
@@ -368,7 +368,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
         ),
         if(_isFlipped && _middleCardIndex != 0)
           Positioned(
-            top: 559.h,
+            top: _isFlipped && _middleCardIndex != 0 ? 600.h : 559.h,
             right: 60.w,
             child: InkWell(
               onTap: (){

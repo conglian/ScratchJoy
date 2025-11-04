@@ -88,9 +88,12 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard>
       } else if (value == 1) {
         if (widget.autoScratch && !_isAutoScratching) {
           _startAutoScratch();
-          if (SJLocalProvider.instance.sj_bg_music) SJMP3Player().pauseBackground();
-          SJMP3Player().pauseEffect();
-          if (SJLocalProvider.instance.sj_sound_music) SJMP3Player().playEffect();
+          if (SJLocalProvider.instance.sj_sound_music){
+            if (SJLocalProvider.instance.sj_bg_music) {
+              await SJMP3Player().pauseBackground();
+            }
+            await SJMP3Player().playEffect();
+          }
         }
       }
     });
@@ -165,9 +168,12 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard>
       _repaintFlag++;
       _autoCoinPosition = null;
     });
-    await SJMP3Player().pauseEffect2();
-    await SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
+    if (SJLocalProvider.instance.sj_sound_music) {
+      await SJMP3Player().pauseEffect();
+    }
+    if (SJLocalProvider.instance.sj_bg_music) {
+      await SJMP3Player().playBackground();
+    }
   }
 
   void _resetScratchCard() {
@@ -300,10 +306,12 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard>
 
     widget.onScratchEnd?.call();
     _animationController.forward();
-
-    await SJMP3Player().pauseEffect2();
-    await SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
+    if (SJLocalProvider.instance.sj_sound_music) {
+      await SJMP3Player().pauseEffect();
+    }
+    if (SJLocalProvider.instance.sj_bg_music) {
+       await SJMP3Player().playBackground();
+    }
   }
 
   double _calculateDistance(Offset p1, Offset p2) {
@@ -345,10 +353,12 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard>
               _currentFingerPosition = details.localPosition;
               _autoCoinPosition = null;
             });
-            await SJMP3Player().pauseBackground();
-            await SJMP3Player().pauseEffect2();
-            await SJMP3Player().pauseEffect();
-            if (SJLocalProvider.instance.sj_sound_music) await SJMP3Player().playEffect2();
+            if (SJLocalProvider.instance.sj_sound_music) {
+              if (SJLocalProvider.instance.sj_bg_music) {
+                await SJMP3Player().pauseBackground();
+              }
+              await SJMP3Player().playEffect();
+            }
           },
           onPanUpdate: _isAutoScratching
               ? null

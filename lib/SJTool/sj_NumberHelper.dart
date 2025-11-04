@@ -94,8 +94,14 @@ class SJNumberAHelper {
     allNumbers.shuffle(_rand);
     List<int> winNumbers = allNumbers.take(4).toList();
 
-    // 2️⃣ 生成12个显示数字 (初始为普通随机数 10~99)
-    List<int> displayNumbers = List.generate(12, (_) => _rand.nextInt(90) + 10);
+    // 2️⃣ 生成12个显示数字，确保未中奖时不包含 winNumbers
+    List<int> displayNumbers = [];
+    while (displayNumbers.length < 12) {
+      int n = _rand.nextInt(90) + 10;
+      if (!winNumbers.contains(n)) {
+        displayNumbers.add(n);
+      }
+    }
 
     // 3️⃣ 每个显示数字对应的中奖值
     List<int> winMatchNumbers = [];
@@ -113,9 +119,9 @@ class SJNumberAHelper {
     bool isWin = forceWin || (_rand.nextDouble() < pointRate);
 
     // 5️⃣ 若中奖，只替换一个位置为 winNumbers 中的一个
-    int winIndex = -1;
+    int winIndex = 0;
     if (isWin) {
-      winIndex = _rand.nextInt(displayNumbers.length);
+      winIndex = _rand.nextInt(3);
       int winNumber = winNumbers[_rand.nextInt(winNumbers.length)];
       displayNumbers[winIndex] = winNumber;
     }
@@ -126,7 +132,7 @@ class SJNumberAHelper {
       int diceIdx = _rand.nextInt(displayNumbers.length);
       displayNumbers[diceIdx] = -2;
     }
-    winIndex = _rand.nextInt(3);
+
     // ✅ 7️⃣ 封装结果返回
     return SJPlayJoyResult(
       winNumbers: winNumbers,
@@ -137,6 +143,7 @@ class SJNumberAHelper {
       winIndex: winIndex,
     );
   }
+
 
   SJsecret_stashResult generatesecret_stashStash({bool forceWin = false}) {
     final _rand = Random();

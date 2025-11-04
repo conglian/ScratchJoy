@@ -8,6 +8,8 @@ import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 
 import '../SJTool/sj_NumberHelper.dart';
 import '../SJTool/sj_init_sdk.dart';
+import '../SJTool/sj_mp3_player.dart';
+import 'SJBase/SJLuauch.dart';
 
 Future<void> main() async {
   // 初始化Flutter绑定（确保async操作在runApp前执行）
@@ -38,6 +40,15 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     SJNumberAHelper().init();
     SJSDKHelpers().initSDK();
+    // 背景音乐
+    if (SJLocalProvider.instance.sj_bg_music) {
+      SJMP3Player().playBackground();
+    } else {
+      SJMP3Player().pauseBackground();
+    }
+    SJMP3Player().pauseEffect();
+    SJMP3Player().pauseEffect2();
+    SJMP3Player().pauseEffect3();
   }
 
   @override
@@ -65,7 +76,7 @@ class _MyAppState extends State<MyApp> {
           home: child,
         );
       },
-      child: SJHome(),
+      child: SJSratchJoyLaunch(),
     );
   }
 

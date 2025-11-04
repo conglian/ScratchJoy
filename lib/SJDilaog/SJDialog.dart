@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
@@ -94,6 +95,19 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
   @override
   void initState() {
     super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect2();
+      }
+      Future.delayed(Duration(milliseconds: 400), () async {
+        await SJMP3Player().pauseEffect2();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
   }
 
   @override
@@ -191,6 +205,34 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
 
     _scaleAnimation2 = Tween(begin: 1.0, end: 1.2)
         .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect4();
+      }
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        await SJMP3Player().pauseEffect4();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect3();
+      }
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJMP3Player().pauseEffect3();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
   }
 
   @override
@@ -237,15 +279,15 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
           Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               onTap: (){
                 Navigator.pop(context, 1);
-                // 看ad-重新刷新
                 SJAdAHelper().show(context, (hasCache){
                   if (!hasCache){
                     SJAdAHelper().resetBlock();
                   }
                 }, (finished) async {
                   SJAdAHelper().resetBlock();
+                  playAwardmp3();
                   Navigator.pop(context);
-                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
                 });
               },
               child: Container(
@@ -270,16 +312,18 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
                     }
                   }, (finished) async {
                     SJAdAHelper().resetBlock();
+                    playAwardmp3();
                     Navigator.pop(context);
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
                   });
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
           Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
-            onTap: (){
+            onTap: () async {
+              playAwardmp3();
               Navigator.pop(context, 0);
-              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
             },
             child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
           )),
@@ -377,10 +421,10 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                                 child: InkWell(
                                   onTap: () async {
                                     if (SJLocalProvider.instance.sj_bg_music){
-                                      SJMP3Player().pauseBackground();
+                                      await SJMP3Player().pauseBackground();
                                       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_bg_musicName,false);
                                     } else {
-                                      SJMP3Player().playBackground();
+                                      await SJMP3Player().playBackground();
                                       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_bg_musicName,true);
                                     }
                                     setState(() {});
@@ -420,7 +464,7 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (builder) {
                           return SJwebkitview(
-                            urlString: "https://scratchplayland.com/privacy/",
+                            urlString: "https://sites.google.com/view/130scratchjoyprivacy-policy/home",
                           );
                         }),
                       );
@@ -510,7 +554,6 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
                   }
                 }, (finished) async {
                   SJAdAHelper().resetBlock();
-                  Navigator.pop(context);
                   unlocklevelsluck();
                 });
 
@@ -528,16 +571,15 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
                     }
                   }, (finished) async {
                     SJAdAHelper().resetBlock();
-                    Navigator.pop(context);
                     unlocklevelsluck();
                   });
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
           Positioned(top: 528.h,left: (0.width(context) - 124) * 0.5, child: InkWell(
-            onTap: (){
+            onTap: () async {
                if (SJLocalProvider.instance.sj_domand_number >= 1000){
-                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
+                 await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
                  unlocklevelsluck();
                } else {
                  Navigator.pop(context);
@@ -551,29 +593,30 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
     );
   }
 
-  void unlocklevelsluck(){
+  Future<void> unlocklevelsluck() async {
     if (widget.type == 0){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name, '');
     } else if (widget.type == 1){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name, '');
     } else if (widget.type == 2){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name, '');
     } else if (widget.type == 3){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name, '');
     } else if (widget.type == 4){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name, '');
     } else if (widget.type == 5){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name, '');
     } else if (widget.type == 6){
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, 0);
-      SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name, '');
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, 0);
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name, '');
     }
+    Navigator.pop(context);
   }
 }
 // 未中奖
@@ -583,18 +626,28 @@ class SJPopUnAwardDialog extends StatefulWidget {
   State<SJPopUnAwardDialog> createState() => SJPopUnAwardDialogState();
 }
 
-class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog>
-    with TickerProviderStateMixin {
+class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog> {
   late spine.SpineWidgetController _controller;
 
   @override
   void initState() {
     super.initState();
     _controller = spine.SpineWidgetController(onInitialized: (controller) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
         controller.animationState.setAnimationByName(0, "animation", true);
+        if (SJLocalProvider.instance.sj_sound_music){
+          await SJMP3Player().pauseBackground();
+          await SJMP3Player().playEffect2();
+        }
+        Future.delayed(Duration(milliseconds: 400), () async {
+          await SJMP3Player().pauseEffect2();
+          if (SJLocalProvider.instance.sj_bg_music){
+            await SJMP3Player().playBackground();
+          }
+        });
       });
     });
+
   }
 
   @override
@@ -664,6 +717,18 @@ class SJPopLevelADialogState extends State<SJPopLevelADialog>
 
     _timer = Timer(const Duration(milliseconds: 2000), () {
       Navigator.pop(context);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect9();
+      }
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        await SJMP3Player().pauseEffect9();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
     });
   }
 

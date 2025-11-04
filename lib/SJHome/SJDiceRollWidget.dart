@@ -11,6 +11,7 @@ import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJTool/sj_img.dart';
+import '../SJTool/sj_mp3_player.dart';
 import 'SJScratchA.dart';
 
 class SJDiceRollWidget extends StatefulWidget {
@@ -44,7 +45,6 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
   };
 
   final int totalNumbers = 12; // 周边数字总数严格 12 个
-
   final double numberSize = 82;
 
   @override
@@ -52,7 +52,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 3000),
+      duration: const Duration(milliseconds: 1700), // ✅ 改为 1700ms
     );
   }
 
@@ -75,18 +75,36 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
   }
 
   void _rollDice() {
-    if (SJLocalProvider.instance.sj_dice_number <= 0){
+    if (SJLocalProvider.instance.sj_dice_number <= 0) {
       context.tipShow(SJPopNotdiceDialog());
       return;
     }
     if (_isRolling) return;
-    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number - 1);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect5();
+      }
+      Future.delayed(Duration(milliseconds: 1700), () async {
+        await SJMP3Player().pauseEffect5();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+
+    SJLocalProvider.instance.updateint(
+      SJLocalProvider.instance.sj_dice_numberName,
+      SJLocalProvider.instance.sj_dice_number - 1,
+    );
+
     _isRolling = true;
     _finalFace = _getFaceByProbability();
     _controller.forward(from: 0);
     _timer?.cancel();
 
-    const total = 3000;
+    const total = 1700; // ✅ 总时长改为 1700ms
     int elapsed = 0;
 
     _timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
@@ -100,14 +118,14 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         return;
       }
 
-      if (elapsed < 1200) {
+      if (elapsed < 700) {
         if (elapsed % 40 < 16) {
           setState(() {
             _currentFace = Random().nextInt(6) + 1;
           });
         }
-      } else if (elapsed < 2000) {
-        if (elapsed % 120 < 16) {
+      } else if (elapsed < 1200) {
+        if (elapsed % 100 < 16) {
           setState(() {
             _currentFace = _finalFace;
           });
@@ -122,70 +140,79 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
     });
   }
 
-
+  /// 跑马灯逻辑
   void _startMarquee() {
     if (_isMarqueeRunning) return;
     _isMarqueeRunning = true;
 
     int steps = _finalFace; // 跑马灯走的步数
     int elapsedSteps = 0;
-    double interval = 150; // 初始间隔改大，原来是 50ms
+    double interval = 200; // ✅ 初始间隔略放慢（原 150）
 
     _marqueeTimer?.cancel();
     _marqueeTimer = Timer.periodic(Duration(milliseconds: interval.toInt()), (timer) {
       setState(() {
         _currentNumberIndex = (_currentNumberIndex + 1) % totalNumbers;
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_currentNumberIndexName, _currentNumberIndex);
+        SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_currentNumberIndexName,
+          _currentNumberIndex,
+        );
       });
 
       elapsedSteps++;
 
-      // 逐渐变慢，最大间隔 400ms
-      interval = min(400, 150 + elapsedSteps * 40).toDouble();
+      // ✅ 逐渐变慢，最大间隔 450ms（原 400）
+      interval = min(450, 200 + elapsedSteps * 45).toDouble();
 
-      // 重新设置定时器间隔
       timer.cancel();
       if (elapsedSteps < steps) {
-        _marqueeTimer = Timer.periodic(Duration(milliseconds: interval.toInt()), (t) => _startMarqueeStep(t, elapsedSteps, steps));
+        _marqueeTimer = Timer.periodic(
+          Duration(milliseconds: interval.toInt()),
+              (t) => _startMarqueeStep(t, elapsedSteps, steps),
+        );
       } else {
         _isMarqueeRunning = false;
         _isRolling = false;
-        if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0){
-            context.tipShow(SJPopYouWinADialog(award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
+        if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
+          context.tipShow(SJPopYouWinADialog(
+              award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
         }
       }
     });
   }
 
-// 辅助函数实现步进
   void _startMarqueeStep(Timer timer, int elapsedSteps, int steps) {
     setState(() {
       _currentNumberIndex = (_currentNumberIndex + 1) % totalNumbers;
-      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_currentNumberIndexName, _currentNumberIndex);
+      SJLocalProvider.instance.updateint(
+        SJLocalProvider.instance.sj_currentNumberIndexName,
+        _currentNumberIndex,
+      );
     });
     elapsedSteps++;
-    double interval = min(400, 150 + elapsedSteps * 40).toDouble();
+    double interval = min(450, 200 + elapsedSteps * 45).toDouble(); // ✅ 对应速度放慢
     timer.cancel();
     if (elapsedSteps < steps) {
-      _marqueeTimer = Timer.periodic(Duration(milliseconds: interval.toInt()), (t) => _startMarqueeStep(t, elapsedSteps, steps));
+      _marqueeTimer = Timer.periodic(
+        Duration(milliseconds: interval.toInt()),
+            (t) => _startMarqueeStep(t, elapsedSteps, steps),
+      );
     } else {
       _isMarqueeRunning = false;
       _isRolling = false;
-      if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0){
-        context.tipShow(SJPopYouWinADialog(award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
+      if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
+        context.tipShow(SJPopYouWinADialog(
+            award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
       }
     }
   }
 
-
-  /// 返回每个数字相对于中心骰子的偏移，正方形顺时针布局 12 个
+  /// 数字布局位置
   Offset _getSquarePosition(int index) {
     double spacing = (0.width(context) - (82 * 4)) / 5;
-    // 正方形边长 = (numberSize + spacing) * 3
     double sideLength = (numberSize + spacing) * 3;
 
     switch (index) {
-    // 上边 0~3 左到右
       case 0:
         return Offset(-sideLength / 2, -sideLength / 2);
       case 1:
@@ -194,29 +221,22 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         return Offset(sideLength / 6, -sideLength / 2);
       case 3:
         return Offset(sideLength / 2, -sideLength / 2);
-
-    // 右边 4~6 上到下
       case 4:
         return Offset(sideLength / 2, -sideLength / 6);
       case 5:
         return Offset(sideLength / 2, sideLength / 6);
       case 6:
         return Offset(sideLength / 2, sideLength / 2);
-
-    // 下边 7~9 右到左
       case 7:
         return Offset(sideLength / 6, sideLength / 2);
       case 8:
         return Offset(-sideLength / 6, sideLength / 2);
       case 9:
         return Offset(-sideLength / 2, sideLength / 2);
-
-    // 左边 10~11 下到上
       case 10:
         return Offset(-sideLength / 2, sideLength / 6);
       case 11:
         return Offset(-sideLength / 2, -sideLength / 6);
-
       default:
         return Offset.zero;
     }
@@ -249,7 +269,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                         decoration: BoxDecoration(image: SJDImg('sj_shai_cenrer_bg')),
                         child: Column(
                           children: [
-                            SizedBox(height: 15),
+                            const SizedBox(height: 15),
                             SizedBox(
                               width: 87,
                               height: 87,
@@ -301,7 +321,10 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                                       alignment: Alignment.center,
                                       transform: transform,
                                       child: SJImg(
-                                          name: 'dice_$_currentFace', width: 87, height: 87),
+                                        name: 'dice_$_currentFace',
+                                        width: 87,
+                                        height: 87,
+                                      ),
                                     );
                                   },
                                 ),
@@ -312,7 +335,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                       ),
                     ),
                   ),
-                  // 周边数字 12 个
+                  // 周边数字
                   for (int i = 0; i < totalNumbers; i++)
                     Positioned(
                       left: 152.w + _getSquarePosition(i).dx,
@@ -321,15 +344,34 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                         width: numberSize,
                         height: numberSize,
                         decoration: BoxDecoration(
-                          image: SJDImg(i == _currentNumberIndex ? 'sj_numbers_s' : 'sj_numbers_n')
+                          image: SJDImg(
+                              i == _currentNumberIndex ? 'sj_numbers_s' : 'sj_numbers_n'),
                         ),
                         child: Column(
                           children: [
-                            SizedBox(height: 54,),
-                            Center(child: SizedBox(width: 40, height:20,child: SJGradientStrokeText(text: '${SJNumberAHelper().numberEntity.diceNumeric[i] == 0 ? '  0' : SJNumberAHelper().numberEntity.diceNumeric[i]}', gradientColors: ['#FFFDE0'.color(), '#F8FF20'.color()], fontSize: 16, strokeWidth: 1, strokeColor: '#010442'.color(),width: 82, height: 20,)))
+                            const SizedBox(height: 54),
+                            Center(
+                              child: SizedBox(
+                                width: 40,
+                                height: 20,
+                                child: SJGradientStrokeText(
+                                  text:
+                                  '${SJNumberAHelper().numberEntity.diceNumeric[i] == 0 ? '  0' : SJNumberAHelper().numberEntity.diceNumeric[i]}',
+                                  gradientColors: [
+                                    '#FFFDE0'.color(),
+                                    '#F8FF20'.color()
+                                  ],
+                                  fontSize: 16,
+                                  strokeWidth: 1,
+                                  strokeColor: '#010442'.color(),
+                                  width: 82,
+                                  height: 20,
+                                ),
+                              ),
+                            )
                           ],
                         ),
-                      )
+                      ),
                     ),
                 ],
               ),
@@ -337,24 +379,27 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
             Container(
               width: 140,
               height: 50,
-              decoration: BoxDecoration(
-                image: SJDImg('sj_shai_number_bg')
-              ),
+              decoration: BoxDecoration(image: SJDImg('sj_shai_number_bg')),
               child: Consumer<SJLocalProvider>(
                 builder: (context, provider, child) {
                   return Row(
                     children: [
-                      SizedBox(width: 82,),
-                      SJText(text: '${provider.sj_dice_number}', size: 24, color: '#FFFFFF'.color(), weight: FontWeight.w400)
+                      const SizedBox(width: 82),
+                      SJText(
+                        text: '${provider.sj_dice_number}',
+                        size: 24,
+                        color: '#FFFFFF'.color(),
+                        weight: FontWeight.w400,
+                      )
                     ],
                   );
                 },
               ),
             ),
-            SizedBox(height: 10.h,),
+            SizedBox(height: 10.h),
             InkWell(
               onTap: _rollDice,
-              child: SJImg(name: 'sj_throw_btn', width: 260, height: 74,),
+              child: SJImg(name: 'sj_throw_btn', width: 260, height: 74),
             )
           ],
         ),

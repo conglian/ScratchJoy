@@ -47,7 +47,7 @@ dependencies:
   json_annotation: ^4.9.0
   fl_toast: ^3.2.0
   flutter_screenutil: ^5.8.2
-  spine_flutter: ^4.2.36
+  spine_flutter: 4.2.36
   flutter_tba_info: ^0.0.9
   flutter_card_swiper: ^7.1.0
   applovin_max: ^4.6.0
