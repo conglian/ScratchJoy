@@ -616,6 +616,7 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, 0);
       await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name, '');
     }
+    if (!mounted) return; // ✅ 页面已经被销毁就直接返回
     Navigator.pop(context);
   }
 }
