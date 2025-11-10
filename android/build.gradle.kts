@@ -2,13 +2,53 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        flatDir {
+            dirs("libs") // 指定libs目录
+        }
+        maven { url  = uri("https://artifactory.bidmachine.io/bidmachine") }
+        maven { url  = uri("https://cboost.jfrog.io/artifactory/chartboost-ads/") }
+        maven { url  = uri("https://android-sdk.is.com") }
+        maven { url  = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea") }
+        maven { url  = uri("https://artifact.bytedance.com/repository/pangle") }
+        maven {
+            url  = uri("https://jfrog.anythinktech.com/artifactory/debugger")
+        }
+        //TU(Core)
+        maven {
+            url  = uri("https://jfrog.anythinktech.com/artifactory/overseas_sdk")
+        }
+
+        //Ironsource
+        maven {
+            url  = uri("https://android-sdk.is.com/")
+        }
+
+        //Pangle
+        maven {
+            url  = uri("https://artifact.bytedance.com/repository/pangle")
+        }
+
+        //Mintegral
+        maven {
+            url  = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea")
+        }
+
+        //Bidmachine
+        maven {
+            url  = uri("https://artifactory.bidmachine.io/bidmachine")
+        }
+
+        //Chartboost
+        maven {
+            url  = uri("https://cboost.jfrog.io/artifactory/chartboost-ads")
+        }
+        maven {
+            url  = uri("https://cboost.jfrog.io/artifactory/chartboost-mediation")
+        }
     }
 }
 
-val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+val newBuildDir: Directory = rootProject.layout.buildDirectory.dir("../../build").get()
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {

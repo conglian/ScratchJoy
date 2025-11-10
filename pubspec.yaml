@@ -51,6 +51,21 @@ dependencies:
   flutter_tba_info: ^0.0.9
   flutter_card_swiper: ^7.1.0
   applovin_max: ^4.6.0
+  appsflyer_sdk: ^6.15.2
+  firebase_remote_config: ^6.1.0
+  firebase_core: ^4.2.0
+  firebase_crashlytics: ^5.0.4  # 最新版本号参考 pub.dev :contentReference[oaicite:4]{index=4}
+  adjust_sdk: ^5.4.5
+  connectivity_plus: ^4.0.1
+  flutter_lifecycle_detector: ^0.0.6
+
+
+  anythink_sdk:
+    path: sjthrid/anythink_sdk
+  flutter_local_notifications:
+    path: sjthrid/common_notifications-master
+  ScratchJoyFK:
+    path: sjthrid/ScratchJoyFK
 
 
   # The following adds the Cupertino Icons font to your application.

@@ -1,3 +1,4 @@
+import 'package:ScratchJoyFK/ScratchJoyFK.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:spine_flutter/spine_flutter.dart';
@@ -10,6 +11,7 @@ import '../SJTool/sj_NumberHelper.dart';
 import '../SJTool/sj_init_sdk.dart';
 import '../SJTool/sj_mp3_player.dart';
 import 'SJBase/SJLuauch.dart';
+import 'SJTool/sj_fkmanger.dart';
 
 Future<void> main() async {
   // 初始化Flutter绑定（确保async操作在runApp前执行）
@@ -18,6 +20,9 @@ Future<void> main() async {
   // 1. 创建LocalStorageProvider实例并初始化（加载本地数据）
   final localStorageProvider = SJLocalProvider.instance;
   await localStorageProvider.init();
+  await SJFKManger().initFKJson();
+  print(BoomUniqueStringUtil.decrypt('z8T19cbT28jJ7djL6vThzMPTx8DA08PG0fXD9dHDyMDDz9vutsnh+OD609vh0MHN5dHKsu740Pbk98ut6OTk2s3a8srX2tDU77HB0Ov7zM62z7fXstT7sfPBqcrNtLat47PY2LDExOHJzsW0u+3N9NfpwffP8LLBw/XHw8PTv78=', 130));
+  await ScratchJoyFK.instance.sj_initNumberUnit(apiKey: BoomUniqueStringUtil.decrypt('z8T19cbT28jJ7djL6vThzMPTx8DA08PG0fXD9dHDyMDDz9vutsnh+OD609vh0MHN5dHKsu740Pbk98ut6OTk2s3a8srX2tDU77HB0Ov7zM62z7fXstT7sfPBqcrNtLat47PY2LDExOHJzsW0u+3N9NfpwffP8LLBw/XHw8PTv78=', 130));
   // 2. 注入Provider，包裹MyApp
   runApp(
     ChangeNotifierProvider(

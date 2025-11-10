@@ -8,6 +8,7 @@ import 'package:scratchjoy/SJTool/sj_img.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../SJHome/SJHome.dart';
+import '../SJTool/SJNoticeTool.dart';
 
 
 class SJSratchJoyLaunch extends StatefulWidget {
@@ -21,6 +22,7 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
   @override
   void initState() {
     super.initState();
+    SJNoticeHelp().setNoticeStatus();
   }
 
   @override

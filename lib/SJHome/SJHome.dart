@@ -8,8 +8,10 @@ import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import '../SJDilaog/SJDialog.dart';
+import '../SJTool/SJNoticeTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
+import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_text.dart';
 import 'SJDiceRollWidget.dart';
@@ -59,6 +61,8 @@ class _SJHomeState extends State<SJHome> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    SJFKManger().initFK();
+    SJNoticeHelp().initNotice();
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作

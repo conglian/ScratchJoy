@@ -110,6 +110,17 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_Scratch_timeKey_6Name => 'sj_Scratch_timeKey_6';
   String get sj_Level_numberName => 'sj_Level_number';
   String get sj_Level_inedxName => 'sj_Level_inedx';
+  String get sj_fk_number_statusName => 'sj_fk_number_status';
+  String get sj_fk_ip_statusName => 'sj_fk_ip_status';
+  String get sj_fk_decvice_statusName => 'sj_fk_decvice_status';
+  String get sj_ad_show_numberName => 'sj_ad_show_number';
+  String get sj_ad_all_numberName => 'sj_ad_all_number';
+  String get sj_ad_show_indexName => 'sj_ad_show_index';
+  String get sj_ad_reawrd_all_numberName => 'sj_ad_reawrd_all_number';
+  String get sj_ad_short_show_numberName => 'sj_ad_short_show_number';
+  String get sj_fk_ad_short_showName => 'sj_fk_ad_short_show';
+  String get sj_ad_short_close_numberName => 'sj_ad_short_close_number';
+  String get sj_fk_ad_short_closeName => 'sj_fk_ad_short_close';
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
   Future<void> init() async {
