@@ -149,7 +149,7 @@ class SJAdManager {
     // 展示上限
     if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
       sj_event_fire('see_you_tommorow', {});
-      // context.tipShow(SPPopLimitWidget());
+      context.tipShow(SJPopAdLimitDialog());
       hasCache(false);
       return;
     }
@@ -406,7 +406,7 @@ class SJAdManager {
     // 展示上限
     if (SJLocalProvider.instance.sj_ad_show_index >= SJFKManger().fkModel.behavior.ad_daily_show){
       sj_event_fire('see_you_tommorow', {});
-      // context.tipShow(SPPopLimitWidget());
+      context.tipShow(SJPopAdLimitDialog());
     } else {
       // 无网络
       bool isConnected = await NetworkUtils.isConnected();

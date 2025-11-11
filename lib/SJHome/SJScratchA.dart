@@ -1379,7 +1379,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
   void popToNextScratch(){
     if (SJLocalProvider.instance.sj_Scratch_timeKey_0.length == 0){
       Navigator.pop(context);
-      'push==0'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1390,7 +1389,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_1.length == 0){
       Navigator.pop(context);
-      'push==1'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1401,7 +1399,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_2.length == 0){
       Navigator.pop(context);
-      'push==2'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1412,7 +1409,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_3.length == 0){
       Navigator.pop(context);
-      'push==3'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1423,7 +1419,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_4.length == 0){
       Navigator.pop(context);
-      'push==4'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1434,7 +1429,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_5.length == 0){
       Navigator.pop(context);
-      'push==5'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1445,7 +1439,6 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
       );
     } else if (SJLocalProvider.instance.sj_Scratch_timeKey_6.length == 0){
       Navigator.pop(context);
-      'push==6'.log();
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
@@ -1484,7 +1477,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
             SizedBox(width: 12,),
             SizedBox(
                 width: 124,
-                height: 37,
+                height: 49,
                 child: Stack(
                   children: [
                     Center(
@@ -1519,7 +1512,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                           )
                       ),
                     ),
-                    SJImg(name: 'sj_home_domand_icon', width: 35.12, height: 37,)
+                    SJImg(name: 'sj_dolas_icon', width: 49, height: 49,)
                   ],
                 )
             ),
@@ -1539,28 +1532,43 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                         ),
                         child: Consumer<SJLocalProvider>(
                           builder: (context, provider, child) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.circular(15),
-                              child: ShaderMask(
-                                shaderCallback: (Rect bounds) {
-                                  return LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      '#8D1C47'.color(),
-                                      '#F71C65'.color(),
-                                      '#EA0B58'.color(),
-                                      '#6C092E'.color(),
-                                    ],
-                                  ).createShader(bounds);
-                                },
-                                child: LinearProgressIndicator(
-                                  value: provider.sj_Level_inedx / 5.0,
-                                  minHeight: 30,
-                                  backgroundColor: Colors.transparent,
-                                  valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                            return Stack(
+                              children: [
+                                Positioned(
+                                  left: 4,
+                                  top: 4,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
+                                    child: ShaderMask(
+                                      shaderCallback: (Rect bounds) {
+                                        return LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            '#8D1C47'.color(),
+                                            '#F71C65'.color(),
+                                            '#EA0B58'.color(),
+                                            '#6C092E'.color(),
+                                          ],
+                                        ).createShader(bounds);
+                                      },
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 0),
+                                        child: SizedBox(
+                                          width: 120,
+                                          height: 24,
+                                          child: LinearProgressIndicator(
+                                            value: provider.sj_Level_inedx / 5.0,
+                                            minHeight: 24,
+                                            backgroundColor: Colors.transparent,
+                                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
-                              ),
+                              ],
                             );
                           },
                         ),
@@ -1633,28 +1641,71 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
           image: SJDImg('sj_tbabar_bg')
       ),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          // SizedBox(width: 10.w),
-           SizedBox(
-           width: 65, height: 65,
-             child: Padding(
-               padding: EdgeInsets.only(top: 8),
-               child: InkWell(
-                  onTap: (){
+          SizedBox(width: 16.w),
+          SizedBox(
+            width: 100,
+            height: 89,
+            child: InkWell(
+              onTap: (){
 
-                  },
-                  child: Visibility(visible: false, child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
-                ),
-             ),
-           ),
-          SizedBox(width: 0,),
+              },
+              child: Stack(
+                children: [
+                  Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                  Positioned(top: 68,child:Stack(
+                    children: [
+                      // 背景图 71 × 15
+                      SizedBox(
+                        width: 71,
+                        height: 15,
+                        child: SJImg(name: 'sj_box_pro_bg'),
+                      ),
+                      // 进度条（居中）67 × 11
+                      Positioned(
+                        left: (71 - 67) / 2,  // = 2 px
+                        top: 1,   // = 2 px
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            width: 67,
+                            height: 11,
+                            color: Colors.transparent,
+                            child: Align(
+                              alignment: Alignment.centerLeft,
+                              child: Container(
+                                width: 67 * 0.6, // 根据进度变化
+                                height: 11,
+                                decoration: const BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.centerLeft,
+                                    end: Alignment.centerRight,
+                                    colors: [
+                                      Color(0xFFFDEB5A),
+                                      Color(0xFFFFC700),
+                                      Color(0xFFB87400),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ))
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: 4.w),
           InkWell(
               onTap: (){
                 SJScratchUpdateNotificationService.sendToDomandNumberNotification(1);
               },
               child: SJImg(name: 'sj_revall_btn', width: 200, height: 80),
             ),
+          Spacer(),
             InkWell(
               onTap: (){
                 Navigator.of(context).push(
@@ -1693,6 +1744,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                 ),
               ),
             ),
+          SizedBox(width: 16.w),
         ],
       ),
     );

@@ -153,7 +153,6 @@ class _SJGradientProgressBarState extends State<SJGradientProgressBar>
                       ),
                     ),
                   ),
-
                   // ✅ 居中显示百分比文字
                   Center(
                     child: Text(

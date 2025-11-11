@@ -57,7 +57,7 @@ class SJNoticeHelp {
       sj_event_fire('push_status', {});
     }else{
       "nf no permission".log();
-      // NavigationService().navigatorKey.currentContext?.tipShow(SPPopNoticeStatusWidget());
+      // NavigationService().navigatorKey.currentContext?.tipShow(SJPopNoticeDialog());
     }
     "nf has permission".log();
     _initLifecycleListener();
@@ -128,7 +128,7 @@ class SJNoticeHelp {
         title,
         body,
         'sj_notice_big',
-        'Go Earn',
+        'Claim',
         'sj_logo',
       ),
       priority: Priority.high,
@@ -162,7 +162,7 @@ class SJNoticeHelp {
         title,
         body,
         'sj_notice_big',
-        'Go Earn',
+        'Claim',
         'sj_logo',
       ),
       priority: Priority.high,
@@ -196,7 +196,7 @@ class SJNoticeHelp {
         title,
         body,
         'sj_notice_big',
-        'Go Earn',
+        'Claim',
         'sj_logo',
       ),
       priority: Priority.high,
@@ -230,7 +230,7 @@ class SJNoticeHelp {
         title,
         body,
         'sj_notice_big',
-        'Go Earn',
+        'Claim',
         'sj_logo',
       ),
       priority: Priority.high,
@@ -261,7 +261,7 @@ class SJNoticeHelp {
           '',
           '',
           '',
-          'Go Earn',
+          'Claim',
           'sj_logo',
         ),
         priority: Priority.high,
@@ -292,7 +292,7 @@ class SJNoticeHelp {
           randomMotivation2.title,
           randomMotivation2.body,
           'sj_notice_big',
-          'Go Earn',
+          'Claim',
           'sj_logo',
         ),
         //“groupKey”：防止通知被系统折叠

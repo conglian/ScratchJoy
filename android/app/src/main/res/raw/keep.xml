@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/*,@string/thinkup_*,@drawable/thinkup_*,@layout/thinkup_*,@id/thinkup_*,@dimen/thinkup_*,@style/thinkup_*,@color/thinkup_*"
+    tools:shrinkMode="safe" />

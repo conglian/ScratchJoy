@@ -15,7 +15,7 @@ import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_text.dart';
 import 'SJDiceRollWidget.dart';
-import 'SJScratchA.dart';
+import 'SJScratchB.dart';
 
 var history_index = 0;
 
@@ -172,9 +172,7 @@ class _SJHomeState extends State<SJHome> {
       sj_startTime0 = DateTime.parse(SJLocalProvider.instance.sj_Scratch_timeKey_0);
     }
     if (SJLocalProvider.instance.sj_Scratch_timeKey_1.isNotEmpty){
-      '1111111'.log();
       sj_startTime1 = DateTime.parse(SJLocalProvider.instance.sj_Scratch_timeKey_1);
-      'sj_startTime1=$sj_startTime1'.log();
     }
     if (SJLocalProvider.instance.sj_Scratch_timeKey_2.isNotEmpty){
       sj_startTime2 = DateTime.parse(SJLocalProvider.instance.sj_Scratch_timeKey_2);
@@ -199,27 +197,29 @@ class _SJHomeState extends State<SJHome> {
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
-      body: Container(
-        width: 0.width(context),
-        height: 0.height(context),
-        decoration: BoxDecoration(
-          image: SJDImg('sj_home_bg')
-        ),
-        child: Column(
-          children: [
-            SJNavBarWidget(),
-            SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 89, child: SJClickableImageList(sjRemainingDurations:[
-              sj_remainingDuration0,
-              sj_remainingDuration1,
-              sj_remainingDuration2,
-              sj_remainingDuration3,
-              sj_remainingDuration4,
-              sj_remainingDuration5,
-              sj_remainingDuration6,
-            ])),
-            Spacer(),
-            SJBottomBarWidget(),
-          ],
+      body: SingleChildScrollView(
+        child: Container(
+          width: 0.width(context),
+          height: 0.height(context),
+          decoration: BoxDecoration(
+            image: SJDImg('sj_home_bg')
+          ),
+          child: Column(
+            children: [
+              SJNavBarWidget(),
+              SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 89, child: SJClickableImageList(sjRemainingDurations:[
+                sj_remainingDuration0,
+                sj_remainingDuration1,
+                sj_remainingDuration2,
+                sj_remainingDuration3,
+                sj_remainingDuration4,
+                sj_remainingDuration5,
+                sj_remainingDuration6,
+              ])),
+              Spacer(),
+              SJBottomBarWidget(),
+            ],
+          ),
         ),
       ),
     );
@@ -255,7 +255,7 @@ class SJClickableImageList extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (builder) {
-                    return SJScratchA(
+                    return SJScratchB(
                       type: index);
                   },
                 ),
@@ -338,7 +338,7 @@ class SJClickableImageList extends StatelessWidget {
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#8B0746'.color();
                             }
-                            return SJGradientStrokeText(text: '$num', fontSize: 24, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
+                            return SJGradientStrokeText(text: '\$$num', fontSize: 24, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
                           }
                       ),
                     ),
@@ -509,7 +509,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             SizedBox(width: 12,),
             SizedBox(
                 width: 124,
-                height: 37,
+                height: 49,
                 child: Stack(
                   children: [
                     Center(
@@ -544,11 +544,11 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                           )
                       ),
                     ),
-                    SJImg(name: 'sj_home_domand_icon', width: 35.12, height: 37,)
+                    SJImg(name: 'sj_dolas_icon', width: 49, height: 49,)
                   ],
                 )
             ),
-            SizedBox(width: 11.0),
+            SizedBox(width: 11,),
             SizedBox(
                 width: 147,
                 height: 40,
@@ -557,15 +557,20 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                     Padding(
                       padding: EdgeInsets.only(top: 4, left: 19),
                       child: Container(
-                            width: 131,
-                            height: 32,
-                            decoration: BoxDecoration(
-                                image: SJDImg('sj_nav_pro_bg')
-                            ),
-                            child: Consumer<SJLocalProvider>(
-                              builder: (context, provider, child) {
-                                return ClipRRect(
-                                    borderRadius: BorderRadius.circular(15),
+                        width: 131,
+                        height: 32,
+                        decoration: BoxDecoration(
+                            image: SJDImg('sj_nav_pro_bg')
+                        ),
+                        child: Consumer<SJLocalProvider>(
+                          builder: (context, provider, child) {
+                            return Stack(
+                              children: [
+                                Positioned(
+                                  left: 4,
+                                  top: 4,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(20),
                                     child: ShaderMask(
                                       shaderCallback: (Rect bounds) {
                                         return LinearGradient(
@@ -579,15 +584,25 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                                           ],
                                         ).createShader(bounds);
                                       },
-                                      child: LinearProgressIndicator(
-                                        value: provider.sj_Level_inedx / 5.0,
-                                        minHeight: 30,
-                                        backgroundColor: Colors.transparent,
-                                        valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                      child: Padding(
+                                        padding: EdgeInsets.only(top: 0),
+                                        child: SizedBox(
+                                          width: 120,
+                                          height: 24,
+                                          child: LinearProgressIndicator(
+                                            value: provider.sj_Level_inedx / 5.0,
+                                            minHeight: 24,
+                                            backgroundColor: Colors.transparent,
+                                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
+                                          ),
+                                        ),
                                       ),
                                     ),
-                                );
-                                },
+                                  ),
+                                ),
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -609,7 +624,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                       width: 55,
                       height: 40,
                       decoration: BoxDecoration(
-                        image: SJDImg('sj_lev_bg')
+                          image: SJDImg('sj_lev_bg')
                       ),
                       child: Center(
                         child: Consumer<SJLocalProvider>(
@@ -642,7 +657,9 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             // ),
             InkWell(
               onTap: (){
-                context.tipShow(SJPopSettingDialog());
+
+                context.tipShow(SJPopTXNotDialog());
+                // context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
             ),
@@ -673,19 +690,64 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
           image: SJDImg('sj_tbabar_bg')
       ),
       child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
-            // SizedBox(width: 10.w),
-            Padding(
-              padding: EdgeInsets.only(top: 16),
+            SizedBox(width: 16.w),
+            SizedBox(
+              width: 100,
+              height: 89,
               child: InkWell(
                 onTap: (){
-
+                  
                 },
-                child: Visibility(visible: false, child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                child: Stack(
+                  children: [
+                    Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                    Positioned(top: 68,child:Stack(
+                      children: [
+                        // 背景图 71 × 15
+                        SizedBox(
+                          width: 71,
+                          height: 15,
+                          child: SJImg(name: 'sj_box_pro_bg'),
+                        ),
+                        // 进度条（居中）67 × 11
+                        Positioned(
+                          left: (71 - 67) / 2,  // = 2 px
+                          top: 1,   // = 2 px
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              width: 67,
+                              height: 11,
+                              color: Colors.transparent,
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Container(
+                                  width: 67 * 0.6, // 根据进度变化
+                                  height: 11,
+                                  decoration: const BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.centerLeft,
+                                      end: Alignment.centerRight,
+                                      colors: [
+                                        Color(0xFFFDEB5A),
+                                        Color(0xFFFFC700),
+                                        Color(0xFFB87400),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ))
+                  ],
+                ),
               ),
             ),
-            SizedBox(width: 52,),
+            SizedBox(width: 4.w),
             SizedBox(
              width: 200, height: 75,
               child: Padding(
@@ -695,21 +757,22 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (builder) {
-                          return SJScratchA(
+                          return SJScratchB(
                               type: history_index);
                         },
                       ),
                     );
                   },
-                  child: SJImg(name: 'sj_cards_btn', width: 200, height: 75),
+                  child: SJImg(name: 'sj_cash_btns', width: 200, height: 75),
                 ),
               ),
             ),
+            Spacer(),
             SizedBox(
               width: 70,
-              height: 70,
+              height: 73,
               child: Padding(
-                padding: EdgeInsets.only(top: 16),
+                padding: EdgeInsets.only(top: 8, left: 5),
                 child: InkWell(
                   onTap: (){
                     Navigator.of(context).push(
@@ -725,7 +788,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                     height: 65,
                     child: Stack(
                       children: [
-                        SJImg(name: 'sj_shai_icon'),
+                        Positioned(child: SJImg(name: 'sj_shai_icon', width: 65, height: 65,)),
                         Positioned(right: 10,child: Container(
                           width: 20,
                           height: 20,
@@ -746,6 +809,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 ),
               ),
             ),
+            SizedBox(width: 16.w),
           ],
         ),
     );

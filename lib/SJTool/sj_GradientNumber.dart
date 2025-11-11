@@ -89,10 +89,10 @@ class _SJGradientNumberRollerState extends State<SJGradientNumberRoller> with Si
   String _formatNumber(num number) {
     // 如果是整数类型且不需要小数位，直接返回整数格式
     if (number is int && widget.decimalPlaces == 0) {
-      return '${number.toString()}';
+      return '\$${number.toString()}';
     }
     // 否则按小数处理，保留指定小数位数
-    return '${number.toStringAsFixed(widget.decimalPlaces)}';
+    return '\$${number.toStringAsFixed(widget.decimalPlaces)}';
   }
 
   @override

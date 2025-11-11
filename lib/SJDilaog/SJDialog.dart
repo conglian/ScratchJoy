@@ -1,5 +1,5 @@
 import 'dart:async';
-
+import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -12,14 +12,1997 @@ import 'package:scratchjoy/SJTool/sj_img.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 import 'package:spine_flutter/spine_flutter.dart' as spine;
-
 import '../SJHome/SJHome.dart';
 import '../SJHome/SJScratchA.dart';
 import '../SJTool/SJAdAHelp.dart';
 import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_mp3_player.dart';
 
+// 骰子🎲奖励
+class SJPopYouWinBDialog extends StatefulWidget {
+  final int award;
+  SJPopYouWinBDialog({super.key, required this.award});
+  @override
+  State<SJPopYouWinBDialog> createState() => SJPopdiceBwardDialogState();
+}
 
+class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final AnimationController _scaleController;
+  late final Animation<double> _scaleAnimation;
+  late final AnimationController _scaleController2;
+  late final Animation<double> _scaleAnimation2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 匀速旋转动画
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    // 顶部图片放大缩小动画 ✅ 修复版
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween(begin: 1.0, end: 1.2)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    _scaleController2 = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation2 = Tween(begin: 1.0, end: 1.2)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect4();
+      }
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        await SJMP3Player().pauseEffect4();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect3();
+      }
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJMP3Player().pauseEffect3();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scaleController.dispose();
+    _scaleController2.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        children: [
+          // ✅ 顶部加放大缩小动画
+          Positioned(
+            top: 240.h,
+            left: (0.width(context) - 267) * 0.5,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: SJImg(
+                name: 'sj_dice_tops',
+                width: 267,
+                height: 63,
+              ),
+            ),
+          ),
+
+          // 其余完全不变 ↓
+          Positioned(top: 147.h, child: ScaleTransition(scale: _scaleAnimation2,child: SJImg(name: 'sj_dice_conten_1', width: 0.width(context), height: 441.h))),
+          Positioned(
+            top: 310.h,
+            left: (MediaQuery.of(context).size.width - 222) * 0.5,
+            child: RotationTransition(
+              turns: _controller,
+              child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
+            ),
+          ),
+          Positioned(top: 320.h, left: (0.width(context) - 165) * 0.5, child: SJImg(name: 'sj_dolas_big_1', width: 165, height: 165)),
+          Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+              onTap: (){
+                Navigator.pop(context, 1);
+                SJAdAHelper().show(context, (hasCache){
+                  if (!hasCache){
+                    SJAdAHelper().resetBlock();
+                  }
+                }, (finished) async {
+                  SJAdAHelper().resetBlock();
+                  playAwardmp3();
+                  Navigator.pop(context);
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                });
+              },
+              child: Container(
+                width: 260, height: 74,
+                decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                child: Stack(
+                  children: [
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                  ],
+                ),
+              )
+          )),
+          Positioned(
+            top: 542.h,
+            right: 60.w,
+            child: InkWell(
+                onTap: (){
+                  // 看ad-重新刷新
+                  SJAdAHelper().show(context, (hasCache){
+                    if (!hasCache){
+                      SJAdAHelper().resetBlock();
+                    }
+                  }, (finished) async {
+                    SJAdAHelper().resetBlock();
+                    playAwardmp3();
+                    Navigator.pop(context);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                  });
+                },
+                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+          ),
+          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+            onTap: () async {
+              playAwardmp3();
+              Navigator.pop(context, 0);
+              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+            },
+            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class SJPopSuperWinBDialog extends StatefulWidget {
+  final int award;
+  SJPopSuperWinBDialog({super.key, required this.award});
+  @override
+  State<SJPopSuperWinBDialog> createState() => SJPopSuperWinBDialogState();
+}
+
+class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final AnimationController _scaleController;
+  late final Animation<double> _scaleAnimation;
+  late final AnimationController _scaleController2;
+  late final Animation<double> _scaleAnimation2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 匀速旋转动画
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    // 顶部图片放大缩小动画 ✅ 修复版
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween(begin: 1.0, end: 1.2)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    _scaleController2 = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation2 = Tween(begin: 1.0, end: 1.8)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect4();
+      }
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        await SJMP3Player().pauseEffect4();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect3();
+      }
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJMP3Player().pauseEffect3();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scaleController.dispose();
+    _scaleController2.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        children: [
+          // 其余完全不变 ↓
+          Positioned(top: 147.h, child: SJImg(name: 'sj_superwin_1', width: 0.width(context), height: 441.h)),
+          Positioned(
+            top: 210.h,
+            left: (0.width(context) - 362) * 0.5,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: SJImg(
+                name: 'sj_superwin_0',
+                width: 362,
+                height: 149,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 310.h,
+            left: (MediaQuery.of(context).size.width - 222) * 0.5,
+            child: RotationTransition(
+              turns: _controller,
+              child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
+            ),
+          ),
+          Positioned(top: 320.h, left: (0.width(context) - 190) * 0.5, child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190)),
+          Positioned(top: 465.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+              onTap: (){
+                Navigator.pop(context, 1);
+                SJAdAHelper().show(context, (hasCache){
+                  if (!hasCache){
+                    SJAdAHelper().resetBlock();
+                  }
+                }, (finished) async {
+                  SJAdAHelper().resetBlock();
+                  playAwardmp3();
+                  Navigator.pop(context);
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                });
+              },
+              child: Container(
+                width: 260, height: 74,
+                decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                child: Stack(
+                  children: [
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                  ],
+                ),
+              )
+          )),
+          Positioned(
+            top: 542.h,
+            right: 60.w,
+            child: InkWell(
+                onTap: (){
+                  // 看ad-重新刷新
+                  SJAdAHelper().show(context, (hasCache){
+                    if (!hasCache){
+                      SJAdAHelper().resetBlock();
+                    }
+                  }, (finished) async {
+                    SJAdAHelper().resetBlock();
+                    playAwardmp3();
+                    Navigator.pop(context);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                  });
+                },
+                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+          ),
+          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+            onTap: () async {
+              playAwardmp3();
+              Navigator.pop(context, 0);
+              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+            },
+            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+class SJPopEpicWinBDialog extends StatefulWidget {
+  final int award;
+  SJPopEpicWinBDialog({super.key, required this.award});
+  @override
+  State<SJPopEpicWinBDialog> createState() => SJPopEpicWinBDialogState();
+}
+
+class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final AnimationController _scaleController;
+  late final Animation<double> _scaleAnimation;
+  late final AnimationController _scaleController2;
+  late final Animation<double> _scaleAnimation2;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 匀速旋转动画
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    // 顶部图片放大缩小动画 ✅ 修复版
+    _scaleController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation = Tween(begin: 1.0, end: 1.2)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    _scaleController2 = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat(reverse: true);
+
+    _scaleAnimation2 = Tween(begin: 1.0, end: 1.8)
+        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect4();
+      }
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        await SJMP3Player().pauseEffect4();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (SJLocalProvider.instance.sj_sound_music){
+        await SJMP3Player().pauseBackground();
+        await SJMP3Player().playEffect3();
+      }
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJMP3Player().pauseEffect3();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJMP3Player().playBackground();
+        }
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _scaleController.dispose();
+    _scaleController2.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        children: [
+          // 其余完全不变 ↓
+          Positioned(top: 147.h, child: SJImg(name: 'sj_epic_bg', width: 0.width(context), height: 441.h)),
+          Positioned(
+            top: 170.h,
+            left: (0.width(context) - 365) * 0.5,
+            child: ScaleTransition(
+              scale: _scaleAnimation,
+              child: SJImg(
+                name: 'sj_epicwin_top',
+                width: 365,
+                height: 174,
+              ),
+            ),
+          ),
+          Positioned(
+            top: 310.h,
+            left: (MediaQuery.of(context).size.width - 222) * 0.5,
+            child: RotationTransition(
+              turns: _controller,
+              child: SJImg(name: 'sj_epic_guang', width: 222, height: 222),
+            ),
+          ),
+          Positioned(top: 320.h, left: (0.width(context) - 259) * 0.5, child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192)),
+          Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 572.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+              onTap: (){
+                Navigator.pop(context, 1);
+                SJAdAHelper().show(context, (hasCache){
+                  if (!hasCache){
+                    SJAdAHelper().resetBlock();
+                  }
+                }, (finished) async {
+                  SJAdAHelper().resetBlock();
+                  playAwardmp3();
+                  Navigator.pop(context);
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                });
+              },
+              child: Container(
+                width: 260, height: 74,
+                decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                child: Stack(
+                  children: [
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                  ],
+                ),
+              )
+          )),
+          Positioned(
+            top: 556.h,
+            right: 60.w,
+            child: InkWell(
+                onTap: (){
+                  // 看ad-重新刷新
+                  SJAdAHelper().show(context, (hasCache){
+                    if (!hasCache){
+                      SJAdAHelper().resetBlock();
+                    }
+                  }, (finished) async {
+                    SJAdAHelper().resetBlock();
+                    playAwardmp3();
+                    Navigator.pop(context);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                  });
+                },
+                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+          ),
+          Positioned(top: 572.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+            onTap: () async {
+              playAwardmp3();
+              Navigator.pop(context, 0);
+              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+            },
+            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          )),
+        ],
+      ),
+    );
+  }
+}
+// 广告上线
+class SJPopAdLimitDialog extends StatefulWidget {
+  SJPopAdLimitDialog({super.key});
+  @override
+  State<SJPopAdLimitDialog> createState() => SJPopAdLimitDialogState();
+}
+
+class SJPopAdLimitDialogState extends State<SJPopAdLimitDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'Ad Limit Reached', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_pop_rv_big', width: 107.w, height: 107.w,),
+                  ),
+                ),
+                SizedBox(height: 30.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'You’ve watched all available ads for today. Try again tomorrow', size: 14.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center),
+                ),
+                SizedBox(height: 21.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_ok_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+// 广告无网络
+class SJPopAdNotWiFiDialog extends StatefulWidget {
+  SJPopAdNotWiFiDialog({super.key});
+  @override
+  State<SJPopAdNotWiFiDialog> createState() => SJPopAdNotWiFiDialogState();
+}
+
+class SJPopAdNotWiFiDialogState extends State<SJPopAdNotWiFiDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'No Network', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_wifi_icon', width: 107.w, height: 107.w,),
+                  ),
+                ),
+                SizedBox(height: 30.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'Large rewards were interrupted', size: 14.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 1, align: TextAlign.center),
+                ),
+                SizedBox(height: 21.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_try_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+// 广告加载失败
+class SJPopAdLoadFailDialog extends StatefulWidget {
+  SJPopAdLoadFailDialog({super.key});
+  @override
+  State<SJPopAdLoadFailDialog> createState() => SJPopAdLoadFailDialogState();
+}
+
+class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'Quick Break - Back Soon!', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_rvfaid_icon', width: 89.w, height: 103.h,),
+                  ),
+                ),
+                SizedBox(height: 30.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'More Cash Coming!', size: 20.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 1, align: TextAlign.center),
+                ),
+                SizedBox(height: 21.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_try_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+
+// 通知二次弹框
+class SJPopNoticeDialog extends StatefulWidget {
+  SJPopNoticeDialog({super.key});
+  @override
+  State<SJPopNoticeDialog> createState() => SJPopNoticeDialogState();
+}
+
+class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'Turn On Push Notifications', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_notoce_icon', width: 132.w, height: 119.h,),
+                  ),
+                ),
+                SizedBox(height: 8.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'Your next big win could be one tap away!', size: 14.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center),
+                ),
+                SizedBox(height: 12.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_alls_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 197.w,
+                  height: 40.h,
+                  child: InkWell(
+                    onTap: () async {
+                      Navigator.pop(context, 0);
+                    },
+                    child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: 'Not Now', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+
+// 未中奖
+class SJPopNotAwardDialog extends StatefulWidget {
+  SJPopNotAwardDialog({super.key});
+  @override
+  State<SJPopNotAwardDialog> createState() => SJPopNotAwardDialogState();
+}
+
+class SJPopNotAwardDialogState extends State<SJPopNotAwardDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 255.w,
+            height: 310.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_2')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'A Large Bonus Was Missed', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 29.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_faild_icon', width: 118.w, height: 118.h,),
+                  ),
+                ),
+                SizedBox(height: 26.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_try_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 310.h) * 0.47,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+
+// 概率提醒
+class SJPopRatioDialog extends StatefulWidget {
+  SJPopRatioDialog({super.key});
+  @override
+  State<SJPopRatioDialog> createState() => SJPopRatioDialogState();
+}
+
+class SJPopRatioDialogState extends State<SJPopRatioDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 255.w,
+            height: 383.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 26.h,),
+                SJStrokeText(text: 'This is the PERFECT time to spin!', size: 14.spMax, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 14.h,),
+                      SJText(text: 'Boost Lottery Odds.', size: 18, color: '#F4FF1F'.color(), weight: FontWeight.w400),
+                      SizedBox(height: 6.h,),
+                      SJImg(name: 'sj_dolas_big_4', width: 109.w, height: 87.h,)
+                    ],
+                  ),
+                ),
+                SizedBox(height: 12.h,),
+                SizedBox(
+                  width: 213.w,
+                  height: 51.h,
+                  child: SJText(text: "Don't let this hot streak cool off! Tap below and see what epicness awaits...", size: 14.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 3, align: TextAlign.center),
+                ),
+                SizedBox(height: 10.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_boost_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+                SizedBox(
+                  width: 197.w,
+                  height: 40.h,
+                  child: InkWell(
+                    onTap: () async {
+                      Navigator.pop(context, 0);
+                    },
+                    child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: 'Next Time', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 383.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+
+// 信息确认
+class SJPopAccountConfinDialog extends StatefulWidget {
+  SJPopAccountConfinDialog({super.key});
+  @override
+  State<SJPopAccountConfinDialog> createState() => SJPopAccountConfinDialogState();
+}
+
+class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              RichText(
+              textAlign: TextAlign.center,
+              text: TextSpan(
+                style: TextStyle(
+                  fontSize: 18.0.spMax,
+                  fontWeight: FontWeight.w700,
+                  color: '#FFFFFF'.color()
+                ),
+                children: <TextSpan>[
+                  TextSpan(
+                    text: 'Please Verify Your ',
+                  ),
+                  TextSpan(
+                    text: 'Payout Account',
+                    style: TextStyle(color: '#FF2633'.color()),
+                  ),
+                  TextSpan(
+                    text: '!',
+                  ),
+                ],
+               ),
+              ),
+              SizedBox(height: 16.h,),
+              Container(
+                width: 329.w,
+                height: 516.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_pap_bgs')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 29.h),
+                    SJText(text: 'Withdrawal Amount', size: 18.spMax, color: '#42401E'.color(), weight: FontWeight.w400),
+                    SizedBox(height: 9.h),
+                    SJText(text: '\$1000', size: 48.spMax, color: '#0B851C'.color(), weight: FontWeight.w400),
+                    SizedBox(height: 52.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Payout Platform', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJText(text: 'App', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Payout Instructions', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJText(text: 'Game Rewards', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Creation Time', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJText(text: '2025.02.11 02:11', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Account Information', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJText(text: '2025.02.11 02:11', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Frequency', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJText(text: 'One Time', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 24.h),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Payment Method', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
+                        Spacer(),
+                        SJImg(name: 'sj_pap_icon_0', width: 93.w, height: 24.h,),
+                        SizedBox(width: 22.w,),
+                      ],
+                    ),
+                    SizedBox(height: 37.h),
+                    Container(
+                      width: 197.w,
+                      height: 56.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_confim_btn')
+                      ),
+                      child: InkWell(
+                        onTap: (){
+                          Navigator.pop(context);
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+
+// 提现loading
+class SJPopTXLoadingDialog extends StatefulWidget {
+  SJPopTXLoadingDialog({super.key});
+  @override
+  State<SJPopTXLoadingDialog> createState() => SJPopTXLoadingDialogState();
+}
+
+class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ 2 秒后关闭弹窗
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted){
+        Navigator.of(context).pop();
+        context.tipShow(SJPopTXTaskDialog());
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJImg(name: 'sj_dolas_big_4', width: 195.w, height: 186.h,),
+              SizedBox(height: 63.h,),
+              SizedBox(width:321.w,height:48.h,child: SJText(text: 'Due to a high number of requests, processing may take a bit longer.', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400,maxLines: 2,align: TextAlign.center,))
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+// 提现任务
+class SJPopTXTaskDialog extends StatefulWidget {
+  SJPopTXTaskDialog({super.key});
+  @override
+  State<SJPopTXTaskDialog> createState() => SJPopTXTaskDialogState();
+}
+
+class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Spacer(),
+                  InkWell(onTap: (){
+                    Navigator.pop(context);
+                  }, child: SJImg(name: 'sj_close_btn', width: 45, height: 48,)),
+                  SizedBox(width: 20.w,),
+                ],
+              ),
+              SizedBox(height: 32.h,),
+              SJText(text: 'Withdrawal in Progress', size: 28.spMax, color: '#FCFF98'.color(), weight: FontWeight.w400),
+              SizedBox(height: 24.h,),
+              SizedBox(
+                width: 343.w,
+                height: 172.h,
+                child: VerticalMarquee(items: List.generate(
+                  99,
+                      (i) => Container(
+                    color: Colors.transparent,
+                    child: _buildItem(),
+                  ),
+                )
+                ),
+              ),
+              SizedBox(
+                width: 280.w,
+                height: 20.h,
+                child: SJText(text: 'Your withdrawal request is currently', size: 16.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+              ),
+              SizedBox(
+                width: 280.w,
+                height: 40.h,
+                child: SJText(text: 'Being Processed . ', size: 32.sp, color: '#27D70F'.color(), weight: FontWeight.w400, align: TextAlign.center,),
+              ),
+              SizedBox(height: 13.h,),
+              Container(
+                width: 280.w,
+                height: 17.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_account_center_pro_bg')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 1.h,),
+                    SizedBox(
+                      width: 274.w,
+                      height: 12.h,
+                      child: LinearProgressIndicator(
+                        borderRadius: BorderRadius.all(Radius.circular(12.h)),
+                        value: 2.0 / 5.0,
+                        minHeight: 12.h,
+                        backgroundColor: Colors.transparent,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
+                      ),
+                    ),
+                  ],
+                )
+              ),
+              SizedBox(height: 6.h,),
+              SJText(text: '(estimated 3–5 business days)', size: 14, color: '#AFA289'.color(), weight: FontWeight.w400),
+              SizedBox(height: 20.h,),
+              Container(
+                width: 343.w,
+                height: 189.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_account_bgs')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 18.h,),
+                    SizedBox(
+                      width: 305.w,
+                      height: 38.h,
+                      child: SJText(text: 'Complete a few quick tasks to move up in the queue and get your payout faster!', size: 16.sp, color: '#FFFCEB'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center,),
+                    ),
+                    SizedBox(height: 21.h,),
+                    Container(
+                      width: 313.w,
+                      height: 43.h,
+                      decoration: BoxDecoration(
+                        image: SJDImg('sj_account_center_bg')
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 13.w,),
+                          SJText(text: 'XXXXXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          Spacer(),
+                          SJImg(name: 'sj_seletecd_s', width: 29.w, height: 29.w,),
+                          SizedBox(width: 9.w,),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8.h,),
+                    Container(
+                      width: 313.w,
+                      height: 43.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_account_center_bg')
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 13.w,),
+                          SJText(text: 'XXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          Spacer(),
+                          SJImg(name: 'sj_seletecd_n', width: 29.w, height: 29.w,),
+                          SizedBox(width: 9.w,),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  Widget _buildItem() {
+    return Container(
+      width: 343.w,
+      height: 43.h,
+      decoration: BoxDecoration(
+        image: SJDImg('sj_accout_bgs')
+      ),
+      child: Column(
+        children: [
+          SizedBox(height: 7.h,),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              SJText(text: randomDateInPastYear(), size: 16.sp, color: '#FCF0A9'.color(), weight: FontWeight.w400),
+              SJText(text: 'In Progress', size: 16.sp, color: '#FCF0A9'.color(), weight: FontWeight.w400),
+              SJText(text: randomUserMask(), size: 16.sp, color: '#FCF0A9'.color(), weight: FontWeight.w400),
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+  String randomDateInPastYear() {
+    final now = DateTime.now();
+    final random = Random();
+
+    // 过去一年共 60 天
+    int randomDays = random.nextInt(60); // 0~364
+
+    // 生成随机日期
+    DateTime date = now.subtract(Duration(days: randomDays));
+
+    // 格式化成 MM/dd/yyyy
+    String mm = date.month.toString().padLeft(2, '0');
+    String dd = date.day.toString().padLeft(2, '0');
+    String yyyy = date.year.toString();
+
+    return "$mm/$dd/$yyyy";
+  }
+
+  String randomUserMask() {
+    const letters = 'abcdefghijklmnopqrstuvwxyz';
+    final rand = Random();
+
+    // 前缀长度 3~5
+    int prefixLength = 3 + rand.nextInt(3); // 3,4,5
+    // 后缀长度 2~3
+    int suffixLength = 2 + rand.nextInt(2); // 2,3
+
+    // 生成前缀
+    String prefix = List.generate(
+      prefixLength,
+          (_) => letters[rand.nextInt(letters.length)],
+    ).join();
+
+    // 生成后缀
+    String suffix = List.generate(
+      suffixLength,
+          (_) => letters[rand.nextInt(letters.length)],
+    ).join();
+
+    return "$prefix****$suffix";
+  }
+
+}
+// 提现安全页
+class SJPopTXSafetyDialog extends StatefulWidget {
+  SJPopTXSafetyDialog({super.key});
+  @override
+  State<SJPopTXSafetyDialog> createState() => SJPopTXSafetyDialogState();
+}
+
+class SJPopTXSafetyDialogState extends State<SJPopTXSafetyDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ 2 秒后关闭弹窗
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted){
+        Navigator.of(context).pop();
+        context.tipShow(SJPopTXLastDialog());
+      }
+    });
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJText(text: 'Security Verification', size: 28, color: '#FCFF98'.color(), weight: FontWeight.w400),
+              SJImg(name: 'sj_tx_anquan_icon', width: 282.w, height: 282.w,),
+              SizedBox(height: 12.h,),
+              SizedBox(width:250.w,height:48.h,child: SJText(text: 'Your withdrawal is under security verification. ', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400,maxLines: 2,align: TextAlign.center,))
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+// 最后一步提现任务
+class SJPopTXLastDialog extends StatefulWidget {
+  SJPopTXLastDialog({super.key});
+  @override
+  State<SJPopTXLastDialog> createState() => SJPopTXLastDialogState();
+}
+
+class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Spacer(),
+                  InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                    child: SJImg(name: 'sj_close_btn', width: 48, height: 49,),
+                  ),
+                  SizedBox(width: 32.w,)
+                ],
+              ),
+              SizedBox(height: 12.h,),
+              SJText(text: 'Security Verification', size: 28, color: '#FCFF98'.color(), weight: FontWeight.w400),
+              SizedBox(height: 51.h,),
+              SJImg(name: 'sj_gan_icon', width: 146.w, height: 131.w,),
+              SizedBox(height: 40.h,),
+              SizedBox(width:303.w,height:48.h,child: SJText(text: 'The payment was forced to stop. please verify your identity.', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400,maxLines: 2,align: TextAlign.center,)),
+              SizedBox(height: 20.h,),Container(
+                width: 343.w,
+                height: 125.h,
+                decoration: BoxDecoration(
+                    image: SJDImg('sj_last_tx_bg')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 12.h,),
+                    Container(
+                      width: 313.w,
+                      height: 43.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_account_center_bg')
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 13.w,),
+                          SJText(text: 'XXXXXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          Spacer(),
+                          SJImg(name: 'sj_seletecd_s', width: 29.w, height: 29.w,),
+                          SizedBox(width: 9.w,),
+                        ],
+                      ),
+                    ),
+                    SizedBox(height: 8.h,),
+                    Container(
+                      width: 313.w,
+                      height: 43.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_account_center_bg')
+                      ),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 13.w,),
+                          SJText(text: 'XXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          Spacer(),
+                          SJImg(name: 'sj_seletecd_n', width: 29.w, height: 29.w,),
+                          SizedBox(width: 9.w,),
+                        ],
+                      ),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+// 提现成功
+class SJPopTXSulsDialog extends StatefulWidget {
+  SJPopTXSulsDialog({super.key});
+  @override
+  State<SJPopTXSulsDialog> createState() => SJPopTXSulsDialogState();
+}
+
+class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Spacer(),
+                  InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                    child: SJImg(name: 'sj_close_btn', width: 48, height: 49,),
+                  ),
+                  SizedBox(width: 32.w,)
+                ],
+              ),
+              SizedBox(height: 22.h,),
+              Container(
+                width: 329.w,
+                height: 389.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_tx_sul_bg')
+                ),
+                child:
+                Column(
+                  children: [
+                    SizedBox(height: 24.h,),
+                    SJStrokeText(text: 'Application Successful', size: 24.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#5A3703'.color()),
+                    SizedBox(height: 61.h,),
+                    SJText(text: '7 working days after application.', size: 16.sp, color: '#54442E'.color(), weight: FontWeight.w400),
+                    SizedBox(height: 19.h,),
+                    SJText(text: 'A 1% fee applies per withdrawal.', size: 16.sp, color: '#54442E'.color(), weight: FontWeight.w400),
+                    SizedBox(height: 19.h,),
+                    SizedBox(width: 284.w, height:58.h,child: SJText(text: 'Keep growing your wealth while you wait!', size: 24.sp, color: '#038605'.color(), weight: FontWeight.w400,maxLines: 2, align: TextAlign.center,)),
+                    SizedBox(height: 44.h,),
+                    InkWell(
+                      onTap: (){
+                        Navigator.pop(context);
+                      },
+                      child: SJImg(name: 'sj_play_more_btn ', width: 204.w,height: 54.h,),
+                    )
+                  ],
+                ),
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+// 提交账号第一步
+class SJPopSubmitOneDialog extends StatefulWidget {
+  SJPopSubmitOneDialog({super.key});
+  @override
+  State<SJPopSubmitOneDialog> createState() => SJPopSubmitOneDialogState();
+}
+
+class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
+  
+  int seletecd_index = 0;
+
+  final TextEditingController _controller = TextEditingController();
+
+  FocusNode _focusNode = FocusNode();
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 329.w,
+                height: 493.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_tx_sub_bg')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 29.h,),
+                    SJText(text: 'Payment Information', size: 18.sp, color: '#42401E'.color(), weight: FontWeight.w400),
+                    SizedBox(height: 18.h,),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index = 0;
+                        });
+                      },
+                      child: SJImg(name: 'sj_account_0_s', width: 176.w, height: 61.w,),
+                    ),
+                    SizedBox(height: 12.h,),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index = 1;
+                        });
+                      },
+                      child: SJImg(name: 'sj_account_1_n', width: 176.w, height: 61.w,),
+                    ),
+                    SizedBox(height: 40.h,),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Account/Phone', size: 16.sp, color: '#4D3C3C'.color(), weight: FontWeight.w400)
+                      ],
+                    ),
+                    SizedBox(height: 6.h,),
+                    Container(
+                      width: 287.w,
+                      height: 48.h,
+                      decoration: BoxDecoration(
+                        color: '#D8D8D3'.color(),
+                        borderRadius: BorderRadius.all(Radius.circular(5))
+                      ),
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        decoration:  InputDecoration(
+                          labelText: 'E.G. 123456789@abc.com',
+                          labelStyle: TextStyle(
+                            color: '#9A9881'.color(), // 设置字体颜色为蓝色
+                            fontSize: 13.0,     // 可选：设置字体大小
+                            fontWeight: FontWeight.bold, // 可选：设置字体粗细
+                          ),
+                          border:  OutlineInputBorder(),
+                          // 设置启用状态下的边框颜色
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: Colors.transparent),
+                          ),
+                          // 设置聚焦状态下的边框颜色
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: '#E38AF9'.color()),
+                          ),
+                        ),
+                        style: TextStyle(
+                          color: '#000000'.color(), // 设置字体颜色为蓝色
+                          fontSize: 15.0,     // 可选：设置字体大小
+                          fontWeight: FontWeight.bold, // 可选：设置字体粗细
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 34.h,),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Direct to Your paypal  Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                      ],
+                    ),
+                    SizedBox(height: 7.h,),
+                    Row(
+                      children: [
+                        SizedBox(width: 22.w,),
+                        SJText(text: 'Direct to Your cash app Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                      ],
+                    ),
+                    SizedBox(height: 30.h,),
+                    InkWell(
+                      onTap: (){
+                        Navigator.pop(context);
+                        if (mounted){
+                          context.tipShow(SJPopSubmitLastDialog());
+                        }
+                      },
+                      child: SJImg(name: 'sj_submit_btn', width: 202.w, height: 51.5.h,),
+                    )
+                  ],
+                ),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+}
+// 提交账号第二步
+class SJPopSubmitAccountDialog extends StatefulWidget {
+  SJPopSubmitAccountDialog({super.key});
+  @override
+  State<SJPopSubmitAccountDialog> createState() => SJPopSubmitAccountDialogState();
+}
+
+class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJText(text: "Don't Leave Your Money Behind!", size: 24.sp, color: '#F1F80E'.color(), weight: FontWeight.w400),
+              SizedBox(height: 6.h,),
+              SizedBox(width: 231.w, height:58.h,child:
+              RichText(
+                textAlign: TextAlign.center,
+                text: TextSpan(
+                  style: TextStyle(
+                      fontSize: 24.0.spMax,
+                      fontWeight: FontWeight.w400,
+                      color: '#FFFFFF'.color(),
+                      fontFamily: 'Barlow_Black'
+                  ),
+                  children: <TextSpan>[
+                    TextSpan(
+                      text: 'Secure Your Earnings in ',
+                    ),
+                    TextSpan(
+                      text: 'One Quick Step',
+                      style: TextStyle(color: '#0EC120'.color()),
+                    ),
+                  ],
+                ),
+              ),
+              ),
+              SizedBox(height: 4.h,),
+              Container(
+                width: 366.w,
+                height: 196.h,
+                decoration: BoxDecoration(
+                    image: SJDImg('sj_cai_bg')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 9.h,),
+                    SJImg(name: 'sj_matel_icon', width: 144.w, height: 144.w,),
+                  ],
+                ),
+              ),
+              SizedBox(height: 109.h,),
+              SizedBox(
+                width: 338.w,
+                height: 38.h,
+                child: SJText(text: 'Your game was a success! To send your \$1000 in earnings, we just need your payout info.', size: 16.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center,),
+              ),
+              SizedBox(height: 25.h,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                },
+                child: SJImg(name: 'sj_secure_btn', width: 260.w, height: 74.h,),
+              ),
+              InkWell(
+                  onTap: (){
+                    Navigator.pop(context);
+                  },
+                  child: SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],),)
+              ),
+            ],
+          ),
+          Positioned(top: 350.h, left:(0.width(context) - 265.w) * 0.5,child: Container(
+            width: 265.w,
+            height: 110.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_tips_0')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 39.h,),
+                SizedBox(
+                  width: 217.w,
+                  height: 53.h,
+                  child: RichText(
+                    textAlign: TextAlign.center,
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: 24.0.spMax,
+                        fontWeight: FontWeight.w400,
+                        color: '#C61013'.color(),
+                        fontFamily: 'Barlow_Black',
+                      ),
+                      children: <TextSpan>[
+                        TextSpan(
+                          text: 'Only 1 Minute\n',
+                        ),
+                        TextSpan(
+                          text: 'Secure Your Winnings Now',
+                          style: TextStyle(color: '#594211'.color(), fontSize: 18.sp),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              ],
+            ),
+          ))
+        ],
+      ),
+    );
+  }
+
+}
+// 提交账号第三步
+class SJPopSubmitLastDialog extends StatefulWidget {
+  SJPopSubmitLastDialog({super.key});
+  @override
+  State<SJPopSubmitLastDialog> createState() => SJPopSubmitLastDialogState();
+}
+
+class SJPopSubmitLastDialogState extends State<SJPopSubmitLastDialog> {
+
+  @override
+  void initState() {
+    super.initState();
+
+    // ✅ 2 秒后关闭弹窗
+    Future.delayed(const Duration(seconds: 2), () {
+      if (mounted){
+        Navigator.of(context).pop();
+        // context.tipShow(SJPopTXLastDialog());
+      }
+    });
+
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+                Container(
+                  width: 379.w,
+                  height: 200.h,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_tx_3_bg')
+                  ),
+                  child: SJImg(name: 'sj_tx_3_center'),
+                )
+              ],
+            ),
+        ],
+      ),
+    );
+  }
+
+}
+
+// 提现不足
+class SJPopTXNotDialog extends StatefulWidget {
+  SJPopTXNotDialog({super.key});
+  @override
+  State<SJPopTXNotDialog> createState() => SJPopTXNotDialogState();
+}
+
+class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'Account Security Restrictions', size: 16.sp, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 130.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pop_center_1')
+                  ),
+                  child: Center(
+                    child: SJImg(name: 'sj_faild_icon', width: 118.w, height: 118.w,),
+                  ),
+                ),
+                SizedBox(height: 15.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'For security,\nhe minimum withdrawal is 1000.', size: 14.sp, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center),
+                ),
+                SizedBox(height: 24.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_try_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      Navigator.pop(context);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
 ///******************** A **************************///
 class SJDialogTool {
   // tosat
@@ -785,3 +2768,96 @@ class SJPopLevelADialogState extends State<SJPopLevelADialog>
     );
   }
 }
+
+class VerticalMarquee extends StatefulWidget {
+  final List<Widget> items;
+
+  const VerticalMarquee({super.key, required this.items});
+
+  @override
+  State<VerticalMarquee> createState() => _VerticalMarqueeState();
+}
+
+class _VerticalMarqueeState extends State<VerticalMarquee>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+  late Animation<double> animation;
+
+  final double itemContentHeight = 33.h;
+  final double spacing = 10.h;
+
+  double get itemHeight => itemContentHeight + spacing;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+
+    animation = Tween<double>(
+      begin: 0,
+      end: -itemHeight,
+    ).animate(CurvedAnimation(parent: controller, curve: Curves.linear));
+
+    controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        controller.reset();
+
+        setState(() {
+          final first = widget.items.removeAt(0);
+          widget.items.add(first);
+        });
+
+        controller.forward();
+      }
+    });
+
+    controller.forward();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRect(
+      child: SizedBox(
+        width: 343.w,
+        height: 174.h,
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (_, child) {
+            return Transform.translate(
+              offset: Offset(0, animation.value),
+              child: child,
+            );
+          },
+          child: ListView.builder(
+            padding: EdgeInsets.zero,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: widget.items.length,
+            itemBuilder: (_, index) {
+              return SizedBox(
+                width: 343.w,
+                height: itemHeight,
+                child: SizedBox(
+                  width: 343.w,
+                  height: itemContentHeight,
+                  child: widget.items[index],
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+

@@ -73,6 +73,7 @@ class SJUnderlineTextButton extends StatelessWidget {
     final textWidget = Text(
       text,
       style: TextStyle(
+        fontFamily: 'Barlow_Black',
         fontSize: fontSize,
         color: gradient == null ? textColor : Colors.white,
         decoration: TextDecoration.underline,

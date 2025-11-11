@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="64dp"
-    android:background="#FFFFFF"
+    android:background="#E9FFF4"
     android:orientation="vertical">
 
 <!--    <ImageView-->
@@ -43,8 +43,8 @@
                 android:layout_marginBottom="4dp"
                 android:ellipsize="end"
                 android:singleLine="true"
-                android:textColor="#4152D2"
-                android:textSize="16sp"
+                android:textColor="#000000"
+                android:textSize="17sp"
                 android:textStyle="bold"
                 tools:text="This is title" />
 
