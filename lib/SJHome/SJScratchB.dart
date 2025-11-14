@@ -8,6 +8,7 @@ import 'package:scratchjoy/SJDilaog/SJDialog.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
+import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
@@ -184,10 +185,8 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (extra_bonusResult.isWin) {
-                var code = await context.tipShow(SJPopEpicWinBDialog(
-                    award: extra_bonusResult.winMatchNumbers[extra_bonusResult
-                        .winIndex]));
-                if (code >= 0) {
+                var bols = await showAwardWidget(SJNumberHelpers().bonusConfigModel!.extraBonus.pop!, extra_bonusResult.winMatchNumbers[extra_bonusResult
+                    .winIndex]);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -206,7 +205,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
+
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -352,9 +351,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (goldRushResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: goldRushResult.prize));
-                if (code == 0 || code == 1) {
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -373,7 +370,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -412,7 +408,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     SizedBox(width: 108.w,),
                     SJText(text: 'Prize', size: 40, color: '#3A0153'.color(), weight: FontWeight.w900),
                     SizedBox(width: 23.w,),
-                    SJText(text: '${goldRushResult.prize}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
+                    SJText(text: '\$${goldRushResult.prize}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
                   ],
                 ),
                 SizedBox(height: 38.h,),
@@ -519,9 +515,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (lucku_momentResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: lucku_momentResult.winMatchNumbers.first));
-                if (code == 0 || code == 1) {
+               showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckuMoment.pop!, lucku_momentResult.winMatchNumbers.first);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -540,7 +534,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -578,17 +571,17 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                   children: [
                     SizedBox(width: 55.w,),
                     if(lucku_momentResult.winIndex == 0)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '\$${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 0)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     SizedBox(width: 70.w,),
                     if(lucku_momentResult.winIndex == 1)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '\$${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 1)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     Spacer(),
                     if(lucku_momentResult.winIndex == 2)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '\$${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 2)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     SizedBox(width: 55.w,),
@@ -708,9 +701,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (secret_stashResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier));
-                if (code == 0 || code == 1) {
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -728,7 +719,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -797,7 +787,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                                     if(secret_stashResult.numbers[index] != -2)
                                       Positioned(width: 53,child: SJBouncyImage(imagePath: 'sj_scratch_icon_3_${secret_stashResult.numbers[index]}'.image(), width: 53, height: 53, enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
                                     if(secret_stashResult.numbers[index] != -2)
-                                      Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${secret_stashResult.prizeValues[index]}', fontSize: 20, color: '#30190A'.color(), enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
+                                      Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '\$${secret_stashResult.prizeValues[index]}', fontSize: 20, color: '#30190A'.color(), enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
                                   ]
                               )
                           );
@@ -873,9 +863,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (superMultipleResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier));
-                if (code == 0 || code == 1) {
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -893,7 +881,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -952,7 +939,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                                 if(superMultipleResult.numbers[index] != -5)
                                   Positioned(width: 53,child: SJBouncyImage(imagePath: 'sj_scratch_icon_4_${superMultipleResult.numbers[index]}'.image(), width: 50, height: 50, enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                                 if(superMultipleResult.numbers[index] != -5)
-                                  Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${superMultipleResult.prizeValues[index]}', fontSize: 16, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
+                                  Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '\$${superMultipleResult.prizeValues[index]}', fontSize: 16, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                               ]
                           )
                       );
@@ -1023,9 +1010,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (fortuneRushResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: fortuneRushResult.prizeValues[fortuneRushResult.winRow]));
-                if (code == 0 || code == 1) {
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, fortuneRushResult.prizeValues[fortuneRushResult.winRow]);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -1043,7 +1028,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -1117,15 +1101,15 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                           child: Column(
                             children: [
                               SizedBox(height: 18.h,),
-                              SJStrokeText(text: '${fortuneRushResult.prizeValues.first}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                              SJStrokeText(text: '\$${fortuneRushResult.prizeValues.first}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                               SizedBox(height: 22.h,),
-                              SJStrokeText(text: '${fortuneRushResult.prizeValues[1]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                              SJStrokeText(text: '\$${fortuneRushResult.prizeValues[1]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                               SizedBox(height: 22.h,),
-                              SJStrokeText(text: '${fortuneRushResult.prizeValues[2]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                              SJStrokeText(text: '\$${fortuneRushResult.prizeValues[2]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                               SizedBox(height: 22.h,),
-                              SJStrokeText(text: '${fortuneRushResult.prizeValues[3]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                              SJStrokeText(text: '\$${fortuneRushResult.prizeValues[3]}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                               SizedBox(height: 22.h,),
-                              SJStrokeText(text: '${fortuneRushResult.prizeValues.last}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                              SJStrokeText(text: '\$${fortuneRushResult.prizeValues.last}', size: 32.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                             ],
                           ),
                         )
@@ -1208,9 +1192,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (sweetTimeResult.isWin) {
-                var code = await context.tipShow(SJPopYouWinBDialog(
-                    award: sweetTimeResult.prizeValues[sweetTimeResult.winningRow]));
-                if (code == 0 || code == 1) {
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, sweetTimeResult.prizeValues[sweetTimeResult.winningRow]);
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
@@ -1228,7 +1210,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-                }
               } else {
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
@@ -1269,11 +1250,11 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                       child: Column(
                         children: [
                           SizedBox(height: 12.h,),
-                          SizedBox(width: 120.w, height: 53, child: SJText(text: '${sweetTimeResult.prizeValues.first}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
+                          SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues.first}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
                           SizedBox(height: 38.h,),
-                          SizedBox(width: 120.w, height: 53, child: SJText(text: '${sweetTimeResult.prizeValues[1]}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
+                          SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues[1]}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
                           SizedBox(height: 32.h,),
-                          SizedBox(width: 120.w, height: 53, child: SJText(text: '${sweetTimeResult.prizeValues.last}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
+                          SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues.last}', size: 44, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
                         ],
                       ),
                     ),
@@ -1365,6 +1346,35 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
   }
   void showLevelDialog(){
     context.tipShow(SJPopLevelADialog());
+  }
+  // 展示奖励弹框
+  Future<void> showAwardWidget(List<int> pops, int award) async {
+    bool isShow = false;
+    bool isShowThree = false;
+
+    if (award < pops.first) {
+      isShow = false;
+      isShowThree = false;
+    } else if (award < pops.last) {
+      isShow = true;
+      isShowThree = false;
+    } else {
+      isShow = true;
+      isShowThree = true;
+    }
+    // 更新本地数据
+    await SJLocalProvider.instance.updateint(
+        SJLocalProvider.instance.sj_card_numberName,
+        SJLocalProvider.instance.sj_card_number + 1,
+    );
+    // 调用弹框
+    final code = await (context.tipShow(
+      SJPopYouWinBDialog(
+        award: award,
+        is_show: isShow,
+        is_showThree: isShowThree,
+      ),
+    ) as Future<int?>);
   }
   // 进入下一个主题
   void popToNextScratch(){

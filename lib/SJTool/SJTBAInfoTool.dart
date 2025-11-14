@@ -7,50 +7,47 @@ import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 
 void sj_session_fire() async {
   var baseBody = await SJRequestHelpers().baseBody();
-  baseBody["cobra"] = 'method';
+  baseBody["coax"] = 'chandler';
   SJRequestHelpers().post(baseBody, 2);
 }
 
 void sj_ad_fire(Map<String, dynamic> body) async {
   var baseBody = await SJRequestHelpers().baseBody();
-  for (String key in body.keys){
-    baseBody[key] = body[key];
-  }
-  baseBody["cobra"] = 'bisque';
+  baseBody["taciturn"] = body;
   SJRequestHelpers().post(baseBody, 3);
 }
 
 void sj_event_fire(String name, Map<String, dynamic> body) async {
   var baseBodys = await SJRequestHelpers().baseBody();
-  baseBodys["cobra"] = name;
-  baseBodys[name] = body;
+  baseBodys["coax"] = name;
+  for (String key in body.keys){
+    baseBodys['calais@$key'] = body[key];
+  }
   SJRequestHelpers().post(baseBodys, 0);
 }
 
 void sj_install_fire() async {
   var baseBody = await SJRequestHelpers().baseBody();
   var map = await FlutterTbaInfo.instance.getReferrerMap();
-  Map<String, dynamic> nagasaki = {
-    'irish' : map['build'],
-    'beg' : map['referrer_url'],
-    'john' : map['install_version'],
-    'usia' : map['user_agent'],
-    'ntis' : 'injunct',
-    'racket' : map['referrer_click_timestamp_seconds'],
-    'tripoli' : map['install_begin_timestamp_seconds'],
-    'microbe' : map['referrer_click_timestamp_server_seconds'],
-    'crop' : map['install_begin_timestamp_server_seconds'],
-    'upset' : map['install_first_seconds'],
-    'swirly' : map['last_update_seconds'],
-    // 'wu' : map['google_play_instant'],
+  Map<String, dynamic> leibniz = {
+    'covert' : map['build'],
+    'yell' : map['referrer_url'],
+    'fermium' : map['install_version'],
+    'grosset' : map['user_agent'],
+    'menorca' : 'oatmeal',
+    'moreland' : map['referrer_click_timestamp_seconds'],
+    'honest' : map['install_begin_timestamp_seconds'],
+    'soak' : map['referrer_click_timestamp_server_seconds'],
+    'fraud' : map['install_begin_timestamp_server_seconds'],
+    'whee' : map['install_first_seconds'],
+    'bimini' : map['last_update_seconds'],
   };
-  baseBody["nagasaki"] = nagasaki;
+  baseBody["leibniz"] = leibniz;
   SJRequestHelpers().post(baseBody, 1);
 }
 
 class SJRequestHelpers {
   static final SJRequestHelpers _instance = SJRequestHelpers._internal();
-  static const MethodChannel _nativeHelper = MethodChannel('Scratch_Win_channel');
 
   factory SJRequestHelpers() {
     return _instance;
@@ -59,13 +56,13 @@ class SJRequestHelpers {
   SJRequestHelpers._internal();
 
   static String cloak_Url =
-      "https://aisle.scratchplayland.com/topmost/humus/tress";
-
-  // static String tba_event_Url =
-  //     "https://test-fugue.scratchplayland.com/forum/adobe/ductwork";
+      "https://angstrom.crazerushscrajoy.com/buttrick/distal/inherent";
 
   static String tba_event_Url =
-      "https://fugue.scratchplayland.com/cookbook/dose";
+      "https://test-gallup.crazerushscrajoy.com/shoemake/mango/row";
+
+  // static String tba_event_Url =
+  //     "https://gallup.crazerushscrajoy.com/ps/parish/grackle";
 
   final Map<String, String> normalHeader = {
     'Content-Type': 'application/json',
@@ -151,29 +148,26 @@ extension RequestHelpersExtension on SJRequestHelpers {
 
   Future<Map<String, dynamic>> baseBody() async {
     Map<String, dynamic> baseBody = {};
-    Map<String, dynamic> vinci = {
-      'inapt' : await FlutterTbaInfo.instance.getBrand(),
-      'tingle' : await FlutterTbaInfo.instance.getOsCountry(),
-      'ala' : await FlutterTbaInfo.instance.getDistinctId(),
-      'allen' : 'iodinate',
-      "antic": await FlutterTbaInfo.instance.getLogId(),
-      'constant' : await FlutterTbaInfo.instance.getManufacturer(),
-      "hedge": await FlutterTbaInfo.instance.getNetworkType(),
-      'confide' : await FlutterTbaInfo.instance.getOsVersion(),
+    Map<String, dynamic> genuine = {
+      'aaron' : await FlutterTbaInfo.instance.getBrand(),
+      'leftmost' : await FlutterTbaInfo.instance.getOsCountry(),
+      'graceful' : await FlutterTbaInfo.instance.getDistinctId(),
+      'afghan' : 'fleming',
+      "against": await FlutterTbaInfo.instance.getLogId(),
+      'eidetic' : await FlutterTbaInfo.instance.getManufacturer(),
+      "durance": await FlutterTbaInfo.instance.getNetworkType(),
+      'anglican' : await FlutterTbaInfo.instance.getOsVersion(),
+      "solace": await FlutterTbaInfo.instance.getGaid(),
+      'jennifer' : await FlutterTbaInfo.instance.getSystemLanguage(),
+      "puffery": await FlutterTbaInfo.instance.getOperator(),
+      'mystery' : await FlutterTbaInfo.instance.getAndroidId(),
+      'merry' : await FlutterTbaInfo.instance.getAppVersion(),
+      'archaic' : DateTime.now().millisecondsSinceEpoch,
+      "cab": await FlutterTbaInfo.instance.getBundleId(),
+      "ah": await FlutterTbaInfo.instance.getDeviceModel(),
     };
-    baseBody['vinci'] = vinci;
+    baseBody['genuine'] = genuine;
 
-    Map<String, dynamic> insult = {
-      "isle": await FlutterTbaInfo.instance.getGaid(),
-      'sauna' : await FlutterTbaInfo.instance.getSystemLanguage(),
-      "carmela": await FlutterTbaInfo.instance.getOperator(),
-      'epiphyte' : await FlutterTbaInfo.instance.getAndroidId(),
-      'cupful' : await FlutterTbaInfo.instance.getAppVersion(),
-      'dream' : DateTime.now().millisecondsSinceEpoch,
-      "comment": await FlutterTbaInfo.instance.getBundleId(),
-      "frilly": await FlutterTbaInfo.instance.getDeviceModel(),
-    };
-    baseBody['insult'] = insult;
     return baseBody;
   }
 

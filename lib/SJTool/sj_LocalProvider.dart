@@ -22,6 +22,7 @@ class SJLocalProvider extends ChangeNotifier {
   String sj_Scratch_timeKey_6= '';
   String sj_account_id = '';
   String sj_tx_list = "";
+  String sj_ratio_str = "90";
 
 
   bool sj_bg_music = true; // 存储的本地值
@@ -48,6 +49,9 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_fk_ip_status = false;
   bool sj_fk_ad_short_show = false;
   bool sj_fk_ad_short_close = false;
+  bool sj_dolas_800 = false;
+  bool sj_dolas_1000 = false;
+  bool sj_100_timer_star = false;
 
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
@@ -121,6 +125,13 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_fk_ad_short_showName => 'sj_fk_ad_short_show';
   String get sj_ad_short_close_numberName => 'sj_ad_short_close_number';
   String get sj_fk_ad_short_closeName => 'sj_fk_ad_short_close';
+  String get sj_new_guideName => 'sj_new_guide';
+  String get sj_ratio_strName => 'sj_ratio_str';
+  String get sj_dolas_1000Name => 'sj_dolas_1000';
+  String get sj_dolas_800Name => 'sj_dolas_800';
+  String get sj_100_timer_starName => 'sj_100_timer_star';
+  String get sj_dolas_numberName => 'sj_dolas_number';
+  String get sj_card_numberName => 'sj_card_number';
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
   Future<void> init() async {
@@ -163,6 +174,9 @@ class SJLocalProvider extends ChangeNotifier {
     sj_show_bubble = prefs.getBool('sj_show_bubble') ?? false;
     sj_show_dolas_ani = prefs.getBool('sj_show_dolas_ani') ?? false;
     sj_show_box_guide = prefs.getBool('sj_show_box_guide') ?? false;
+    sj_dolas_800 = prefs.getBool('sj_dolas_800') ?? false;
+    sj_dolas_1000 = prefs.getBool('sj_dolas_1000') ?? false;
+    sj_100_timer_star = prefs.getBool('sj_100_timer_star') ?? false;
     sj_ad_reawrd_all_number = prefs.getInt('sj_ad_reawrd_all_number') ?? 0;
     sj_ad_all_number = prefs.getInt('sj_ad_all_number') ?? 0;
     sj_dolas_number = prefs.getInt('sj_dolas_number') ?? 0;
@@ -194,6 +208,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_Scratch_timeKey_4 = prefs.getString('sj_Scratch_timeKey_4') ?? '';
     sj_Scratch_timeKey_5 = prefs.getString('sj_Scratch_timeKey_5') ?? '';
     sj_Scratch_timeKey_6 = prefs.getString('sj_Scratch_timeKey_6') ?? '';
+    sj_ratio_str = prefs.getString('sj_ratio_str') ?? '90';
     sj_account_id = prefs.getString('sj_account_id') ?? '';
     sj_tx_list =
         prefs.getString("sj_tx_list") ?? "";

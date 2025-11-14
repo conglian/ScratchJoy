@@ -14,8 +14,11 @@ import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_text.dart';
+import 'SJCash.dart';
 import 'SJDiceRollWidget.dart';
+import 'SJScratchA.dart';
 import 'SJScratchB.dart';
+import 'SJScratchRatio.dart';
 
 var history_index = 0;
 
@@ -26,8 +29,6 @@ class SJHome extends StatefulWidget {
 }
 
 class _SJHomeState extends State<SJHome> {
-
-  Timer? _timer;
 
   Duration? sj_remainingDuration0;
 
@@ -57,6 +58,10 @@ class _SJHomeState extends State<SJHome> {
 
   DateTime? sj_startTime6;
 
+  int _countdown = 100;
+
+  Timer? _timer;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -68,7 +73,45 @@ class _SJHomeState extends State<SJHome> {
       // 在这里执行需要更新UI的操作
       sj_setStarTime();
       sjsj_startTimer();
+      sj_newUserGuide();
     });
+    // 100% 中奖处理，只保留当前的记录退出不算
+    SJScratchDiceTimerNotificationService.stream.listen((value) async {
+      _startCountdown();
+    });
+  }
+
+  // 100s 倒计时
+  void _startCountdown() {
+    _timer?.cancel();
+    _countdown = 100;
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) async {
+      if (_countdown <= 1) {
+        timer.cancel();
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_100_timer_starName, false);
+      } else {
+        setState(() {
+          _countdown--;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  // 新用户
+  Future<void> sj_newUserGuide() async {
+    if (!SJLocalProvider.instance.sj_new_guide){
+      var code = await context.tipShow(CardShuffleAnimation(is_start: false));
+      if (code == 1){
+        SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
+      }
+    }
   }
 
   // 开始计时器
@@ -204,22 +247,48 @@ class _SJHomeState extends State<SJHome> {
           decoration: BoxDecoration(
             image: SJDImg('sj_home_bg')
           ),
-          child: Column(
+          child: Stack(
             children: [
-              SJNavBarWidget(),
-              SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 89, child: SJClickableImageList(sjRemainingDurations:[
-                sj_remainingDuration0,
-                sj_remainingDuration1,
-                sj_remainingDuration2,
-                sj_remainingDuration3,
-                sj_remainingDuration4,
-                sj_remainingDuration5,
-                sj_remainingDuration6,
-              ])),
-              Spacer(),
-              SJBottomBarWidget(),
+              Column(
+                children: [
+                  SJNavBarWidget(),
+                  SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 89, child: SJClickableImageList(sjRemainingDurations:[
+                    sj_remainingDuration0,
+                    sj_remainingDuration1,
+                    sj_remainingDuration2,
+                    sj_remainingDuration3,
+                    sj_remainingDuration4,
+                    sj_remainingDuration5,
+                    sj_remainingDuration6,
+                  ])),
+                  Spacer(),
+                  SJBottomBarWidget(),
+                ],
+              ),
+              Positioned(left: 4.w,bottom: 56.h,child:
+              Consumer<SJLocalProvider>(
+                builder: (context, provider, child) {
+                  return Visibility(
+                    visible: provider.sj_box_index >= 3,
+                    child: Container(
+                      width: 285.w,
+                      height: 71.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_box_tips')
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 15.h,),
+                          SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 18, color: '#7B4311'.color(), weight: FontWeight.w400)
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              )
             ],
-          ),
+          )
         ),
       ),
     );
@@ -250,7 +319,8 @@ class SJClickableImageList extends StatelessWidget {
         itemBuilder: (context, index) {
           final img = imageNames[index];
           return GestureDetector(
-            onTap: () {
+            onTap: () async {
+              await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '90');
               history_index = index;
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -523,13 +593,19 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                             builder: (context, provider, child) {
                               return InkWell(
                                 onTap: (){
-
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (builder) {
+                                        return SJCash();
+                                      },
+                                    ),
+                                  );
                                 },
                                 child: Padding(
                                   padding: EdgeInsets.only(top: 2.0, left: 32.12),
                                   child: Center(
                                     child: SJGradientNumberRoller(
-                                      value: provider.sj_domand_number,
+                                      value: provider.sj_dolas_number,
                                       duration: 800,
                                       fontSize: 20.0,
                                       gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
@@ -658,7 +734,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             InkWell(
               onTap: (){
 
-                context.tipShow(SJPopTXNotDialog());
+                context.tipShow(SJBoxOpenDiaologWidget());
                 // context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
@@ -697,7 +773,11 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
               height: 89,
               child: InkWell(
                 onTap: (){
-                  
+                  if (SJLocalProvider.instance.sj_box_index >= 3){
+                    context.tipShow(SJBoxOpenDiaologWidget());
+                  } else {
+                    SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
+                  }
                 },
                 child: Stack(
                   children: [
@@ -722,21 +802,24 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                               color: Colors.transparent,
                               child: Align(
                                 alignment: Alignment.centerLeft,
-                                child: Container(
-                                  width: 67 * 0.6, // 根据进度变化
-                                  height: 11,
-                                  decoration: const BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.centerLeft,
-                                      end: Alignment.centerRight,
-                                      colors: [
-                                        Color(0xFFFDEB5A),
-                                        Color(0xFFFFC700),
-                                        Color(0xFFB87400),
-                                      ],
-                                    ),
-                                  ),
-                                ),
+                                child: Consumer<SJLocalProvider>(
+                                    builder: (context, provider, child) {
+                                      return  Container(
+                                        width: 67 * (provider.sj_box_index / 3.0), // 根据进度变化
+                                        height: 11,
+                                        decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                            colors: [
+                                              Color(0xFFFDEB5A),
+                                              Color(0xFFFFC700),
+                                              Color(0xFFB87400),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    })
                               ),
                             ),
                           ),
@@ -757,8 +840,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (builder) {
-                          return SJScratchB(
-                              type: history_index);
+                          return SJCash();
                         },
                       ),
                     );
@@ -798,7 +880,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                           child: Center(
                             child: Consumer<SJLocalProvider>(
                               builder: (context, provider, child) {
-                                return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
+                                return SJText(text: SJLocalProvider.instance.sj_100_timer_star == true ? '∞' : '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
                               },
                             ),
                           ),
@@ -813,5 +895,21 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
           ],
         ),
     );
+  }
+}
+
+
+class SJScratchDiceTimerNotificationService {
+  static final StreamController<int> _streamController =
+  StreamController<int>.broadcast();
+
+  static Stream<int> get stream => _streamController.stream;
+
+  static void sendToDomandNumberNotification(int value) {
+    _streamController.sink.add(value);
+  }
+
+  static void close() {
+    _streamController.close();
   }
 }

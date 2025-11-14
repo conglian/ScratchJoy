@@ -1,0 +1,24 @@
+{
+  "int_ad": [
+    {
+      "first_number": 0,
+      "point": 0,
+      "end_number": 100
+    },
+    {
+      "first_number": 100,
+      "point": 0.5,
+      "end_number": 300
+    },
+    {
+      "first_number": 300,
+      "point": 0.8,
+      "end_number": 600
+    },
+    {
+      "first_number": 600,
+      "point": 1,
+      "end_number": 1000
+    }
+  ]
+}

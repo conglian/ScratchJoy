@@ -75,9 +75,11 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
   }
 
   void _rollDice() {
-    if (SJLocalProvider.instance.sj_dice_number <= 0) {
-      context.tipShow(SJPopNotdiceDialog());
-      return;
+    if (SJLocalProvider.instance.sj_100_timer_star == false){
+      if (SJLocalProvider.instance.sj_dice_number <= 0) {
+        context.tipShow(SJPopNotdiceDialog());
+        return;
+      }
     }
     if (_isRolling) return;
 
@@ -93,11 +95,12 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         }
       });
     });
-
-    SJLocalProvider.instance.updateint(
-      SJLocalProvider.instance.sj_dice_numberName,
-      SJLocalProvider.instance.sj_dice_number - 1,
-    );
+    if (SJLocalProvider.instance.sj_100_timer_star == false) {
+      SJLocalProvider.instance.updateint(
+        SJLocalProvider.instance.sj_dice_numberName,
+        SJLocalProvider.instance.sj_dice_number - 1,
+      );
+    }
 
     _isRolling = true;
     _finalFace = _getFaceByProbability();
@@ -174,8 +177,8 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         _isMarqueeRunning = false;
         _isRolling = false;
         if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
-          context.tipShow(SJPopYouWinADialog(
-              award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
+          context.tipShow(SJPopYouWinBDialog(
+              award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex], is_show: false, is_showThree: false));
         }
       }
     });
@@ -201,8 +204,8 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       _isMarqueeRunning = false;
       _isRolling = false;
       if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
-        context.tipShow(SJPopYouWinADialog(
-            award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex]));
+        context.tipShow(SJPopYouWinBDialog(
+            award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex], is_show: false, is_showThree: false));
       }
     }
   }
@@ -356,7 +359,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                                 height: 20,
                                 child: SJGradientStrokeText(
                                   text:
-                                  '${SJNumberAHelper().numberEntity.diceNumeric[i] == 0 ? '  0' : SJNumberAHelper().numberEntity.diceNumeric[i]}',
+                                  '\$${SJNumberAHelper().numberEntity.diceNumeric[i] == 0 ? '  0' : SJNumberAHelper().numberEntity.diceNumeric[i]}',
                                   gradientColors: [
                                     '#FFFDE0'.color(),
                                     '#F8FF20'.color()
@@ -386,7 +389,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                     children: [
                       const SizedBox(width: 82),
                       SJText(
-                        text: '${provider.sj_dice_number}',
+                        text: SJLocalProvider.instance.sj_100_timer_star == true ? '∞' : '${provider.sj_dice_number}',
                         size: 24,
                         color: '#FFFFFF'.color(),
                         weight: FontWeight.w400,

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
 import 'package:applovin_max/applovin_max.dart';
+import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'SJAdAHelp.dart';
@@ -16,6 +17,8 @@ class SJSDKHelpers {
   factory SJSDKHelpers() {
     return _instance;
   }
+
+  final facebookAppEvents = FacebookAppEvents();
 
   SJSDKHelpers._internal();
 
@@ -95,23 +98,21 @@ class SJSDKHelpers {
   }
 
   // 上报收入
-  sj_sendAdToSdk(MaxAd max) {
+  sj_sendAdToSdk(MaxAd max) async {
     try {
       AdjustAdRevenue adjustAdRevenue = AdjustAdRevenue('applovin_max_sdk');
       adjustAdRevenue.setRevenue(max.revenue, 'USD');
       adjustAdRevenue.adRevenueNetwork = max.networkPlacement;
       adjustAdRevenue.adRevenuePlacement = max.placement;
       Adjust.trackAdRevenue(adjustAdRevenue);
+      await facebookAppEvents.logPurchase(amount: max.revenue, currency: 'USD');
       "af logs:: af revenue success ${max.revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();
     }
-
-    // FacebookAppEvents fb = FacebookAppEvents();
-    // fb.logPurchase(amount: max.revenue, currency: "USD");
   }
   // 上报收入
-  sj_sendintTopOnAdToSdk(Map extraMap) {
+  sj_sendintTopOnAdToSdk(Map extraMap) async {
     final revenue = extraMap["publisher_revenue"] ?? 0;
     final network = extraMap["network_name"];
     final currency = extraMap["currency"] ?? "";
@@ -120,6 +121,7 @@ class SJSDKHelpers {
       adjustAdRevenue.setRevenue(revenue, 'USD');
       adjustAdRevenue.adRevenueNetwork = network;
       Adjust.trackAdRevenue(adjustAdRevenue);
+      await facebookAppEvents.logPurchase(amount: revenue, currency: 'USD');
       "af logs:: af revenue success ${revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();

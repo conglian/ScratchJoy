@@ -2,12 +2,15 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_img.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 
 import '../SJTool/SJAdAHelp.dart';
+import 'SJHome.dart';
 import 'SJScratchA.dart';
+import 'SJScratchB.dart';
 
 class CardShuffleAnimation extends StatefulWidget {
   final bool is_start;
@@ -34,6 +37,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
 
   List<double> _cardPositions = [-60, 60, 0];
   int _middleCardIndex = 2;
+
+  int _targetWinIndex = 0; // ✅ 最终要中奖的卡索引
 
   @override
   void initState() {
@@ -122,8 +127,27 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
           double dist = (_cardPositions[i] - 0).abs();
           if (dist < minDistance) {
             minDistance = dist;
-            _middleCardIndex = i;
+            if (!SJLocalProvider.instance.sj_new_guide){
+              _middleCardIndex = 0;
+            } else {
+              _middleCardIndex = i;
+            }
           }
+        }
+        if (!SJLocalProvider.instance.sj_new_guide) {
+          // 根据中奖卡重新排列位置，让它在中间
+          for (int i = 0; i < 3; i++) {
+            if (i == _middleCardIndex) {
+              _cardPositions[i] = 0; // 中间位置
+            } else if (i == 0) {
+              _cardPositions[i] = -120; // 左边
+            } else {
+              _cardPositions[i] = 520;  // 右边
+            }
+          }
+          // 更新左右卡旋转角度
+          _leftRotation = -20;
+          _rightRotation = 20;
         }
         setState(() {});
         _startFlip();
@@ -184,6 +208,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
 
   void _startShuffle() {
     if (_isShuffling) return;
+    _targetWinIndex = 0;
     _isShuffling = true;
     _isFlipped = false;
 
@@ -199,6 +224,13 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     await _scaleController.forward(from: 0);
     await _scaleController.animateTo(0.25,
         duration: const Duration(milliseconds: 100)); // 缩小到 1.1 倍
+    if (_middleCardIndex == 0){
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '100');
+    } else if (_middleCardIndex == 1) {
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '99');
+    } else if (_middleCardIndex == 2) {
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '90');
+    }
     setState(() {});
   }
 
@@ -288,9 +320,9 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isFlipped)
-              SJImg(name: 'sj_100top2_icon', width: 323, height: 158),
+              SJImg(name:'sj_100top2_icon', width: 323, height: 158),
             if (!_isFlipped)
-             SJImg(name: 'sj_hide100_top', width: 273, height: 182),
+             SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_newtips_icon' :  'sj_hide100_top', width: 273, height: 182),
             SizedBox(height: 52.h),
             GestureDetector(
               onTap: _startShuffle,
@@ -309,13 +341,25 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
             if(!_isFlipped)
               InkWell(
                onTap: _startShuffle,
-               child: SJImg(name: 'sj_up_btn', width: 260, height: 74),
+               child: SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_allin_btn' : 'sj_up_btn', width: 260, height: 74),
               ),
             if(_isFlipped)
               InkWell(
                 onTap: () async {
                   if (_middleCardIndex == 0){
                     Navigator.pop(context, 1);
+                    if (!SJLocalProvider.instance.sj_new_guide) {
+                      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_new_guideName, true);
+                      history_index = 0;
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (builder) {
+                            return SJScratchB(
+                                type: history_index);
+                          },
+                        ),
+                      );
+                    }
                   } else {
                     // 看ad-重新刷新
                     SJAdAHelper().show(context, (hasCache){

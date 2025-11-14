@@ -136,6 +136,7 @@ class SJAdManager {
   // 根据比价结果显示广告
   sj_showAd(bool isint, String placeIdentifer, BuildContext context, void Function(bool) hasCache,
       void Function(bool)? finished) async {
+
     finishIntAd = null;
     placeId = placeIdentifer;
     if (finished != null) {
@@ -412,11 +413,10 @@ class SJAdManager {
       bool isConnected = await NetworkUtils.isConnected();
       if (isConnected) {
         print("有网加载失败");
-        // context.tipShow(SPPopAdLoadFailWidget());
+        context.tipShow(SJPopAdLoadFailDialog());
       } else {
-        // context.tipShow(SPPopNotNetWidget());
-        print("设备无网络连接"
-        );
+        context.tipShow(SJPopAdNotWiFiDialog());
+        print("设备无网络连接");
       }
     }
   }

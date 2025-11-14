@@ -12,6 +12,7 @@ import '../SJTool/sj_init_sdk.dart';
 import '../SJTool/sj_mp3_player.dart';
 import 'SJBase/SJLuauch.dart';
 import 'SJTool/sj_fkmanger.dart';
+import 'SJTool/sj_number_helper.dart';
 
 Future<void> main() async {
   // 初始化Flutter绑定（确保async操作在runApp前执行）
@@ -45,6 +46,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
     SJNumberAHelper().init();
     SJSDKHelpers().initSDK();
+    SJNumberHelpers().initNumberModel();
     // 背景音乐
     if (SJLocalProvider.instance.sj_bg_music) {
       SJMP3Player().playBackground();

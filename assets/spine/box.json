@@ -1,0 +1,102 @@
+{
+"skeleton": {
+	"hash": "Mq/AzElvNMo",
+	"spine": "4.2.43",
+	"x": -292.41,
+	"y": -187.75,
+	"width": 522,
+	"height": 447,
+	"images": "",
+	"audio": ""
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "图层 3 1", "parent": "root" },
+	{ "name": "图层 2 3", "parent": "root" },
+	{ "name": "Group 4898944", "parent": "root" }
+],
+"slots": [
+	{ "name": "图层 2 3", "bone": "图层 2 3", "attachment": "图层 2 3" },
+	{ "name": "图层 3 1", "bone": "图层 3 1", "attachment": "图层 3 1" },
+	{ "name": "Group 4898944", "bone": "Group 4898944", "attachment": "Group 4898944" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"Group 4898944": {
+				"Group 4898944": { "x": -31.41, "y": 84.61, "width": 522, "height": 201 }
+			},
+			"图层 2 3": {
+				"图层 2 3": { "x": 0.5, "y": 0.5, "width": 411, "height": 339 }
+			},
+			"图层 3 1": {
+				"图层 3 1": { "x": -21.99, "y": 35.75, "width": 438, "height": 447 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"slots": {
+			"Group 4898944": {
+				"rgba": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 1.0667, "color": "ffffff00" },
+					{ "time": 1.1667, "color": "ffffffff", "curve": "stepped" },
+					{ "time": 2, "color": "ffffffff" }
+				]
+			},
+			"图层 2 3": {
+				"rgba": [
+					{ "time": 1.0667, "color": "ffffffff" },
+					{ "time": 1.1, "color": "ffffff00" }
+				]
+			},
+			"图层 3 1": {
+				"rgba": [
+					{ "color": "ffffff00", "curve": "stepped" },
+					{ "time": 1.0667, "color": "ffffff00" },
+					{ "time": 1.1667, "color": "ffffffff" }
+				]
+			}
+		},
+		"bones": {
+			"图层 3 1": {
+				"scale": [
+					{ "time": 1.1 },
+					{ "time": 1.3, "x": 1.2, "y": 1.2 },
+					{ "time": 1.6667 }
+				]
+			},
+			"图层 2 3": {
+				"rotate": [
+					{ "time": 0.5 },
+					{ "time": 0.6, "value": -10.94 },
+					{ "time": 0.7333, "value": 8.92 },
+					{ "time": 0.8333 }
+				],
+				"translate": [
+					{ "time": 0.1667 },
+					{ "time": 0.5, "y": 36.51 },
+					{ "time": 0.8333 }
+				],
+				"scale": [
+					{},
+					{ "time": 0.1667, "y": 0.8 },
+					{ "time": 0.5 },
+					{ "time": 0.9333, "x": 0.762, "y": 0.762 },
+					{ "time": 1.0667 }
+				]
+			},
+			"Group 4898944": {
+				"scale": [
+					{ "time": 1.1 },
+					{ "time": 1.3, "x": 1.2, "y": 1.2 },
+					{ "time": 1.6667 }
+				]
+			}
+		}
+	}
+}
+}

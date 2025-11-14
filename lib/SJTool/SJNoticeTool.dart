@@ -66,6 +66,7 @@ class SJNoticeHelp {
     _repeatNotification3();
     _repeatNotification4();
     _subscribeFcmTopic();
+    _subscribeFcmTopic2();
     _showUnlockNotification();
     _spinitNotificationCount();
   }
@@ -117,13 +118,115 @@ class SJNoticeHelp {
 
   Future<void> _repeatNotification1() async {
     //自定义通知ID
-    final int id = 1542;
+    final int id = 5220;
     final randomMotivation = StepMotivationManager.getRandomMotivation();
     final String title = randomMotivation.title;
     final String body = randomMotivation.body;
     AndroidNotificationDetails details = AndroidNotificationDetails(
-      '122notice',
-      'ScractchPlayLand',
+      '130notice1',
+      'Scractchjoy1',
+      styleInformation: BeautyStyleInformation(
+        title,
+        body,
+        'sj_notice_big',
+        'Claim',
+        'sj_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 23),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "fix"
+    );
+  }
+
+  Future<void> _repeatNotification2() async {
+    //自定义通知ID
+    final int id = 9562;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice2',
+      'Scractchjoy2',
+      styleInformation: BeautyStyleInformation(
+        title,
+        body,
+        'sj_notice_big',
+        'Claim',
+        'sj_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 49),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "fix"
+    );
+  }
+
+  Future<void> _repeatNotification3() async {
+    //自定义通知ID
+    final int id = 7552;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice3',
+      'Scractchjoy3',
+      styleInformation: BeautyStyleInformation(
+        title,
+        body,
+        'sj_notice_big',
+        'Claim',
+        'sj_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 61),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "fix"
+    );
+  }
+
+  Future<void> _repeatNotification4() async {
+    //自定义通知ID
+    final int id = 4175;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice4',
+      'Scractchjoy4',
       styleInformation: BeautyStyleInformation(
         title,
         body,
@@ -149,114 +252,31 @@ class SJNoticeHelp {
     );
   }
 
-  Future<void> _repeatNotification2() async {
-    //自定义通知ID
-    final int id = 1562;
-    final randomMotivation = StepMotivationManager.getRandomMotivation();
-    final String title = randomMotivation.title;
-    final String body = randomMotivation.body;
-    AndroidNotificationDetails details = AndroidNotificationDetails(
-      '122notice2',
-      'ScractchPlayLand2',
-      styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
-      ),
-      priority: Priority.high,
-      importance: Importance.high,
-      icon: 'sj_logo',
-      //“groupKey”：防止通知被系统折叠
-      groupKey: "$id",
-    );
-    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
-        id,
-        title,
-        body,
-        //间隔时长根据需求设置
-        const Duration(minutes: 60),
-        notificationDetails: details,
-        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
-    );
-  }
-
-  Future<void> _repeatNotification3() async {
-    //自定义通知ID
-    final int id = 1552;
-    final randomMotivation = StepMotivationManager.getRandomMotivation();
-    final String title = randomMotivation.title;
-    final String body = randomMotivation.body;
-    AndroidNotificationDetails details = AndroidNotificationDetails(
-      '122notice3',
-      'ScractchPlayLand3',
-      styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
-      ),
-      priority: Priority.high,
-      importance: Importance.high,
-      icon: 'sj_logo',
-      //“groupKey”：防止通知被系统折叠
-      groupKey: "$id",
-    );
-    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
-        id,
-        title,
-        body,
-        //间隔时长根据需求设置
-        const Duration(minutes: 90),
-        notificationDetails: details,
-        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
-    );
-  }
-
-  Future<void> _repeatNotification4() async {
-    //自定义通知ID
-    final int id = 175;
-    final randomMotivation = StepMotivationManager.getRandomMotivation();
-    final String title = randomMotivation.title;
-    final String body = randomMotivation.body;
-    AndroidNotificationDetails details = AndroidNotificationDetails(
-      '122notice4',
-      'ScractchPlayLand4',
-      styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
-      ),
-      priority: Priority.high,
-      importance: Importance.high,
-      icon: 'sj_logo',
-      //“groupKey”：防止通知被系统折叠
-      groupKey: "$id",
-    );
-    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
-        id,
-        title,
-        body,
-        //间隔时长根据需求设置
-        const Duration(minutes: 120),
-        notificationDetails: details,
-        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
-    );
-  }
-
   Future<void> _subscribeFcmTopic() async {
     await AndroidFlutterLocalNotificationsPlugin().subscribeToTopic(
-      'c122fcm_card',
+      'C130_us_data_fcm',
        AndroidNotificationDetails(
-        'fcm_step122',
-        'ScractchPlayLand',
+        '130_us_data_fcm',
+        'ScractchJoy',
+        styleInformation: BeautyStyleInformation(
+          '',
+          '',
+          '',
+          'Claim',
+          'sj_logo',
+        ),
+        priority: Priority.high,
+        importance: Importance.high,
+      ),
+    );
+  }
+
+  Future<void> _subscribeFcmTopic2() async {
+    await AndroidFlutterLocalNotificationsPlugin().subscribeToTopic(
+      'C130_us_normal_fcm',
+      AndroidNotificationDetails(
+        '130_us_normal_fcm',
+        'ScractchJoy2',
         styleInformation: BeautyStyleInformation(
           '',
           '',
@@ -272,7 +292,7 @@ class SJNoticeHelp {
 
   Future<void> _showUnlockNotification() async {
     //自定义通知ID
-    final int ids = 2689;
+    final int ids = 6829;
     final randomMotivation = StepMotivationManager.getRandomMotivation();
     StepMotivation randomMotivation2 = StepMotivationManager.getRandomMotivation();;
     await AndroidFlutterLocalNotificationsPlugin().showBroadcastNotification(
@@ -280,11 +300,11 @@ class SJNoticeHelp {
       randomMotivation.title,
       randomMotivation.body,
       //两次发送解锁通知的间隔，根据需求设置
-      const Duration(seconds: 15),
+      const Duration(seconds: 30),
     'android.intent.action.USER_PRESENT',
        AndroidNotificationDetails(
-        '114ScractchPlayLand',
-        'ScractchPlayLand',
+        '130Scractchjoys',
+        'Scractchjoys',
         priority: Priority.high,
         importance: Importance.high,
         icon: 'sj_logo',
@@ -351,28 +371,52 @@ class StepMotivationManager {
   // 文案数据列表
   static final List<StepMotivation> _motivations = [
     StepMotivation(
-      title: "💵Scratch & Cash Out Now!♂️",
-      body: 'Your scratch card revealed \$72.50. Tap to withdraw now!',
+      title: "Last Chance! \$800 Vanish in 60 Mins!",
+      body: 'Your cash bonus disappears at midnight! Tap NOW to rescue it!',
     ),
     StepMotivation(
-      title: "Real payout unlocked 💵",
-      body: "You’re just one scratch away from your next cashout. Don’t miss your chance to win BIG!",
+      title: "Swipe to Unlock \$800!",
+      body: "Your magic move: Slide right → Claim cash instantly!",
     ),
     StepMotivation(
-      title: "⏰ Limited Scratch – Real Cash Inside!",
-      body: "Hurry! Special scratch cards with instant cash prizes are available for a limited time.",
+      title: "1 More Step = \$800 Cash!",
+      body: "Complete ANY task now - Boom! Money lands in wallet.",
     ),
     StepMotivation(
-      title: "Daily Cash Scratch is live!",
-      body: "Scratch today’s card and win real rewards instantly.",
+      title: "Beat the Clock: 90s= \$800!",
+      body: "Tap faster → Higher cash! The timer starts NOW!",
     ),
     StepMotivation(
-      title: "It’s cash o’clock!",
-      body: "Today’s scratch bonus is waiting for you—don’t miss it!",
+      title: "Your Exclusive Cash Drop! 🔐",
+      body: "This \$800 offer disappears in 2 hrs. Yours only.",
     ),
     StepMotivation(
-      title: "🎉 Your Cash Card Is Unlocked!",
-      body: "Scratch the special card now and reveal your surprise payout. Real cash is waiting inside!",
+      title: "Congrats! You've Earned a lot! 🎉",
+      body: "Another \$ 500 cash in your pocket! Keep playing for more!",
+    ),
+    StepMotivation(
+      title: "Feeling Lucky Today? 🍀",
+      body: "Come and try your luck, win a fortune!",
+    ),
+    StepMotivation(
+      title: "Pending withdraw amount💰",
+      body: "\$500 has arrived in your account",
+    ),
+    StepMotivation(
+      title: "Your Next Cash Reward is Ready! 👉",
+      body: "Just a few more games to claim your \$800 cash!",
+    ),
+    StepMotivation(
+      title: "\$1,000,000 Spectacular",
+      body: "🎰 Congrats! Your \$1,000,000 Spectacular ticket is activated!",
+    ),
+    StepMotivation(
+      title: "💥Fast \$50s – Speed Boost Activated!",
+      body: "💸 Your Fast \$50s ticket is ready!",
+    ),
+    StepMotivation(
+      title: "💰Multiplier Rewards Available!",
+      body: "24-hour special: Next multiplier DOUBLED!",
     ),
   ];
 

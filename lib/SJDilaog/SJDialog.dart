@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math';
 import 'package:fl_toast/fl_toast.dart';
 import 'package:flutter/cupertino.dart';
@@ -9,19 +10,27 @@ import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_img.dart';
+import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 import 'package:spine_flutter/spine_flutter.dart' as spine;
+import '../SJHome/SJCash.dart';
+import '../SJHome/SJDiceRollWidget.dart';
 import '../SJHome/SJHome.dart';
 import '../SJHome/SJScratchA.dart';
 import '../SJTool/SJAdAHelp.dart';
+import '../SJTool/SJAdManager.dart';
+import '../SJTool/SJTBAInfoTool.dart';
+import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_mp3_player.dart';
 
 // 骰子🎲奖励
 class SJPopYouWinBDialog extends StatefulWidget {
+  final bool is_show;
+  final bool is_showThree;
   final int award;
-  SJPopYouWinBDialog({super.key, required this.award});
+  SJPopYouWinBDialog({super.key, required this.award, required this.is_show, required this.is_showThree});
   @override
   State<SJPopYouWinBDialog> createState() => SJPopdiceBwardDialogState();
 }
@@ -72,6 +81,14 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
           await SJMP3Player().playBackground();
         }
       });
+      if (widget.is_show){
+        Future.delayed(Duration(milliseconds: 1000), () async {
+          if (mounted){
+            Navigator.pop(context);
+            context.tipShow(SJPopSuperWinBDialog(award: widget.award, is_show: widget.is_showThree));
+          }
+        });
+      }
     });
   }
 
@@ -131,66 +148,105 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
           ),
           Positioned(top: 320.h, left: (0.width(context) - 165) * 0.5, child: SJImg(name: 'sj_dolas_big_1', width: 165, height: 165)),
           Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
-              onTap: (){
-                Navigator.pop(context, 1);
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
-                }, (finished) async {
-                  SJAdAHelper().resetBlock();
-                  playAwardmp3();
-                  Navigator.pop(context);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                });
-              },
-              child: Container(
-                width: 260, height: 74,
-                decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
-                child: Stack(
-                  children: [
-                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
-                  ],
-                ),
-              )
+          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: !widget.is_show,
+            child: InkWell(
+                onTap: (){
+                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                    Navigator.pop(context, 0);
+                    poptxTaskContent();
+                  }, (finished) async {
+                    playAwardmp3();
+                    Navigator.pop(context, 1);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    poptxTaskContent();
+                  });
+                },
+                child: Container(
+                  width: 260, height: 74,
+                  decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                  child: Stack(
+                    children: [
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    ],
+                  ),
+                )
+            ),
           )),
           Positioned(
             top: 542.h,
             right: 60.w,
-            child: InkWell(
-                onTap: (){
-                  // 看ad-重新刷新
-                  SJAdAHelper().show(context, (hasCache){
-                    if (!hasCache){
-                      SJAdAHelper().resetBlock();
-                    }
-                  }, (finished) async {
-                    SJAdAHelper().resetBlock();
-                    playAwardmp3();
-                    Navigator.pop(context);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                  });
-                },
-                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            child: Visibility(
+              visible: !widget.is_show,
+              child: InkWell(
+                  onTap: (){
+                    // 看ad-重新刷新
+                    SJAdManager().sj_showAd(false, '', context, (hasCache){
+                      Navigator.pop(context, 0);
+                      poptxTaskContent();
+                    }, (finished) async {
+                      playAwardmp3();
+                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      poptxTaskContent();
+                    });
+                  },
+                  child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            ),
           ),
-          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
-            onTap: () async {
-              playAwardmp3();
-              Navigator.pop(context, 0);
-              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
-            },
-            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: !widget.is_show,
+            child: InkWell(
+              onTap: () async {
+                if (SJNumberHelpers().checkProbability()) {
+                  // 看ad-重新刷新
+                  SJAdManager().sj_showAd(true, '', context, (hasCache){
+                    Navigator.pop(context, 0);
+                    poptxTaskContent();
+                  }, (finished) async {
+                    playAwardmp3();
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    poptxTaskContent();
+                  });
+                  
+                } else {
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  poptxTaskContent();
+                }
+              },
+              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+            ),
           )),
         ],
       ),
     );
   }
+
+  // 运营逻辑添加
+  Future<void> poptxTaskContent() async {
+    if(SJLocalProvider.instance.sj_card_number == 3){
+      context.tipShow(SJPopSubmitAccountDialog());
+    } else if (SJLocalProvider.instance.sj_card_number == 6){
+      context.tipShow(SJPopSubmitLastDialog());
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXDiceDialog());
+      }
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXWallerDialog());
+      }
+    }
+  }
 }
 
 class SJPopSuperWinBDialog extends StatefulWidget {
+  final bool is_show;
   final int award;
-  SJPopSuperWinBDialog({super.key, required this.award});
+  SJPopSuperWinBDialog({super.key, required this.award, required this.is_show});
   @override
   State<SJPopSuperWinBDialog> createState() => SJPopSuperWinBDialogState();
 }
@@ -239,6 +295,12 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
         await SJMP3Player().pauseEffect4();
         if (SJLocalProvider.instance.sj_bg_music){
           await SJMP3Player().playBackground();
+        }
+      });
+      Future.delayed(Duration(milliseconds: 1000), () async {
+        if (widget.is_show && mounted){
+          Navigator.pop(context);
+          context.tipShow(SJPopEpicWinBDialog(award: widget.award));
         }
       });
     });
@@ -298,60 +360,98 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
           ),
           Positioned(top: 320.h, left: (0.width(context) - 190) * 0.5, child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190)),
           Positioned(top: 465.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
-              onTap: (){
-                Navigator.pop(context, 1);
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
-                }, (finished) async {
-                  SJAdAHelper().resetBlock();
-                  playAwardmp3();
-                  Navigator.pop(context);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                });
-              },
-              child: Container(
-                width: 260, height: 74,
-                decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
-                child: Stack(
-                  children: [
-                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
-                  ],
-                ),
-              )
+          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: !widget.is_show,
+            child: InkWell(
+                onTap: (){
+                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                    Navigator.pop(context, 0);
+                    poptxTaskContent();
+                  }, (finished) async {
+                    playAwardmp3();
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    poptxTaskContent();
+                  });
+                },
+                child: Container(
+                  width: 260, height: 74,
+                  decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                  child: Stack(
+                    children: [
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    ],
+                  ),
+                )
+            ),
           )),
           Positioned(
             top: 542.h,
             right: 60.w,
-            child: InkWell(
-                onTap: (){
-                  // 看ad-重新刷新
-                  SJAdAHelper().show(context, (hasCache){
-                    if (!hasCache){
-                      SJAdAHelper().resetBlock();
-                    }
-                  }, (finished) async {
-                    SJAdAHelper().resetBlock();
-                    playAwardmp3();
-                    Navigator.pop(context);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                  });
-                },
-                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            child: Visibility(
+              visible: !widget.is_show,
+              child: InkWell(
+                  onTap: (){
+                    // 看ad-重新刷新
+                    SJAdManager().sj_showAd(false, '', context, (hasCache){
+                      Navigator.pop(context, 0);
+                      poptxTaskContent();
+                    }, (finished) async {
+                      playAwardmp3();
+                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      poptxTaskContent();
+                    });
+                  },
+                  child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            ),
           ),
-          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
-            onTap: () async {
-              playAwardmp3();
-              Navigator.pop(context, 0);
-              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
-            },
-            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: !widget.is_show,
+            child: InkWell(
+              onTap: () async {
+                if (SJNumberHelpers().checkProbability()) {
+                  // 看ad-重新刷新
+                  SJAdManager().sj_showAd(true, '', context, (hasCache){
+                    Navigator.pop(context, 0);
+                    poptxTaskContent();
+                  }, (finished) async {
+                    playAwardmp3();
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    poptxTaskContent();
+                  });
+
+                } else {
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  poptxTaskContent();
+                }
+              },
+              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+            ),
           )),
         ],
       ),
     );
+  }
+
+  // 运营逻辑添加
+  Future<void> poptxTaskContent() async {
+    if(SJLocalProvider.instance.sj_card_number == 3){
+      context.tipShow(SJPopSubmitAccountDialog());
+    } else if (SJLocalProvider.instance.sj_card_number == 6){
+      context.tipShow(SJPopSubmitLastDialog());
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXDiceDialog());
+      }
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXWallerDialog());
+      }
+    }
   }
 }
 
@@ -467,16 +567,14 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
           Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 572.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               onTap: (){
-                Navigator.pop(context, 1);
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
+                SJAdManager().sj_showAd(false, '', context, (hasCache){
+                  Navigator.pop(context, 0);
+                  poptxTaskContent();
                 }, (finished) async {
-                  SJAdAHelper().resetBlock();
                   playAwardmp3();
-                  Navigator.pop(context);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                  poptxTaskContent();
                 });
               },
               child: Container(
@@ -495,30 +593,61 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
             child: InkWell(
                 onTap: (){
                   // 看ad-重新刷新
-                  SJAdAHelper().show(context, (hasCache){
-                    if (!hasCache){
-                      SJAdAHelper().resetBlock();
-                    }
+                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                    Navigator.pop(context, 0);
+                    poptxTaskContent();
                   }, (finished) async {
-                    SJAdAHelper().resetBlock();
                     playAwardmp3();
-                    Navigator.pop(context);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    poptxTaskContent();
                   });
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
           Positioned(top: 572.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
             onTap: () async {
-              playAwardmp3();
-              Navigator.pop(context, 0);
-              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+              if (SJNumberHelpers().checkProbability()) {
+                // 看ad-重新刷新
+                SJAdManager().sj_showAd(true, '', context, (hasCache){
+                  Navigator.pop(context, 0);
+                  poptxTaskContent();
+                }, (finished) async {
+                  playAwardmp3();
+                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  poptxTaskContent();
+                });
+
+              } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                poptxTaskContent();
+              }
             },
             child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
           )),
         ],
       ),
     );
+  }
+
+  // 运营逻辑添加
+  Future<void> poptxTaskContent() async {
+    if(SJLocalProvider.instance.sj_card_number == 3){
+      context.tipShow(SJPopSubmitAccountDialog());
+    } else if (SJLocalProvider.instance.sj_card_number == 6){
+      context.tipShow(SJPopSubmitLastDialog());
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXDiceDialog());
+      }
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
+      if (mounted){
+        context.tipShow(SJPopTXWallerDialog());
+      }
+    }
   }
 }
 // 广告上线
@@ -1048,7 +1177,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                     SizedBox(height: 29.h),
                     SJText(text: 'Withdrawal Amount', size: 18.spMax, color: '#42401E'.color(), weight: FontWeight.w400),
                     SizedBox(height: 9.h),
-                    SJText(text: '\$1000', size: 48.spMax, color: '#0B851C'.color(), weight: FontWeight.w400),
+                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number}', size: 48.spMax, color: '#0B851C'.color(), weight: FontWeight.w400),
                     SizedBox(height: 52.h),
                     Row(
                       children: [
@@ -1075,7 +1204,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                         SizedBox(width: 22.w,),
                         SJText(text: 'Creation Time', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
                         Spacer(),
-                        SJText(text: '2025.02.11 02:11', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SJText(text: formatNow(), size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
                         SizedBox(width: 22.w,),
                       ],
                     ),
@@ -1085,7 +1214,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                         SizedBox(width: 22.w,),
                         SJText(text: 'Account Information', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
                         Spacer(),
-                        SJText(text: '2025.02.11 02:11', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SJText(text: SJLocalProvider.instance.sj_account_id.isEmpty ? 'Submit later' : SJLocalProvider.instance.sj_account_id, size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
                         SizedBox(width: 22.w,),
                       ],
                     ),
@@ -1105,7 +1234,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                         SizedBox(width: 22.w,),
                         SJText(text: 'Payment Method', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
                         Spacer(),
-                        SJImg(name: 'sj_pap_icon_0', width: 93.w, height: 24.h,),
+                        SJImg(name: 'sj_pap_icon_${SJLocalProvider.instance.sj_tx_ing_account}', width: 93.w, height: 24.h,),
                         SizedBox(width: 22.w,),
                       ],
                     ),
@@ -1119,6 +1248,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                       child: InkWell(
                         onTap: (){
                           Navigator.pop(context);
+                          context.tipShow(SJPopTXLoadingDialog());
                         },
                       ),
                     ),
@@ -1130,6 +1260,18 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
         ],
       ),
     );
+  }
+
+  String formatNow() {
+    final now = DateTime.now();
+
+    final year = now.year.toString();
+    final month = now.month.toString().padLeft(2, '0');
+    final day = now.day.toString().padLeft(2, '0');
+    final hour = now.hour.toString().padLeft(2, '0');
+    final minute = now.minute.toString().padLeft(2, '0');
+
+    return "$year.$month.$day $hour:$minute";
   }
 
 }
@@ -1734,7 +1876,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                       onTap: (){
                         Navigator.pop(context);
                         if (mounted){
-                          context.tipShow(SJPopSubmitLastDialog());
+                          // context.tipShow(SJPopSubmitLastDialog());
                         }
                       },
                       child: SJImg(name: 'sj_submit_btn', width: 202.w, height: 51.5.h,),
@@ -1750,7 +1892,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
   }
 
 }
-// 提交账号第二步
+// 运营1
 class SJPopSubmitAccountDialog extends StatefulWidget {
   SJPopSubmitAccountDialog({super.key});
   @override
@@ -1824,12 +1966,14 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
               InkWell(
                 onTap: (){
                   Navigator.pop(context);
+                  context.tipShow(SJPopTXTipsDialog());
                 },
                 child: SJImg(name: 'sj_secure_btn', width: 260.w, height: 74.h,),
               ),
               InkWell(
                   onTap: (){
                     Navigator.pop(context);
+                    context.tipShow(SJPopTXTipsDialog());
                   },
                   child: SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],),)
               ),
@@ -1877,7 +2021,7 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
   }
 
 }
-// 提交账号第三步
+// 运营3
 class SJPopSubmitLastDialog extends StatefulWidget {
   SJPopSubmitLastDialog({super.key});
   @override
@@ -1894,7 +2038,7 @@ class SJPopSubmitLastDialogState extends State<SJPopSubmitLastDialog> {
     Future.delayed(const Duration(seconds: 2), () {
       if (mounted){
         Navigator.of(context).pop();
-        // context.tipShow(SJPopTXLastDialog());
+        context.tipShow(SJPopTXTipsDialog());
       }
     });
 
@@ -2003,6 +2147,965 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
   }
 
 }
+
+// 运营4
+class SJPopTXTipsDialog extends StatefulWidget {
+  SJPopTXTipsDialog({super.key});
+  @override
+  State<SJPopTXTipsDialog> createState() => SJPopTXTipsDialogState();
+}
+
+class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ThreeRowHorizontalMarquee(containerWidth: 0.width(context), containerHeight: 110.h,itemsPerRow:3),
+              SizedBox(height: 15.h,),
+              SJText(text: 'Almost There! ', size: 36.sp, color: '#F1F80E'.color(), weight: FontWeight.w400),
+              SizedBox(
+                width: 255.w,
+                height: 48.h,
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                      fontSize: 20.0,
+                      fontWeight: FontWeight.w400,
+                      color: '#FFFFFF'.color(),
+                      fontFamily: 'Barlow_Black'
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'Your withdrawal progress is ahead of',
+                      ),
+                      TextSpan(
+                        text: ' ${SJLocalProvider.instance.sj_dolas_number / 1000}% ',
+                        style: TextStyle(color: '#65DE38'.color()),
+                      ),
+                      TextSpan(
+                        text: 'of users! ',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 11.h,),
+              Container(
+                width: 289.w,
+                height: 107.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_tx_center_3')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 31.h,),
+                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number}', size: 40.sp, color: '#4C3117'.color(), weight: FontWeight.w400),
+                  ],
+                ),
+              ),
+              SizedBox(height: 28.h,),
+              Row(
+                children: [
+                  SizedBox(width: 61.w,),
+                  SizedBox(
+                    width: 28.w,
+                    height: 108.h,
+                    child: SJImg(name: 'sj_tx_center_4'),
+                  ),
+                  SizedBox(width: 19.w,),
+                  SizedBox(
+                    width: 216.w,
+                    height: 108.h,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        SJText(text: 'Submit payment information', size: 16.sp, color: '#48D038'.color(), weight: FontWeight.w400),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                                fontSize: 16.0,
+                                fontWeight: FontWeight.w400,
+                                color: '#FAFAF0'.color(),
+                                fontFamily: 'Barlow_Black'
+                            ),
+                            children: <TextSpan>[
+                              TextSpan(
+                                text: 'Just',
+                              ),
+                              TextSpan(
+                                text: ' \$${1000 - SJLocalProvider.instance.sj_dolas_number} ',
+                                style: TextStyle(color: '#C61013'.color()),
+                              ),
+                              TextSpan(
+                                text: 'Away From Payout!',
+                              ),
+                            ],
+                          ),
+                        ),
+                        SJText(text: 'Revenue Received', size: 16.sp, color: '#FAFAF0'.color(), weight: FontWeight.w400),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              SizedBox(height: 22.w,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                },
+                child: SJImg(name: 'sj_gets_btn', width: 260.w, height: 74.h,),
+              ),
+              SizedBox(height: 22.w,),
+              Container(
+                width: 343.w,
+                height: 106.h,
+                decoration: BoxDecoration(
+                  image: SJDImg('sj_pa_center_bg_0')
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(height: 8.h,),
+                    Row(
+                      children: [
+                        Spacer(),
+                        InkWell(
+                          onTap: (){
+                            Navigator.pop(context);
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (builder) {
+                                  return SJCash();
+                                },
+                              ),
+                            );
+                          }, child: SJImg(name: 'sj_cash_out_btn', width: 151.w, height: 40.h,)),
+                        SizedBox(width: 8.w,)
+                      ],
+                    ),
+                    SizedBox(height: 5.h,),
+                    Row(
+                      children: [
+                        SizedBox(width: 15.w,),
+                        SJText(text: 'Accumulate \$1000 to cash out.', size: 14.sp, color: '#FFF9B5'.color(), weight: FontWeight.w400),
+                      ],
+                    ),
+                    SizedBox(height: 3.5.h,),
+                    Row(
+                      children: [
+                        SizedBox(width: 18.w,),
+                        SizedBox(
+                          width:307.w,
+                          height: 14.h,
+                          child: LinearProgressIndicator(
+                            borderRadius: BorderRadius.all(Radius.circular(14.h)),
+                            value: SJLocalProvider.instance.sj_dolas_number / 1000.0,
+                            minHeight: 14.h,
+                            backgroundColor: Colors.transparent,
+                            valueColor: AlwaysStoppedAnimation<Color>('#F7FF0F'.color()),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                )
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+
+// 运营5
+class SJPopTXDiceDialog extends StatefulWidget {
+  SJPopTXDiceDialog({super.key});
+  @override
+  State<SJPopTXDiceDialog> createState() => SJPopTXDiceDialogState();
+}
+
+class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Row(
+                children: [
+                  Spacer(),
+                  Container(
+                    width: 149.w,
+                    height: 43.h,
+                    decoration: BoxDecoration(
+                      image: SJDImg('sj_pa_top_time_bg')
+                    ),
+                    child: Padding(
+                      padding: EdgeInsets.only(top: 3.h),
+                      child: Row(
+                        children: [
+                          SizedBox(width: 50.w,),
+                          RichText(
+                            textAlign: TextAlign.center,
+                            text: TextSpan(
+                              style: TextStyle(
+                                  fontSize: 9.0,
+                                  fontWeight: FontWeight.w400,
+                                  color: '#441F0D'.color(),
+                                  fontFamily: 'Barlow_Black'
+                              ),
+                              children: <TextSpan>[
+                                TextSpan(
+                                  text: 'Remaining Time: ',
+                                ),
+                                TextSpan(
+                                  text: '100s',
+                                  style: TextStyle(color: '#27A214'.color()),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  SizedBox(width: 50.w,)
+                ],
+              ),
+              ThreeRowHorizontalMarquee(containerWidth: 0.width(context), containerHeight: 110.h,itemsPerRow:3),
+              SizedBox(height: 15.h,),
+              SJGradientStrokeText(text: 'Celebrate Early!', gradientColors: ['#F1F80E'.color(),'#FF5912'.color(),'#FF1BD1'.color()], width: 262.w, height: 43.h, fontSize: 36),
+              SizedBox(height: 50.h,),
+              SizedBox(
+                width: 140.w,
+                height: 140.w,
+                child: SJImg(name: 'sj_shaizi_big_icon'),
+              ),
+              SizedBox(height: 20.h,),
+              SizedBox(
+                width: 330.w,
+                height: 48.h,
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w400,
+                        color: '#FFFFFF'.color(),
+                        fontFamily: 'Barlow_Black'
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'You’re about to cash out ',
+                      ),
+                      TextSpan(
+                        text: '\$1000',
+                        style: TextStyle(color: '#64DE38'.color()),
+                      ),
+                      TextSpan(
+                        text: '!\n',
+                      ),
+                      TextSpan(
+                        text: 'Enjoy 100 seconds of unlimited dice!',
+                        style: TextStyle(color: '#FFFA71'.color()),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 11.h,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                  SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_100_timer_starName, true);
+                  SJScratchDiceTimerNotificationService.sendToDomandNumberNotification(0);
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (builder) {
+                        return SJDiceRollWidget();
+                      },
+                    ),
+                  );
+                },
+                child: SJImg(name: 'sj_confim_btn', width: 260.w, height: 74.h,),
+              ),
+              SizedBox(height: 22.w,),
+              Container(
+                  width: 343.w,
+                  height: 106.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_pa_center_bg_0')
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 8.h,),
+                      Row(
+                        children: [
+                          Spacer(),
+                          InkWell(
+                              onTap: (){
+                                Navigator.pop(context);
+                                SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_100_timer_starName, true);
+                                SJScratchDiceTimerNotificationService.sendToDomandNumberNotification(0);
+                                Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (builder) {
+                                      return SJCash();
+                                    },
+                                  ),
+                                );
+                              }, child: SJImg(name: 'sj_cash_out_btn', width: 151.w, height: 40.h,)),
+                          SizedBox(width: 8.w,)
+                        ],
+                      ),
+                      SizedBox(height: 5.h,),
+                      Row(
+                        children: [
+                          SizedBox(width: 15.w,),
+                          SJText(text: 'Accumulate \$1000 to cash out.', size: 14.sp, color: '#FFF9B5'.color(), weight: FontWeight.w400),
+                        ],
+                      ),
+                      SizedBox(height: 3.5.h,),
+                      Row(
+                        children: [
+                          SizedBox(width: 18.w,),
+                          SizedBox(
+                            width:307.w,
+                            height: 14.h,
+                            child: LinearProgressIndicator(
+                              borderRadius: BorderRadius.all(Radius.circular(14.h)),
+                              value: SJLocalProvider.instance.sj_dolas_number / 1000,
+                              minHeight: 14.h,
+                              backgroundColor: Colors.transparent,
+                              valueColor: AlwaysStoppedAnimation<Color>('#F7FF0F'.color()),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  )
+              )
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+
+// 运营6
+class SJPopTXWallerDialog extends StatefulWidget {
+  SJPopTXWallerDialog({super.key});
+  @override
+  State<SJPopTXWallerDialog> createState() => SJPopTXWallerDialogState();
+}
+
+class SJPopTXWallerDialogState extends State<SJPopTXWallerDialog> {
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJText(text: 'Milestone Achieved!', size: 28.sp, color: '#FCFF98'.color(), weight: FontWeight.w400),
+              SizedBox(height: 11.h,),
+              SJImg(name: 'sj_wallter_icon', width: 197.w, height: 197.w,),
+              SizedBox(height: 34.h,),
+              SizedBox(
+                width: 344.w,
+                height: 91.h,
+                child: RichText(
+                  textAlign: TextAlign.center,
+                  text: TextSpan(
+                    style: TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.w400,
+                        color: '#FFFFFF'.color(),
+                        fontFamily: 'Barlow_Black'
+                    ),
+                    children: <TextSpan>[
+                      TextSpan(
+                        text: 'Your effort has paid off!\n',
+                      ),
+                      TextSpan(
+                        text: "You've earned \$1000!\n",
+                        style: TextStyle(color: '#18AC04'.color(), fontSize: 36.sp),
+                      ),
+                      TextSpan(
+                        text: 'And Are Ready To Withdraw.',
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              SizedBox(height: 11.h,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                  context.tipShow(SJPopAccountConfinDialog());
+                },
+                child: SJImg(name: 'sj_claim_btns', width: 260.w, height: 74.h,),
+              ),
+              SizedBox(height: 12.w,),
+              SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],onPressed: (){
+                Navigator.pop(context);
+                context.tipShow(SJPopAccountConfinDialog());
+              },),)
+            ],
+          )
+        ],
+      ),
+    );
+  }
+
+}
+
+
+// 开宝箱
+class SJBoxOpenDiaologWidget extends StatefulWidget {
+  SJBoxOpenDiaologWidget({super.key});
+  @override
+  State<SJBoxOpenDiaologWidget> createState() => SJBoxOpenDiaologWidgetState();
+}
+
+class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with SingleTickerProviderStateMixin {
+
+  var _showanimation = true;
+
+  var _showBottom = false;
+
+  var _openOne = false;
+
+  var _openTwo = false;
+
+  var _openThree = false;
+
+  var doals_one = 20.0;
+
+  var doals_two = 30.0;
+
+  var doals_three = 40.0;
+
+  var open_index = 0.0;
+
+  late spine.SpineWidgetController _controller0;
+
+  late spine.SpineWidgetController _controller1;
+
+  late spine.SpineWidgetController _controller2;
+
+  late spine.SpineWidgetController _controller3;
+
+  late spine.SpineWidgetController _controller4;
+
+  late spine.SpineWidgetController _controller5;
+
+  late spine.SpineWidgetController _controller6;
+
+  late spine.SpineWidgetController _controller7;
+
+  late spine.SpineWidgetController _controller8;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('open_box_pop', {});
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller2 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller3 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller4 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller5 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller6 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller7 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller8 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+  }
+
+  openBox(){
+    setState(() {
+      _showBottom = true;
+      _showanimation = false;
+    });
+    Future.delayed(Duration(milliseconds: 1200), (){
+      setState(() {
+        if (!_openOne){
+          _openOne = true;
+        }
+        if (!_openTwo){
+          _openTwo = true;
+        }
+        if (!_openThree){
+          _openThree = true;
+        }
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(child: SizedBox(
+            width: 0.width(context),
+            height: 0.height(context),
+            child: Column(
+              children: [
+                SizedBox(height: 120.h,),
+                SJImg(name: 'sj_box_top_title', width: 357.w, height: 134.h,),
+              ],
+            ),
+          )),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              left: 0.w, top: 400.h,
+              width: 174.0.w,
+              height: 141.0.h,
+              child: spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller0),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              left: 20.w, top: 428.h,
+              width: 137.0.w,
+              height: 113.0.h,
+              child: InkWell(
+                  onTap: (){
+                    open_index = doals_one;
+                    _openOne = true;
+                    openBox();
+                  },
+                  child: spine.SpineWidget.fromAsset(_openOne ? 'assets/spine/box.atlas' : 'assets/spine/box1.atlas', _openOne ? 'assets/spine/box.json' : 'assets/spine/box1.json', _controller1)
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _openOne,
+            child: Positioned(
+              left: 62.w, top: 510.h,
+              width: 120.0.w,
+              height: 30.h,
+              child: SizedBox(
+                width: 120.0.w,
+                height: 30.h,
+                child: Row(
+                  children: [
+                    SizedBox(width: 10.w,),
+                    SJGradientNumberRoller(
+                      value: doals_one,
+                      duration: 1000,
+                      fontSize: 24.0.sp,
+                      gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
+                      borderColor: '#601D09'.color(),
+                      borderWidth: 1.0,
+                      decimalPlaces: 0, // 动态调整小数位
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              right: 0.w, top: 400.h,
+              width: 174.0.w,
+              height: 141.0.h,
+              child: spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller2),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              right: 20.w, top: 428.h,
+              width: 137.0.w,
+              height: 113.0.h,
+              child: InkWell(
+                onTap: (){
+                  open_index = doals_two;
+                  _openTwo = true;
+                  openBox();
+                },
+                child: spine.SpineWidget.fromAsset(_openTwo ? 'assets/spine/box.atlas' : 'assets/spine/box1.atlas', _openTwo ? 'assets/spine/box.json' : 'assets/spine/box1.json', _controller3),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _openTwo,
+            child: Positioned(
+              right: 60.w, top: 510.h,
+              width: 120.0.w,
+              height: 30.h,
+              child: SizedBox(
+                width: 120.0.w,
+                height: 30.h,
+                child: Row(
+                  children: [
+                    SizedBox(width: 75.w,),
+                    SJGradientNumberRoller(
+                      value: doals_two,
+                      duration: 1000,
+                      fontSize: 24.0.sp,
+                      gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
+                      borderColor: '#601D09'.color(),
+                      borderWidth: 1.0,
+                      decimalPlaces: 0, // 动态调整小数位
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              right: (0.width(context) - 174.0.w) * 0.5, top: 248.h,
+              width: 174.0.w,
+              height: 141.0.h,
+              child: spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller4),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              right: (0.width(context) - 137.0.w) * 0.5, top: 280.h,
+              width: 137.0.w,
+              height: 113.0.h,
+              child: InkWell(
+                onTap: (){
+                  open_index = doals_three;
+                  _openThree = true;
+                  openBox();
+                },
+                child: spine.SpineWidget.fromAsset(_openThree ? 'assets/spine/box.atlas' : 'assets/spine/box1.atlas', _openThree ? 'assets/spine/box.json' : 'assets/spine/box1.json', _controller5),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _openThree,
+            child: Positioned(
+              right: (0.width(context) - 120.w) * 0.5, top: 364.h,
+              width: 120.0.w,
+              height: 30.h,
+              child: SizedBox(
+                width: 120.0.w,
+                height: 30.h,
+                child: Row(
+                  children: [
+                    SizedBox(width: 40.w,),
+                    SJGradientNumberRoller(
+                      value: doals_three,
+                      duration: 1000,
+                      fontSize: 24.0.sp,
+                      gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
+                      borderColor: '#601D09'.color(),
+                      borderWidth: 1.0,
+                      decimalPlaces: 0, // 动态调整小数位
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _showanimation,
+            child: Positioned(
+                left: 18.w, top: 525.h,
+                width: 142.0.w,
+                height: 42.0.h,
+                child: InkWell(
+                  onTap: (){
+                    open_index = doals_one;
+                    _openOne = true;
+                    openBox();
+                  },
+                  child: Container(decoration: BoxDecoration(
+                      image: SJDImg('sj_open_btn')
+                  ),
+                  ),
+                )
+            ),
+          ),
+          Visibility(
+            visible: _showanimation,
+            child: Positioned(
+                right: 18.w, top: 525.h,
+                width: 142.0.w,
+                height: 42.0.h,
+                child: InkWell(
+                  onTap: (){
+                    open_index = doals_two;
+                    _openTwo = true;
+                    openBox();
+                  },
+                  child: Container(decoration: BoxDecoration(
+                      image: SJDImg('sj_open_btn')
+                  ),
+                  ),
+                )
+            ),
+          ),
+          Visibility(
+            visible: _showanimation,
+            child: Positioned(
+                right: (0.width(context) - 142.0.w) * 0.5, top: 375.h,
+                width: 142.0.w,
+                height: 42.0.h,
+                child: InkWell(
+                  onTap: (){
+                    open_index = doals_three;
+                    _openThree = true;
+                    openBox();
+                  },
+                  child: Container(decoration: BoxDecoration(
+                      image: SJDImg('sj_open_btn')
+                  ),
+                  ),
+                )
+            ),
+          ),
+          // Visibility(
+          //   visible: _showanimation,
+          //   child: Positioned(
+          //       left: 120.w, top: 508.h,
+          //       width: 60.0,
+          //       height: 60.0,
+          //       child: InkWell(
+          //         onTap: (){
+          //           open_index = 0;
+          //           _openOne = true;
+          //           openBox();
+          //         },
+          //         child: spine.SpineWidget.fromAsset('assets/spine/hand1.atlas', 'assets/spine/hand1.json', _controller6),
+          //       )
+          //   ),
+          // ),
+          // Visibility(
+          //   visible: _showanimation,
+          //   child: Positioned(
+          //       right: 15.w, top: 508.h,
+          //       width: 60.0,
+          //       height: 60.0,
+          //       child: InkWell(
+          //         onTap: (){
+          //           open_index = 1;
+          //           _openTwo = true;
+          //           openBox();
+          //         },
+          //         child: spine.SpineWidget.fromAsset('assets/spine/hand1.atlas', 'assets/spine/hand1.json', _controller7),
+          //       )
+          //   ),
+          // ),
+          // Visibility(
+          //   visible: _showanimation,
+          //   child: Positioned(
+          //       right: (0.width(context) - 100) * 0.39, top: 370.h,
+          //       width: 60.0,
+          //       height: 60.0,
+          //       child: InkWell(
+          //         onTap: (){
+          //           open_index = 2;
+          //           _openThree = true;
+          //           openBox();
+          //         },
+          //         child: spine.SpineWidget.fromAsset('assets/spine/hand1.atlas', 'assets/spine/hand1.json', _controller8),
+          //       )
+          //   ),
+          // ),
+          Visibility(
+            visible: _showBottom,
+            child: Positioned(
+                right: (0.width(context) - 260.w) * 0.5, top: 550.h,
+                width: 260.0.w,
+                height: 74.0.h,
+                child: Container(
+                  width: 260.0.w,
+                  height: 74.0.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_claimall_btn')
+                  ),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: InkWell(
+                            onTap: (){
+                              sj_event_fire('open_box_pop_c', {});
+                              SJAdManager().sj_showAd(false,'kmrol_box_rv', context, (hasCache){
+                                if (!hasCache) {
+
+                                }
+                              }, (finished) async {
+                                addtxBoxTaskindex();
+                                var value = doals_one + doals_two + doals_three;
+                                // SJLocalProvider.instance.set_sp_box_index(-5);
+                                // SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
+                              });
+                              Navigator.pop(context, 0);
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+            ),
+          ),
+          Visibility(
+            visible: _showBottom,
+            child: Positioned(
+                right: (0.width(context) - 200) * 0.5, top: 652.h,
+                width: 200.0,
+                height: 52.0,
+                child: SJUnderlineTextButton(text: 'Claim \$${open_index}', fontSize: 20.sp,gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color()], underlineColor: '#C5A213'.color(), onPressed: (){
+                  sj_event_fire('open_box_pop_close', {});
+                  // if (SPNumberhelper().getintadShowStatus()){
+                  //   SPAdManager().sp_showAd(true,'kmrol_box_int', context, (hasCache){
+                  //     if (!hasCache) {
+                  //
+                  //     }
+                  //   }, (finished){
+                  //     var value = 0.0;
+                  //     if (_openOne){
+                  //       value = doals_one;
+                  //     } else if (_openTwo){
+                  //       value = doals_two;
+                  //     } else {
+                  //       value = doals_three;
+                  //     }
+                  //     addtxBoxTaskindex();
+                  //     SJLocalProvider.instance.set_sp_box_index(-5);
+                  //     SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
+                  //   });
+                  // } else {
+                  //
+                  //   var value = 0.0;
+                  //   if (_openOne){
+                  //     value = doals_one;
+                  //   } else if (_openTwo){
+                  //     value = doals_two;
+                  //   } else {
+                  //     value = doals_three;
+                  //   }
+                  //   addtxBoxTaskindex();
+                  //   SJLocalProvider.instance.set_sp_box_index(-5);
+                  //   SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
+                  // }
+                  Navigator.pop(context, 0);
+                },)
+            ),
+          ),
+          Visibility(
+            visible: _showBottom,
+            child: Positioned(
+                right: 43.w, top: 535.h,
+                width: 70,
+                height: 70,
+                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  addtxBoxTaskindex() async {
+    // if (SPNumberhelper().numberEntity.wtd_task[SJLocalProvider.instance.sp_tx_task_index].type != 'box') return;
+    // await SJLocalProvider.instance.set_sp_tx_box_index(SJLocalProvider.instance.sp_tx_box_index + 1);
+    // if (SJLocalProvider.instance.sp_tx_box_index >= SPNumberhelper().numberEntity.wtd_task[SJLocalProvider.instance.sp_tx_task_index].num){
+    //   await SJLocalProvider.instance.set_sp_tx_bubble_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_card_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_wheel_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_box_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_task_index(SJLocalProvider.instance.sp_tx_task_index + 1);
+    // }
+    // if (SJLocalProvider.instance.sp_tx_task_index >= 9){
+    //   await SJLocalProvider.instance.set_sp_tx_bubble_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_card_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_wheel_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_box_index(0);
+    //   await SJLocalProvider.instance.set_sp_tx_task_index(0);
+    //   await SJLocalProvider.instance.updateTXInStatus(2);
+    //   await SJLocalProvider.instance.set_sp_account_id('');
+    // }
+
+  }
+
+}
+
 ///******************** A **************************///
 class SJDialogTool {
   // tosat
@@ -2860,4 +3963,190 @@ class _VerticalMarqueeState extends State<VerticalMarquee>
   }
 }
 
+class ThreeRowHorizontalMarquee extends StatefulWidget {
+  final double containerWidth;
+  final double containerHeight;
+  final int itemsPerRow;
 
+  const ThreeRowHorizontalMarquee({
+    super.key,
+    required this.containerWidth,
+    required this.containerHeight,
+    required this.itemsPerRow,
+  });
+
+  @override
+  State<ThreeRowHorizontalMarquee> createState() =>
+      _ThreeRowHorizontalMarqueeState();
+}
+
+class _ThreeRowHorizontalMarqueeState extends State<ThreeRowHorizontalMarquee> {
+  final int rowCount = 3;
+  final double itemWidth = 208.w;
+  final double itemHeight = 21.h;
+  final double spacing = 100.w;
+  final double speed = 1.5;
+
+  late List<double> _dxs;
+  late List<List<String>> _accounts; // 每行每个账号
+  late List<List<int>> _amounts; // 每行每个金额
+  late List<List<int>> _bgIndexes; // 每行每个 item 背景
+  late Timer _timer;
+  final Random _random = Random();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _dxs = List.generate(rowCount, (index) => _random.nextDouble() * 300);
+
+    _bgIndexes = List.generate(
+      rowCount,
+          (row) => List.generate(widget.itemsPerRow, (i) => _random.nextInt(2)),
+    );
+
+    _accounts = List.generate(
+      rowCount,
+          (row) => List.generate(widget.itemsPerRow, (i) => _randomAccount()),
+    );
+
+    _amounts = List.generate(
+      rowCount,
+          (row) => List.generate(widget.itemsPerRow, (i) => _randomAmount()),
+    );
+
+    _timer = Timer.periodic(const Duration(milliseconds: 16), (timer) {
+      setState(() {
+        for (int row = 0; row < rowCount; row++) {
+          _dxs[row] -= speed;
+          double totalWidth =
+              widget.itemsPerRow * (itemWidth + spacing); // 单份宽度
+
+          if (_dxs[row] <= -totalWidth) {
+            _dxs[row] += totalWidth;
+
+            // 滚动消失的 item 更新账号和金额，但背景保持不变
+            _accounts[row].removeAt(0);
+            _accounts[row].add(_randomAccount());
+
+            _amounts[row].removeAt(0);
+            _amounts[row].add(_randomAmount());
+          }
+        }
+      });
+    });
+  }
+
+  String _randomAccount() {
+    int suffix = 100 + _random.nextInt(900);
+    return '1****$suffix';
+  }
+
+  int _randomAmount() {
+    List<int> amounts = [1000, 1500, 2000, 3000];
+    return amounts[_random.nextInt(amounts.length)];
+  }
+
+  List<Widget> _buildItems(int row) {
+    List<Widget> result = [];
+    for (int i = 0; i < widget.itemsPerRow; i++) {
+      result.add(
+        Container(
+          width: itemWidth,
+          height: itemHeight,
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage(
+                  'assets/images/sj_pa_top_bg_${_bgIndexes[row][i]}.png'),
+              fit: BoxFit.fill,
+            ),
+          ),
+          alignment: Alignment.center,
+          child: RichText(
+            text: TextSpan(
+              children: [
+                TextSpan(
+                  text: 'Congrats, ',
+                  style: TextStyle(
+                    fontFamily: 'Barlow_Black',
+                    fontSize: 9.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                TextSpan(
+                  text: _accounts[row][i] + ' ',
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    fontFamily: 'Barlow_Black',
+                    color: '#20D810'.color(),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                TextSpan(
+                  text: 'withdraw ',
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    fontFamily: 'Barlow_Black',
+                    color: Colors.white,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+                TextSpan(
+                  text: '\$${_amounts[row][i]}',
+                  style: TextStyle(
+                    fontSize: 9.sp,
+                    fontFamily: 'Barlow_Black',
+                    color: '#FFEA00'.color(),
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+      result.add(SizedBox(width: spacing));
+    }
+    return result;
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: widget.containerWidth,
+      height: widget.containerHeight,
+      child: ClipRect(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: List.generate(rowCount, (row) {
+            double totalWidth =
+                widget.itemsPerRow * (itemWidth + spacing); // 单份宽度
+            return SizedBox(
+              height: itemHeight,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: _dxs[row],
+                    child: Row(
+                      children: [
+                        ..._buildItems(row),
+                        ..._buildItems(row), // 双份无缝滚动
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ),
+      ),
+    );
+  }
+}

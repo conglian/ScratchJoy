@@ -14,6 +14,7 @@ import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_scratch_card_image_prize.dart';
 import '../SJTool/sj_text.dart';
+import 'SJCash.dart';
 import 'SJDiceRollWidget.dart';
 import 'SJScratchRatio.dart';
 
@@ -1491,13 +1492,19 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                             builder: (context, provider, child) {
                               return InkWell(
                                 onTap: (){
-
+                                  Navigator.of(context).push(
+                                    MaterialPageRoute(
+                                      builder: (builder) {
+                                        return SJCash();
+                                      },
+                                    ),
+                                  );
                                 },
                                 child: Padding(
                                   padding: EdgeInsets.only(top: 2.0, left: 32.12),
                                   child: Center(
                                     child: SJGradientNumberRoller(
-                                      value: provider.sj_domand_number,
+                                      value: provider.sj_dolas_number,
                                       duration: 800,
                                       fontSize: 20.0,
                                       gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
@@ -1648,7 +1655,11 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
             height: 89,
             child: InkWell(
               onTap: (){
-
+                if (SJLocalProvider.instance.sj_box_index >= 3){
+                  context.tipShow(SJBoxOpenDiaologWidget());
+                } else {
+                  SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
+                }
               },
               child: Stack(
                 children: [
@@ -1672,22 +1683,25 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                             height: 11,
                             color: Colors.transparent,
                             child: Align(
-                              alignment: Alignment.centerLeft,
-                              child: Container(
-                                width: 67 * 0.6, // 根据进度变化
-                                height: 11,
-                                decoration: const BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.centerLeft,
-                                    end: Alignment.centerRight,
-                                    colors: [
-                                      Color(0xFFFDEB5A),
-                                      Color(0xFFFFC700),
-                                      Color(0xFFB87400),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                                alignment: Alignment.centerLeft,
+                                child: Consumer<SJLocalProvider>(
+                                    builder: (context, provider, child) {
+                                      return  Container(
+                                        width: 67 * (provider.sj_box_index / 3.0), // 根据进度变化
+                                        height: 11,
+                                        decoration: const BoxDecoration(
+                                          gradient: LinearGradient(
+                                            begin: Alignment.centerLeft,
+                                            end: Alignment.centerRight,
+                                            colors: [
+                                              Color(0xFFFDEB5A),
+                                              Color(0xFFFFC700),
+                                              Color(0xFFB87400),
+                                            ],
+                                          ),
+                                        ),
+                                      );
+                                    })
                             ),
                           ),
                         ),
@@ -1734,7 +1748,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                         child: Center(
                           child: Consumer<SJLocalProvider>(
                             builder: (context, provider, child) {
-                              return SJText(text: '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
+                              return SJText(text: SJLocalProvider.instance.sj_100_timer_star == true ? '∞' : '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
                             },
                           ),
                         ),
@@ -1807,10 +1821,14 @@ class _BouncySJImgState extends State<BouncySJImg>
             SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
           }
         },
-        child: SJImg(
-          name: 'sj_100%_btn',
-          width: 318,
-          height: 48,
+        child:Consumer<SJLocalProvider>(
+          builder: (context, provider, child) {
+            return SJImg(
+              name: 'sj_${provider.sj_ratio_str}%_btn',
+              width: 318,
+              height: 48,
+            );
+          },
         ),
       ),
     );

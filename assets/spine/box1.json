@@ -1,0 +1,62 @@
+{
+"skeleton": {
+	"hash": "Ja4AlKQ0sL4",
+	"spine": "4.2.43",
+	"x": -205,
+	"y": -169,
+	"width": 411,
+	"height": 339,
+	"images": "",
+	"audio": ""
+},
+"bones": [
+	{ "name": "root" },
+	{ "name": "bone", "parent": "root", "x": 390.01, "y": 281.94 }
+],
+"slots": [
+	{ "name": "图层 2 4", "bone": "root", "attachment": "图层 2 3" },
+	{ "name": "bone", "bone": "bone", "attachment": "bone" },
+	{ "name": "图层 2 3", "bone": "root", "color": "fffb9aff", "attachment": "图层 2 3", "blend": "additive" }
+],
+"skins": [
+	{
+		"name": "default",
+		"attachments": {
+			"bone": {
+				"bone": {
+					"type": "clipping",
+					"end": "图层 2 3",
+					"vertexCount": 4,
+					"vertices": [ -138.75, -482.8, -1.6, -0.4, 61.35, -1.6, -67.37, -482.4 ],
+					"color": "ce3a3a00"
+				}
+			},
+			"图层 2 3": {
+				"图层 2 3": { "x": 0.5, "y": 0.5, "width": 411, "height": 339 }
+			},
+			"图层 2 4": {
+				"图层 2 3": { "x": 0.5, "y": 0.5, "width": 411, "height": 339 }
+			}
+		}
+	}
+],
+"animations": {
+	"animation": {
+		"bones": {
+			"bone": {
+				"translate": [
+					{},
+					{ "time": 1.1667, "x": -620.14, "y": 20.38 }
+				]
+			},
+			"root": {
+				"scale": [
+					{ "time": 1.3333 },
+					{ "time": 1.5, "x": 1.1, "y": 1.1 },
+					{ "time": 2 }
+				]
+			}
+		}
+	}
+}
+}
