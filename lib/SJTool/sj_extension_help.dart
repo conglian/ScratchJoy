@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 extension ScratchJoyExtension on String {
 void log() {
@@ -291,5 +292,47 @@ class BoomUniqueStringUtil {
       xorList.add(decode2[i] ^ code);
     }
     return utf8.decode(xorList);
+  }
+}
+
+// 记录cash数值100倍数不重复
+class SJThresholdTrigger {
+  static const String _key = "sj_triggered_levels";
+  Set<int> _triggered = {};
+
+  /// 初始化，从本地加载
+  Future<void> init() async {
+    final prefs = await SharedPreferences.getInstance();
+    _triggered = (prefs.getStringList(_key)?.map(int.parse).toSet()) ?? {};
+  }
+
+  /// 检查是否触发
+  Future<void> check(
+      int value, {
+        int step = 100,
+        required Function(int level) onTrigger,
+      }) async {
+    int level = (value ~/ step) * step;
+
+    if (level < step) return;
+
+    // 已经触发过，则不再触发
+    if (_triggered.contains(level)) return;
+
+    // 触发
+    onTrigger(level);
+
+    // 标记触发并保存到本地
+    _triggered.add(level);
+    await _save();
+  }
+
+  /// 保存到本地
+  Future<void> _save() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList(
+      _key,
+      _triggered.map((e) => e.toString()).toList(),
+    );
   }
 }

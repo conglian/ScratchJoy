@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "451357445728",
+    "project_id": "c30scratchjoy",
+    "storage_bucket": "c30scratchjoy.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:451357445728:android:cf842ba6540199ba857d05",
+        "android_client_info": {
+          "package_name": "com.crazerush.scra"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9l2fwu35DKgWNqPofetCQtry4iZJXmOI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scratchjoy/SJHome/SJScratchRatio.dart';
 import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
@@ -13,6 +14,7 @@ import 'package:scratchjoy/SJTool/sj_img.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
+import 'package:scratchjoy/main.dart';
 import 'package:spine_flutter/spine_flutter.dart' as spine;
 import '../SJHome/SJCash.dart';
 import '../SJHome/SJDiceRollWidget.dart';
@@ -24,13 +26,15 @@ import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_mp3_player.dart';
+import 'package:app_settings/app_settings.dart';
 
 // 骰子🎲奖励
 class SJPopYouWinBDialog extends StatefulWidget {
   final bool is_show;
   final bool is_showThree;
+  final String type;
   final int award;
-  SJPopYouWinBDialog({super.key, required this.award, required this.is_show, required this.is_showThree});
+  SJPopYouWinBDialog({super.key, required this.award, required this.is_show, required this.is_showThree, required this.type});
   @override
   State<SJPopYouWinBDialog> createState() => SJPopdiceBwardDialogState();
 }
@@ -39,13 +43,18 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
     with TickerProviderStateMixin {
   late final AnimationController _controller;
   late final AnimationController _scaleController;
-  late final Animation<double> _scaleAnimation;
   late final AnimationController _scaleController2;
   late final Animation<double> _scaleAnimation2;
-
+  late spine.SpineWidgetController _controller0;
   @override
   void initState() {
     super.initState();
+    sj_event_fire('coin_pop', {'source_from' : widget.type});
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
     // 匀速旋转动画
     _controller = AnimationController(
@@ -58,9 +67,6 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
-
-    _scaleAnimation = Tween(begin: 1.0, end: 1.2)
-        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
 
     _scaleController2 = AnimationController(
       vsync: this,
@@ -85,7 +91,7 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
         Future.delayed(Duration(milliseconds: 1000), () async {
           if (mounted){
             Navigator.pop(context);
-            context.tipShow(SJPopSuperWinBDialog(award: widget.award, is_show: widget.is_showThree));
+            navigatorKey.currentContext!.tipShow(SJPopSuperWinBDialog(award: widget.award, is_show: widget.is_showThree, type: widget.type));
           }
         });
       }
@@ -126,16 +132,10 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
           Positioned(
             top: 240.h,
             left: (0.width(context) - 267) * 0.5,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: SJImg(
-                name: 'sj_dice_tops',
-                width: 267,
-                height: 63,
-              ),
-            ),
+            width: 267,
+            height: 63,
+            child: spine.SpineWidget.fromAsset('assets/spine/youwin.atlas', 'assets/spine/youwin.json', _controller0),
           ),
-
           // 其余完全不变 ↓
           Positioned(top: 147.h, child: ScaleTransition(scale: _scaleAnimation2,child: SJImg(name: 'sj_dice_conten_1', width: 0.width(context), height: 441.h))),
           Positioned(
@@ -152,13 +152,14 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             visible: !widget.is_show,
             child: InkWell(
                 onTap: (){
-                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                  sj_event_fire('coin_pop_c', {'source_from' : widget.type});
+                  SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    poptxTaskContent();
                   }, (finished) async {
-                    playAwardmp3();
+                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
                     Navigator.pop(context, 1);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    playAwardmp3();
                     poptxTaskContent();
                   });
                 },
@@ -180,14 +181,15 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
               visible: !widget.is_show,
               child: InkWell(
                   onTap: (){
+                    sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-重新刷新
-                    SJAdManager().sj_showAd(false, '', context, (hasCache){
+                    SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
+                      if (!mounted)return;
                       Navigator.pop(context, 0);
-                      poptxTaskContent();
                     }, (finished) async {
-                      playAwardmp3();
+                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
                       Navigator.pop(context, 0);
-                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      playAwardmp3();
                       poptxTaskContent();
                     });
                   },
@@ -198,20 +200,24 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             visible: !widget.is_show,
             child: InkWell(
               onTap: () async {
+                sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   // 看ad-重新刷新
-                  SJAdManager().sj_showAd(true, '', context, (hasCache){
+                  SJAdManager().sj_showAd(true, 'scxji_carreward_int', context, (hasCache){
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    poptxTaskContent();
                   }, (finished) async {
-                    playAwardmp3();
+                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    playAwardmp3();
                     poptxTaskContent();
                   });
                   
                 } else {
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!mounted)return;
+                  Navigator.pop(context, 0);
                   poptxTaskContent();
                 }
               },
@@ -226,19 +232,15 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
   // 运营逻辑添加
   Future<void> poptxTaskContent() async {
     if(SJLocalProvider.instance.sj_card_number == 3){
-      context.tipShow(SJPopSubmitAccountDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
     } else if (SJLocalProvider.instance.sj_card_number == 6){
-      context.tipShow(SJPopSubmitLastDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXDiceDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXWallerDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
     }
   }
 }
@@ -246,7 +248,8 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
 class SJPopSuperWinBDialog extends StatefulWidget {
   final bool is_show;
   final int award;
-  SJPopSuperWinBDialog({super.key, required this.award, required this.is_show});
+  final String type;
+  SJPopSuperWinBDialog({super.key, required this.award, required this.is_show, required this.type});
   @override
   State<SJPopSuperWinBDialog> createState() => SJPopSuperWinBDialogState();
 }
@@ -257,11 +260,25 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
   late final AnimationController _scaleController;
   late final Animation<double> _scaleAnimation;
   late final AnimationController _scaleController2;
-  late final Animation<double> _scaleAnimation2;
+  late spine.SpineWidgetController _controller0;
+  late spine.SpineWidgetController _controller1;
 
   @override
   void initState() {
     super.initState();
+    sj_event_fire('coin_pop', {'source_from' : widget.type});
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
     // 匀速旋转动画
     _controller = AnimationController(
@@ -283,9 +300,6 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
 
-    _scaleAnimation2 = Tween(begin: 1.0, end: 1.8)
-        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (SJLocalProvider.instance.sj_sound_music){
         await SJMP3Player().pauseBackground();
@@ -300,7 +314,7 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
       Future.delayed(Duration(milliseconds: 1000), () async {
         if (widget.is_show && mounted){
           Navigator.pop(context);
-          context.tipShow(SJPopEpicWinBDialog(award: widget.award));
+          context.tipShow(SJPopEpicWinBDialog(award: widget.award, type: widget.type));
         }
       });
     });
@@ -341,18 +355,14 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
           Positioned(
             top: 210.h,
             left: (0.width(context) - 362) * 0.5,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: SJImg(
-                name: 'sj_superwin_0',
-                width: 362,
-                height: 149,
-              ),
-            ),
+            width: 362,
+            height: 149,
+            child: spine.SpineWidget.fromAsset('assets/spine/superwin.atlas', 'assets/spine/superwin.json', _controller0),
           ),
           Positioned(
             top: 310.h,
             left: (MediaQuery.of(context).size.width - 222) * 0.5,
+            width: 222, height: 222,
             child: RotationTransition(
               turns: _controller,
               child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
@@ -364,13 +374,15 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
             visible: !widget.is_show,
             child: InkWell(
                 onTap: (){
-                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                  sj_event_fire('coin_pop_c', {'source_from' : widget.type});
+                  SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    poptxTaskContent();
                   }, (finished) async {
-                    playAwardmp3();
+                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    playAwardmp3();
                     poptxTaskContent();
                   });
                 },
@@ -392,14 +404,16 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
               visible: !widget.is_show,
               child: InkWell(
                   onTap: (){
+                    sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-重新刷新
-                    SJAdManager().sj_showAd(false, '', context, (hasCache){
+                    SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
+                      if (!mounted)return;
                       Navigator.pop(context, 0);
-                      poptxTaskContent();
                     }, (finished) async {
-                      playAwardmp3();
+                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      if (!mounted)return;
                       Navigator.pop(context, 0);
-                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      playAwardmp3();
                       poptxTaskContent();
                     });
                   },
@@ -410,20 +424,23 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
             visible: !widget.is_show,
             child: InkWell(
               onTap: () async {
+                sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   // 看ad-重新刷新
-                  SJAdManager().sj_showAd(true, '', context, (hasCache){
+                  SJAdManager().sj_showAd(true, 'scxji_carreward_int', context, (hasCache){
                     Navigator.pop(context, 0);
-                    poptxTaskContent();
                   }, (finished) async {
-                    playAwardmp3();
+                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    playAwardmp3();
                     poptxTaskContent();
                   });
 
                 } else {
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!mounted)return;
+                  Navigator.pop(context, 0);
                   poptxTaskContent();
                 }
               },
@@ -438,26 +455,23 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
   // 运营逻辑添加
   Future<void> poptxTaskContent() async {
     if(SJLocalProvider.instance.sj_card_number == 3){
-      context.tipShow(SJPopSubmitAccountDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
     } else if (SJLocalProvider.instance.sj_card_number == 6){
-      context.tipShow(SJPopSubmitLastDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXDiceDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXWallerDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
     }
   }
 }
 
 class SJPopEpicWinBDialog extends StatefulWidget {
   final int award;
-  SJPopEpicWinBDialog({super.key, required this.award});
+  final String type;
+  SJPopEpicWinBDialog({super.key, required this.award, required this.type});
   @override
   State<SJPopEpicWinBDialog> createState() => SJPopEpicWinBDialogState();
 }
@@ -468,11 +482,25 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
   late final AnimationController _scaleController;
   late final Animation<double> _scaleAnimation;
   late final AnimationController _scaleController2;
-  late final Animation<double> _scaleAnimation2;
+  late spine.SpineWidgetController _controller0;
+  late spine.SpineWidgetController _controller1;
 
   @override
   void initState() {
     super.initState();
+    sj_event_fire('coin_pop', {'source_from' : widget.type});
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
     // 匀速旋转动画
     _controller = AnimationController(
@@ -494,8 +522,6 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
 
-    _scaleAnimation2 = Tween(begin: 1.0, end: 1.8)
-        .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (SJLocalProvider.instance.sj_sound_music){
@@ -546,34 +572,29 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
           Positioned(
             top: 170.h,
             left: (0.width(context) - 365) * 0.5,
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: SJImg(
-                name: 'sj_epicwin_top',
-                width: 365,
-                height: 174,
-              ),
-            ),
+            width: 365,
+            height: 174,
+            child: spine.SpineWidget.fromAsset('assets/spine/epicwin.atlas', 'assets/spine/epicwin.json', _controller0),
           ),
           Positioned(
-            top: 310.h,
-            left: (MediaQuery.of(context).size.width - 222) * 0.5,
-            child: RotationTransition(
-              turns: _controller,
-              child: SJImg(name: 'sj_epic_guang', width: 222, height: 222),
-            ),
+            top: 278.h,
+            left: (MediaQuery.of(context).size.width - 300) * 0.5,
+            width: 300, height: 300,
+            child: spine.SpineWidget.fromAsset('assets/spine/epiclight.atlas', 'assets/spine/epiclight.json', _controller1),
           ),
           Positioned(top: 320.h, left: (0.width(context) - 259) * 0.5, child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192)),
           Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 572.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               onTap: (){
-                SJAdManager().sj_showAd(false, '', context, (hasCache){
+                sj_event_fire('coin_pop_c', {'source_from' : widget.type});
+                SJAdManager().sj_showAd(false, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', context, (hasCache){
+                  if (!mounted)return;
                   Navigator.pop(context, 0);
-                  poptxTaskContent();
                 }, (finished) async {
-                  playAwardmp3();
+                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                  if (!mounted)return;
                   Navigator.pop(context, 0);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                  playAwardmp3();
                   poptxTaskContent();
                 });
               },
@@ -592,14 +613,16 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
             right: 60.w,
             child: InkWell(
                 onTap: (){
+                  sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                   // 看ad-重新刷新
-                  SJAdManager().sj_showAd(false, '', context, (hasCache){
+                  SJAdManager().sj_showAd(false, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', context, (hasCache){
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    poptxTaskContent();
                   }, (finished) async {
-                    playAwardmp3();
+                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    if (!mounted)return;
                     Navigator.pop(context, 0);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    playAwardmp3();
                     poptxTaskContent();
                   });
                 },
@@ -607,20 +630,24 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
           ),
           Positioned(top: 572.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
             onTap: () async {
+              sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
               if (SJNumberHelpers().checkProbability()) {
                 // 看ad-重新刷新
-                SJAdManager().sj_showAd(true, '', context, (hasCache){
+                SJAdManager().sj_showAd(true, widget.type == 'dice' ? 'scxji_dicereward_int' : 'scxji_carreward_int', context, (hasCache){
+                  if (!mounted)return;
                   Navigator.pop(context, 0);
-                  poptxTaskContent();
                 }, (finished) async {
-                  playAwardmp3();
+                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!mounted)return;
                   Navigator.pop(context, 0);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  playAwardmp3();
                   poptxTaskContent();
                 });
 
               } else {
-                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                if (!mounted)return;
+                Navigator.pop(context, 0);
                 poptxTaskContent();
               }
             },
@@ -634,19 +661,15 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
   // 运营逻辑添加
   Future<void> poptxTaskContent() async {
     if(SJLocalProvider.instance.sj_card_number == 3){
-      context.tipShow(SJPopSubmitAccountDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
     } else if (SJLocalProvider.instance.sj_card_number == 6){
-      context.tipShow(SJPopSubmitLastDialog());
+      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXDiceDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
     } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      if (mounted){
-        context.tipShow(SJPopTXWallerDialog());
-      }
+      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
     }
   }
 }
@@ -735,6 +758,13 @@ class SJPopAdNotWiFiDialog extends StatefulWidget {
 class SJPopAdNotWiFiDialogState extends State<SJPopAdNotWiFiDialog> {
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('network_no', {});
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 0.width(context),
@@ -778,6 +808,7 @@ class SJPopAdNotWiFiDialogState extends State<SJPopAdNotWiFiDialog> {
                   ),
                   child: InkWell(
                     onTap: (){
+                      sj_event_fire('network_no_c', {});
                       Navigator.pop(context);
                     },
                   ),
@@ -808,6 +839,13 @@ class SJPopAdLoadFailDialog extends StatefulWidget {
 }
 
 class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('ad_retry', {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -854,6 +892,8 @@ class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
                   child: InkWell(
                     onTap: (){
                       Navigator.pop(context);
+                      sj_event_fire('ad_retry_c', {});
+                      SJAdManager().initIntAdDatasource();
                     },
                   ),
                 ),
@@ -884,6 +924,13 @@ class SJPopNoticeDialog extends StatefulWidget {
 }
 
 class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
+  
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('noti_confirm_pop', {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -928,8 +975,14 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                       image: SJDImg('sj_alls_btn')
                   ),
                   child: InkWell(
-                    onTap: (){
-                      Navigator.pop(context);
+                    onTap: () async {
+                      sj_event_fire('noti_confirm_pop_allow', {});
+                      Navigator.pop(context, 1);
+                      AppSettings.openAppSettings(
+                        type: AppSettingsType.notification,
+                      );
+                      sj_event_fire('noti_confirm_pop_suc', {});
+                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 10);
                     },
                   ),
                 ),
@@ -938,6 +991,7 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                   height: 40.h,
                   child: InkWell(
                     onTap: () async {
+                      sj_event_fire('noti_confirm_pop_skip', {});
                       Navigator.pop(context, 0);
                     },
                     child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: 'Not Now', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -1031,7 +1085,152 @@ class SJPopNotAwardDialogState extends State<SJPopNotAwardDialog> {
   }
 
 }
+// 新增任务3
+class SJPopTask3Dialog extends StatefulWidget {
+  SJPopTask3Dialog({super.key});
+  @override
+  State<SJPopTask3Dialog> createState() => SJPopTask3DialogState();
+}
 
+class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('cash_task_s', {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 329.w,
+            height: 398.h,
+            decoration: BoxDecoration(
+                image:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? SJDImg('sj_task_4_bg') : SJDImg('sj_task_3_bg')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 29.h,),
+                SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? 'Human Verfication' : 'Compliance Check', size: 24, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                SizedBox(height: 89.0.h,),
+                SizedBox(
+                  width: 278.w,
+                  height: 88.h,
+                  child: Center(child: SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? 'Please complete human verfication before withdrawing' :  'Your withdrawal is pending compliance review. Complete the required steps to validate your accountand release funds.', size: 18, color: '#000000'.color(), weight: FontWeight.w400, maxLines: 4, align: TextAlign.center)),
+                ),
+                SizedBox(height: 27.h,),
+                Container(
+                  width: 313.w,
+                  height: 43.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_account_center_bg')
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 13.w,),
+                      SJText(text: _getTxTaskString().first, size: 20, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                      Spacer(),
+                      SJImg(name: _getTxTaskStatus().first ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
+                      SizedBox(width: 9.w,),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 8.h,),
+                Container(
+                  width: 313.w,
+                  height: 43.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_account_center_bg')
+                  ),
+                  child: Row(
+                    children: [
+                      SizedBox(width: 13.w,),
+                      SJText(text: _getTxTaskString().last, size: 20, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                      Spacer(),
+                      SJImg(name: _getTxTaskStatus().last ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
+                      SizedBox(width: 9.w,),
+                    ],
+                  ),
+                )
+              ],
+            ),
+          ),
+          Positioned(
+            right: 32.w,
+            top: (0.height(context) - 398.h) * 0.35,
+            width: 45,
+            height: 48,
+            child: InkWell(onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<String> _getTxTaskString(){
+    String text1 = '';
+    String text2 = '';
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      text2 =
+      'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.first.last.num} treasure chests';
+      text1 =
+      'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.first.first.num} Dice';
+    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      text2 =
+      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.last.last.num} probability cards';
+      text1 =
+      'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.last.first.num} Dice';
+    }
+    return [text1, text2];
+  }
+
+  List<bool> _getTxTaskStatus(){
+    bool text1 = false;
+    bool text2 = false;
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num) {
+        text1 = false;
+      } else {
+        text1 = true;
+      }
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+        text2 = false;
+      } else {
+        text2 = true;
+      }
+    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num) {
+        text1 = false;
+      } else {
+        text1 = true;
+      }
+      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+        text2 = false;
+      } else {
+        text2 = true;
+      }
+    }
+    return [text1, text2];
+  }
+
+}
 // 概率提醒
 class SJPopRatioDialog extends StatefulWidget {
   SJPopRatioDialog({super.key});
@@ -1040,7 +1239,12 @@ class SJPopRatioDialog extends StatefulWidget {
 }
 
 class SJPopRatioDialogState extends State<SJPopRatioDialog> {
-
+ @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('probability_tips_pop', {});
+  }
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -1090,7 +1294,9 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
                   ),
                   child: InkWell(
                     onTap: (){
-                      Navigator.pop(context);
+                      sj_event_fire('probability_tips_pop_c', {});
+                      Navigator.pop(context, 1);
+                      context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'card',));
                     },
                   ),
                 ),
@@ -1099,6 +1305,7 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
                   height: 40.h,
                   child: InkWell(
                     onTap: () async {
+                      sj_event_fire('probability_tips_pop_close', {});
                       Navigator.pop(context, 0);
                     },
                     child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: 'Next Time', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -1113,6 +1320,7 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
             width: 45,
             height: 48,
             child: InkWell(onTap: (){
+              sj_event_fire('probability_tips_pop_close', {});
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -1131,6 +1339,13 @@ class SJPopAccountConfinDialog extends StatefulWidget {
 }
 
 class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('cash_confirmation', {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1285,6 +1500,8 @@ class SJPopTXLoadingDialog extends StatefulWidget {
 
 class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> {
 
+  late spine.SpineWidgetController _controller0;
+
   @override
   void initState() {
     super.initState();
@@ -1295,6 +1512,12 @@ class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> {
         Navigator.of(context).pop();
         context.tipShow(SJPopTXTaskDialog());
       }
+    });
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
     });
   }
 
@@ -1309,7 +1532,7 @@ class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              SJImg(name: 'sj_dolas_big_4', width: 195.w, height: 186.h,),
+              SizedBox(width: 0.width(context), height: 200.h,child: spine.SpineWidget.fromAsset('assets/spine/loading.atlas', 'assets/spine/loading.json', _controller0)),
               SizedBox(height: 63.h,),
               SizedBox(width:321.w,height:48.h,child: SJText(text: 'Due to a high number of requests, processing may take a bit longer.', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400,maxLines: 2,align: TextAlign.center,))
             ],
@@ -1320,7 +1543,7 @@ class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> {
   }
 
 }
-// 提现任务
+// 提现申请中...
 class SJPopTXTaskDialog extends StatefulWidget {
   SJPopTXTaskDialog({super.key});
   @override
@@ -1332,7 +1555,8 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
   @override
   void initState() {
     super.initState();
-
+    sj_event_fire('cash_task_pop', {});
+    sj_event_fire('cash_task_s', {});
   }
 
   @override
@@ -1395,7 +1619,7 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                       height: 12.h,
                       child: LinearProgressIndicator(
                         borderRadius: BorderRadius.all(Radius.circular(12.h)),
-                        value: 2.0 / 5.0,
+                        value: _gettaskProgress() / 4.0,
                         minHeight: 12.h,
                         backgroundColor: Colors.transparent,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
@@ -1431,9 +1655,9 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                       child: Row(
                         children: [
                           SizedBox(width: 13.w,),
-                          SJText(text: 'XXXXXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          SJText(text: _getTxTaskString().first, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                           Spacer(),
-                          SJImg(name: 'sj_seletecd_s', width: 29.w, height: 29.w,),
+                          SJImg(name: _getTxTaskStatus().first ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
                           SizedBox(width: 9.w,),
                         ],
                       ),
@@ -1448,9 +1672,9 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                       child: Row(
                         children: [
                           SizedBox(width: 13.w,),
-                          SJText(text: 'XXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          SJText(text: _getTxTaskString().last, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                           Spacer(),
-                          SJImg(name: 'sj_seletecd_n', width: 29.w, height: 29.w,),
+                          SJImg(name: _getTxTaskStatus().last ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
                           SizedBox(width: 9.w,),
                         ],
                       ),
@@ -1463,6 +1687,77 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
         ],
       ),
     );
+  }
+
+  int _gettaskProgress(){
+    int row = 0;
+    if (SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.first.num) {
+      row += 1;
+    }
+    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().taskModel!.task.first.last.num) {
+      row += 1;
+    }
+    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num) {
+      row += 1;
+    }
+    if (SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+      row += 1;
+    }
+    return row;
+  }
+
+  List<String> _getTxTaskString(){
+    String text1 = '';
+    String text2 = '';
+    if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      text1 =
+      'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.first.first.num} Card';
+      text2 =
+      'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.first.last.num} Dice';
+    } else if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      text1 =
+      'Log in ${SJLocalProvider.instance.sj_login_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.last.first.num} days in a row';
+      text2 =
+      'Play ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+          .taskModel!
+          .task.last.last.num} Dice';
+    }
+    return [text1, text2];
+  }
+
+  List<bool> _getTxTaskStatus(){
+    bool text1 = false;
+    bool text2 = false;
+    if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num) {
+        text1 = false;
+      } else {
+        text1 = true;
+      }
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+        text2 = false;
+      } else {
+        text2 = true;
+      }
+    } else if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num) {
+        text1 = false;
+      } else {
+        text1 = true;
+      }
+      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+        text2 = false;
+      } else {
+        text2 = true;
+      }
+    }
+    return [text1, text2];
   }
 
   Widget _buildItem() {
@@ -1540,9 +1835,17 @@ class SJPopTXSafetyDialog extends StatefulWidget {
 
 class SJPopTXSafetyDialogState extends State<SJPopTXSafetyDialog> {
 
+  late spine.SpineWidgetController _controller0;
+
   @override
   void initState() {
     super.initState();
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
     // ✅ 2 秒后关闭弹窗
     Future.delayed(const Duration(seconds: 2), () {
@@ -1566,7 +1869,8 @@ class SJPopTXSafetyDialogState extends State<SJPopTXSafetyDialog> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SJText(text: 'Security Verification', size: 28, color: '#FCFF98'.color(), weight: FontWeight.w400),
-              SJImg(name: 'sj_tx_anquan_icon', width: 282.w, height: 282.w,),
+              SizedBox(height: 20.h,),
+              SizedBox(width:300.w, height: 300.w,child: spine.SpineWidget.fromAsset('assets/spine/Safety.atlas', 'assets/spine/Safety.json', _controller0)),
               SizedBox(height: 12.h,),
               SizedBox(width:250.w,height:48.h,child: SJText(text: 'Your withdrawal is under security verification. ', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400,maxLines: 2,align: TextAlign.center,))
             ],
@@ -1686,7 +1990,7 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
   @override
   void initState() {
     super.initState();
-
+    sj_event_fire('congratulation_s', {});
   }
 
   @override
@@ -1735,7 +2039,7 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
                       onTap: (){
                         Navigator.pop(context);
                       },
-                      child: SJImg(name: 'sj_play_more_btn ', width: 204.w,height: 54.h,),
+                      child: SJImg(name: 'sj_play_more_btn', width: 204.w,height: 54.h,),
                     )
                   ],
                 ),
@@ -1748,9 +2052,10 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
   }
 
 }
-// 提交账号第一步
+// 发起提现
 class SJPopSubmitOneDialog extends StatefulWidget {
-  SJPopSubmitOneDialog({super.key});
+  final int number_index;
+  SJPopSubmitOneDialog({super.key, required this.number_index});
   @override
   State<SJPopSubmitOneDialog> createState() => SJPopSubmitOneDialogState();
 }
@@ -1763,10 +2068,12 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
 
   FocusNode _focusNode = FocusNode();
 
+  List<int> tx_list = [1000, 1500, 3000];
+
   @override
   void initState() {
     super.initState();
-
+    sj_event_fire('cash_page_c', {});
   }
 
   @override
@@ -1804,7 +2111,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                           seletecd_index = 0;
                         });
                       },
-                      child: SJImg(name: 'sj_account_0_s', width: 176.w, height: 61.w,),
+                      child: SJImg(name: seletecd_index == 0 ? 'sj_account_0_s' : 'sj_account_0_n', width: 176.w, height: 61.w,),
                     ),
                     SizedBox(height: 12.h,),
                     InkWell(
@@ -1813,7 +2120,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                           seletecd_index = 1;
                         });
                       },
-                      child: SJImg(name: 'sj_account_1_n', width: 176.w, height: 61.w,),
+                      child: SJImg(name: seletecd_index == 1 ? 'sj_account_1_s' : 'sj_account_1_n', width: 176.w, height: 61.w,),
                     ),
                     SizedBox(height: 40.h,),
                     Row(
@@ -1873,10 +2180,28 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                     ),
                     SizedBox(height: 30.h,),
                     InkWell(
-                      onTap: (){
-                        Navigator.pop(context);
-                        if (mounted){
-                          // context.tipShow(SJPopSubmitLastDialog());
+                      onTap: () async {
+                        if (_controller.text.isEmpty){
+                          Navigator.pop(context);
+                          SJDialogTool.toast(context, 'Please Enter Your Account.');
+                        } else {
+                          Navigator.pop(context);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_numberName, widget.number_index);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_account_seled_indexName, seletecd_index);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_accountName, seletecd_index);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number - tx_list[widget.number_index]);
+                          await SJLocalProvider.instance.updateTXInStatus(1);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+                          await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_account_idName, _controller.text);
+                          if (SJLocalProvider.instance.sj_dolas_number >= 1000){
+                            if(mounted){
+                              context.tipShow(SJPopTXWallerDialog());
+                            }
+                          }
                         }
                       },
                       child: SJImg(name: 'sj_submit_btn', width: 202.w, height: 51.5.h,),
@@ -1901,9 +2226,17 @@ class SJPopSubmitAccountDialog extends StatefulWidget {
 
 class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
 
+  late spine.SpineWidgetController _controller1;
+
   @override
   void initState() {
     super.initState();
+
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
   }
 
@@ -1943,18 +2276,18 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
               ),
               ),
               SizedBox(height: 4.h,),
-              Container(
-                width: 366.w,
-                height: 196.h,
-                decoration: BoxDecoration(
-                    image: SJDImg('sj_cai_bg')
-                ),
-                child: Column(
+              SizedBox(
+                width: 0.width(context),
+                height: 220.h,
+                child: Stack(
                   children: [
-                    SizedBox(height: 9.h,),
-                    SJImg(name: 'sj_matel_icon', width: 144.w, height: 144.w,),
+                    Column(
+                      children: [
+                        SizedBox(width: 0.width(context), height: 220.w, child: spine.SpineWidget.fromAsset('assets/spine/yunying1.atlas', 'assets/spine/yunying1.json', _controller1)),
+                      ],
+                    ),
                   ],
-                ),
+                )
               ),
               SizedBox(height: 109.h,),
               SizedBox(
@@ -2082,6 +2415,12 @@ class SJPopTXNotDialog extends StatefulWidget {
 class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('cash_not_pop', {});
+  }
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 0.width(context),
@@ -2125,6 +2464,7 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
                   ),
                   child: InkWell(
                     onTap: (){
+                      sj_event_fire('cash_not_pop_c', {});
                       Navigator.pop(context);
                     },
                   ),
@@ -2138,6 +2478,7 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
             width: 45,
             height: 48,
             child: InkWell(onTap: (){
+              sj_event_fire('cash_not_pop_c', {});
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -2337,6 +2678,25 @@ class SJPopTXDiceDialog extends StatefulWidget {
 
 class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
 
+  late spine.SpineWidgetController _controller0;
+
+  late spine.SpineWidgetController _controller1;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -2392,11 +2752,17 @@ class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
               ThreeRowHorizontalMarquee(containerWidth: 0.width(context), containerHeight: 110.h,itemsPerRow:3),
               SizedBox(height: 15.h,),
               SJGradientStrokeText(text: 'Celebrate Early!', gradientColors: ['#F1F80E'.color(),'#FF5912'.color(),'#FF1BD1'.color()], width: 262.w, height: 43.h, fontSize: 36),
-              SizedBox(height: 50.h,),
+              SizedBox(height: 10.h,),
               SizedBox(
-                width: 140.w,
-                height: 140.w,
-                child: SJImg(name: 'sj_shaizi_big_icon'),
+                width: 0.width(context),
+                height: 228.h,
+                child: Stack(
+                  children: [
+                    spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller1),
+                    spine.SpineWidget.fromAsset('assets/spine/caidai.atlas', 'assets/spine/caidai.json', _controller0),
+                    Center(child: SizedBox(width: 285.w, height: 228.h, child: SJImg(name: 'sj_yunyings_iocn')),),
+                  ],
+                ),
               ),
               SizedBox(height: 20.h,),
               SizedBox(
@@ -2439,7 +2805,7 @@ class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (builder) {
-                        return SJDiceRollWidget();
+                        return SJDiceRollWidget(souce_fromat: 'card',);
                       },
                     ),
                   );
@@ -2520,7 +2886,20 @@ class SJPopTXWallerDialog extends StatefulWidget {
 
 class SJPopTXWallerDialogState extends State<SJPopTXWallerDialog> {
 
+  late spine.SpineWidgetController _controller0;
+
   @override
+  void initState() {
+    super.initState();
+    sj_event_fire('meet_withdraw', {});
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+  }
+
+    @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 0.width(context),
@@ -2533,7 +2912,7 @@ class SJPopTXWallerDialogState extends State<SJPopTXWallerDialog> {
             children: [
               SJText(text: 'Milestone Achieved!', size: 28.sp, color: '#FCFF98'.color(), weight: FontWeight.w400),
               SizedBox(height: 11.h,),
-              SJImg(name: 'sj_wallter_icon', width: 197.w, height: 197.w,),
+              SizedBox(width: 197.w, height: 197.w,child: spine.SpineWidget.fromAsset('assets/spine/yunying6.atlas', 'assets/spine/yunying6.json', _controller0),),
               SizedBox(height: 34.h,),
               SizedBox(
                 width: 344.w,
@@ -2565,15 +2944,24 @@ class SJPopTXWallerDialogState extends State<SJPopTXWallerDialog> {
               SizedBox(height: 11.h,),
               InkWell(
                 onTap: (){
+                  sj_event_fire('meet_withdraw_c', {});
                   Navigator.pop(context);
-                  context.tipShow(SJPopAccountConfinDialog());
+                  if (SJLocalProvider.instance.sj_account_id.isEmpty) {
+                    context.tipShow(SJPopSubmitOneDialog(number_index: 0));
+                  } else {
+                    context.tipShow(SJPopAccountConfinDialog());
+                  }
                 },
                 child: SJImg(name: 'sj_claim_btns', width: 260.w, height: 74.h,),
               ),
               SizedBox(height: 12.w,),
               SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],onPressed: (){
                 Navigator.pop(context);
-                context.tipShow(SJPopAccountConfinDialog());
+                if (SJLocalProvider.instance.sj_account_id.isEmpty) {
+                  context.tipShow(SJPopSubmitOneDialog(number_index: 0));
+                } else {
+                  context.tipShow(SJPopAccountConfinDialog());
+                }
               },),)
             ],
           )
@@ -2634,7 +3022,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
   void initState() {
     // TODO: implement initState
     super.initState();
-    sj_event_fire('open_box_pop', {});
+    sj_event_fire('box_pop', {});
 
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -3005,16 +3393,16 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       Center(
                         child: InkWell(
                             onTap: (){
-                              sj_event_fire('open_box_pop_c', {});
-                              SJAdManager().sj_showAd(false,'kmrol_box_rv', context, (hasCache){
+                              sj_event_fire('box_pop_claim', {});
+                              SJAdManager().sj_showAd(false,'scxji_boxreward_rv', context, (hasCache){
                                 if (!hasCache) {
 
                                 }
                               }, (finished) async {
-                                addtxBoxTaskindex();
                                 var value = doals_one + doals_two + doals_three;
-                                // SJLocalProvider.instance.set_sp_box_index(-5);
-                                // SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
+                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
+                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
+                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
                               });
                               Navigator.pop(context, 0);
                             }
@@ -3031,40 +3419,40 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                 right: (0.width(context) - 200) * 0.5, top: 652.h,
                 width: 200.0,
                 height: 52.0,
-                child: SJUnderlineTextButton(text: 'Claim \$${open_index}', fontSize: 20.sp,gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color()], underlineColor: '#C5A213'.color(), onPressed: (){
-                  sj_event_fire('open_box_pop_close', {});
-                  // if (SPNumberhelper().getintadShowStatus()){
-                  //   SPAdManager().sp_showAd(true,'kmrol_box_int', context, (hasCache){
-                  //     if (!hasCache) {
-                  //
-                  //     }
-                  //   }, (finished){
-                  //     var value = 0.0;
-                  //     if (_openOne){
-                  //       value = doals_one;
-                  //     } else if (_openTwo){
-                  //       value = doals_two;
-                  //     } else {
-                  //       value = doals_three;
-                  //     }
-                  //     addtxBoxTaskindex();
-                  //     SJLocalProvider.instance.set_sp_box_index(-5);
-                  //     SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
-                  //   });
-                  // } else {
-                  //
-                  //   var value = 0.0;
-                  //   if (_openOne){
-                  //     value = doals_one;
-                  //   } else if (_openTwo){
-                  //     value = doals_two;
-                  //   } else {
-                  //     value = doals_three;
-                  //   }
-                  //   addtxBoxTaskindex();
-                  //   SJLocalProvider.instance.set_sp_box_index(-5);
-                  //   SJLocalProvider.instance.add_sp_dolas_number(value.toInt());
-                  // }
+                child: SJUnderlineTextButton(text: 'Claim \$${open_index}', fontSize: 20.sp,gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color()], underlineColor: '#C5A213'.color(), onPressed: () async {
+                  sj_event_fire('box_pop_claim', {});
+                  if (SJNumberHelpers().checkProbability()){
+                    SJAdManager().sj_showAd(true,'scxji_boxreward_int', context, (hasCache){
+                      if (!hasCache) {
+
+                      }
+                    }, (finished) async {
+                      var value = 0.0;
+                      if (_openOne){
+                        value = doals_one;
+                      } else if (_openTwo){
+                        value = doals_two;
+                      } else {
+                        value = doals_three;
+                      }
+                       SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
+                       SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
+                       SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                    });
+                  } else {
+
+                    var value = 0.0;
+                    if (_openOne){
+                      value = doals_one;
+                    } else if (_openTwo){
+                      value = doals_two;
+                    } else {
+                      value = doals_three;
+                    }
+                     SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
+                     SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
+                     SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                  }
                   Navigator.pop(context, 0);
                 },)
             ),
@@ -3082,30 +3470,240 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
       ),
     );
   }
-  addtxBoxTaskindex() async {
-    // if (SPNumberhelper().numberEntity.wtd_task[SJLocalProvider.instance.sp_tx_task_index].type != 'box') return;
-    // await SJLocalProvider.instance.set_sp_tx_box_index(SJLocalProvider.instance.sp_tx_box_index + 1);
-    // if (SJLocalProvider.instance.sp_tx_box_index >= SPNumberhelper().numberEntity.wtd_task[SJLocalProvider.instance.sp_tx_task_index].num){
-    //   await SJLocalProvider.instance.set_sp_tx_bubble_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_card_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_wheel_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_box_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_task_index(SJLocalProvider.instance.sp_tx_task_index + 1);
-    // }
-    // if (SJLocalProvider.instance.sp_tx_task_index >= 9){
-    //   await SJLocalProvider.instance.set_sp_tx_bubble_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_card_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_wheel_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_box_index(0);
-    //   await SJLocalProvider.instance.set_sp_tx_task_index(0);
-    //   await SJLocalProvider.instance.updateTXInStatus(2);
-    //   await SJLocalProvider.instance.set_sp_account_id('');
-    // }
+
+}
+// 老用户宝箱
+class SJBoxOldDiaologWidget extends StatefulWidget {
+  SJBoxOldDiaologWidget({super.key});
+  @override
+  State<SJBoxOldDiaologWidget> createState() => SJBoxOldDiaologWidgetState();
+}
+
+class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with SingleTickerProviderStateMixin {
+
+  var _showanimation = true;
+
+  var _showBottom = false;
+
+  var _openOne = false;
+
+  var doals_one = 20.0;
+
+  var open_index = 0.0;
+
+  late spine.SpineWidgetController _controller0;
+
+  late spine.SpineWidgetController _controller1;
+
+  late spine.SpineWidgetController _controller2;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('box_pop_nu', {});
+
+    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+
+    _controller2 = spine.SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
 
   }
 
-}
+  openBox(){
+    setState(() {
+      _showBottom = true;
+      _showanimation = false;
+    });
+    Future.delayed(Duration(milliseconds: 1200), (){
+      setState(() {
+        if (!_openOne){
+          _openOne = true;
+        }
+      });
+    });
+  }
 
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(child: SizedBox(
+            width: 0.width(context),
+            height: 0.height(context),
+            child: Column(
+              children: [
+                SizedBox(height: 120.h,),
+                Container(
+                  width: 357.w, height: 134.h,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_box_title2')
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 62.h,),
+                      SJGradientStrokeText(text: randomTitle(), gradientColors: ['#FFFFFF'.color(),'#FFEB88'.color()], width: 261.w, height: 29.h, fontSize: 24, strokeWidth: 1, strokeColor: '#6A2C1B'.color(),)
+                    ],
+                  ),
+                )
+              ],
+            ),
+          )),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              left: (0.width(context) - 250.w) * 0.5, top: 260.h,
+              width: 250.0.w,
+              height: 250.0.h,
+              child: spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller0),
+            ),
+          ),
+          Visibility(
+            visible: true,
+            child: Positioned(
+              left: (0.width(context) - 157.w) * 0.5, top: 320.h,
+              width: 157.0.w,
+              height: 133.0.h,
+              child: InkWell(
+                  onTap: (){
+                    open_index = doals_one;
+                    _openOne = true;
+                    openBox();
+                  },
+                  child: spine.SpineWidget.fromAsset(_openOne ? 'assets/spine/box.atlas' : 'assets/spine/box1.atlas', _openOne ? 'assets/spine/box.json' : 'assets/spine/box1.json', _controller1)
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _openOne,
+            child: Positioned(
+              left: (0.width(context) - 80.w) * 0.5, top: 438.h,
+              width: 120.0.w,
+              height: 40.h,
+              child: SizedBox(
+                width: 120.0.w,
+                height: 30.h,
+                child: Row(
+                  children: [
+                    SizedBox(width: 10.w,),
+                    SJGradientNumberRoller(
+                      value: doals_one,
+                      duration: 1000,
+                      fontSize: 32.0.sp,
+                      gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
+                      borderColor: '#601D09'.color(),
+                      borderWidth: 1.0,
+                      decimalPlaces: 0, // 动态调整小数位
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          Visibility(
+            visible: _showanimation,
+            child: Positioned(
+                left: (0.width(context) - 142.w) * 0.5, top: 438.h,
+                width: 142.0.w,
+                height: 42.0.h,
+                child: InkWell(
+                  onTap: (){
+                    open_index = doals_one;
+                    _openOne = true;
+                    openBox();
+                  },
+                  child: Container(decoration: BoxDecoration(
+                      image: SJDImg('sj_open_btn')
+                  ),
+                  ),
+                )
+            ),
+          ),
+          Visibility(
+            visible: _showBottom,
+            child: Positioned(
+                right: (0.width(context) - 260.w) * 0.5, top: 550.h,
+                width: 260.0.w,
+                height: 74.0.h,
+                child: Container(
+                  width: 260.0.w,
+                  height: 74.0.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_claimall_btn')
+                  ),
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: InkWell(
+                            onTap: (){
+                              sj_event_fire('box_pop_c', {});
+                              if (SJNumberHelpers().checkProbability()){
+                                SJAdManager().sj_showAd(true,'scxji_dailyolduser_int', context, (hasCache){
+                                  if (!hasCache) {
+
+                                  }
+                                }, (finished) async {
+                                  var value = 0.0;
+                                  if (_openOne){
+                                    value = doals_one;
+                                  }
+                                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
+                                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
+                                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                                });
+                              } else {
+
+                                var value = 0.0;
+                                if (_openOne){
+                                  value = doals_one;
+                                }
+                                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
+                                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                              }
+                              Navigator.pop(context, 0);
+                            }
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String randomTitle() {
+    const titles = [
+      "Ready！Set！ Cash！",
+      "You've Got Mail!",
+      "Lookin' Sharp!",
+      "Claim Your Daily Bonus!",
+      "Daily Wealth Moment！",
+    ];
+
+    return titles[Random().nextInt(titles.length)];
+  }
+
+}
 ///******************** A **************************///
 class SJDialogTool {
   // tosat
@@ -3228,6 +3826,7 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
           SizedBox(height: 58.h,),
           InkWell(
             onTap: (){
+              sj_event_fire('dice_page_not_find', {});
               // 返回根目录进度最近进入的页面
               Navigator.pop(context);
               // 根目录
@@ -3550,7 +4149,8 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (builder) {
                           return SJwebkitview(
-                            urlString: "https://sites.google.com/view/130scratchjoyprivacy-policy/home",
+                            url: "https://sites.google.com/view/130scratchjoyprivacy-policy/home",
+                            title: 'Privacy Policy',
                           );
                         }),
                       );
@@ -3634,12 +4234,7 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
               onTap: (){
                 Navigator.pop(context, 1);
                 // 看ad-重新刷新
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
-                }, (finished) async {
-                  SJAdAHelper().resetBlock();
+                SJAdManager().sj_showAd(false, 'scxji_unlock_rv', context, (hasCache){}, (finished){
                   unlocklevelsluck();
                 });
 
@@ -3651,12 +4246,7 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
             child: InkWell(
                 onTap: (){
                   // 看ad-重新刷新
-                  SJAdAHelper().show(context, (hasCache){
-                    if (!hasCache){
-                      SJAdAHelper().resetBlock();
-                    }
-                  }, (finished) async {
-                    SJAdAHelper().resetBlock();
+                  SJAdManager().sj_showAd(false, 'scxji_unlock_rv', context, (hasCache){}, (finished){
                     unlocklevelsluck();
                   });
                 },
@@ -3719,6 +4309,7 @@ class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog> {
   @override
   void initState() {
     super.initState();
+    sj_event_fire('scratch_card_fail_pop', {});
     _controller = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         controller.animationState.setAnimationByName(0, "animation", true);
@@ -3768,6 +4359,7 @@ class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog> {
               Center(
                 child: InkWell(
                   onTap: (){
+                    sj_event_fire('scratch_card_fail_pop_c', {});
                     Navigator.pop(context, 0);
                   },
                   child: SJImg(name: 'sj_playagin_btn', width: 262, height: 76,),

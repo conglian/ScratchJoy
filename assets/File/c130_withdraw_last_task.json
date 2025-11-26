@@ -1,0 +1,24 @@
+{
+  "task": [
+    [
+      {
+        "name": "box",
+        "num": 5
+      },
+      {
+        "name": "card",
+        "num": 10
+      }
+    ],
+    [
+      {
+        "name": "dice",
+        "num": 2
+      },
+      {
+        "name": "probability",
+        "num": 2
+      }
+    ]
+  ]
+}

@@ -139,9 +139,9 @@ class SJRequestHelpers {
 extension RequestHelpersExtension on SJRequestHelpers {
   Future<String> getConfigQueryString() async {
     var queryBody = {
-      "comment": await FlutterTbaInfo.instance.getBundleId(),
-      "allen": 'iodinate',
-      "cupful": await FlutterTbaInfo.instance.getAppVersion(),
+      "cab": await FlutterTbaInfo.instance.getBundleId(),
+      "afghan": 'fleming',
+      "merry": await FlutterTbaInfo.instance.getAppVersion(),
     };
     return Uri(queryParameters: queryBody).query;
   }

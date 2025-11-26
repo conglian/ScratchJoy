@@ -8,6 +8,8 @@ import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 
+import 'SJTBAInfoTool.dart';
+
 class SJLocalImageScratchCard extends StatefulWidget {
   final Widget child;
   final String coverImagePath;
@@ -302,6 +304,7 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
           _currentFingerPosition = details.localPosition;
           _autoCoinPosition = null;
         });
+        sj_event_fire('scratch_card', {'type' : 'user'});
         await SJMP3Player().pauseBackground();
         await SJMP3Player().pauseEffect2();
         await SJMP3Player().pauseEffect();

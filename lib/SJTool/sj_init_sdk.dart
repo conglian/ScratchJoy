@@ -3,11 +3,15 @@ import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'SJAdAHelp.dart';
 import 'package:adjust_sdk/adjust.dart';
 import 'package:adjust_sdk/adjust_config.dart';
+
+import 'SJAdManager.dart';
 
 String decsgerew(String st) => utf8.decode(base64Decode(st));
 
@@ -30,11 +34,14 @@ class SJSDKHelpers {
 
   Future<void> initSDK() async {
     _initAppMAX();
-    _initAdjust();
   }
 
 
   Future<void> _initAppMAX() async {
+    // ump设置
+    AppLovinMAX.setHasUserConsent(true);
+    AppLovinMAX.setDoNotSell(false);
+
     AppLovinMAX.setCreativeDebuggerEnabled(false);
     AppLovinMAX.setVerboseLogging(false);
     "${decsgerew("TVdKemhuRVB0S3F4TEtSTEFsVnJUeVFmTzJWeFdaV3RWeF9TelRXQ19NZ29aTDdrVEs=")}"
@@ -48,20 +55,21 @@ class SJSDKHelpers {
     // AppLovinMAX.showMediationDebugger();
     //
     if (configuration != null) {
-      SJAdAHelper().initRewardAdDatasource();
-      // sj_event_fire('kmrol_ad_initsuc', {
-      //   'ad_platform' : 'max',
-      //   'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds
-      // });
+      SJAdManager().initIntAdDatasource();
+      sj_event_fire('scxji_ad_initsuc', {
+        'ad_platform' : 'max',
+        'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds
+      });
     }
   }
 
-  _initAdjust() async {
-    const String appToken = 'gb9h8itt99mo'; // 从 adjust 控制台拿
+  initAdjust() async {
+    const String appToken1 = '1dqdrosdaw74'; // relsease
+    const String appToken2 = '4qedga65udq8'; // debug
     var disId = await FlutterTbaInfo.instance.getDistinctId();
     'disId=$disId'.log();
     Adjust.addGlobalCallbackParameter('customer_user_id', disId);
-    final config = AdjustConfig(appToken, AdjustEnvironment.production);
+    final config = AdjustConfig(kReleaseMode ? appToken1 : appToken2, AdjustEnvironment.production);
     // 归因信息
     config.attributionCallback = (AdjustAttribution attributionChangedData) {
       print('[Adjust]: Attribution changed!');
@@ -69,6 +77,7 @@ class SJSDKHelpers {
         print('[Adjust]: Tracker token: ${attributionChangedData.trackerToken}');
       }
       if (attributionChangedData.trackerName != null) {
+        sj_event_fire('adjust_suc', {'adjust_user' : attributionChangedData.trackerName == 'Organic' ? 0 : 1});
         print('[Adjust]: Tracker name: ${attributionChangedData.trackerName}');
       }
       if (attributionChangedData.campaign != null) {
@@ -94,7 +103,7 @@ class SJSDKHelpers {
       }
     };
     Adjust.initSdk(config);
-
+    sj_event_fire('adjust_req', {});
   }
 
   // 上报收入

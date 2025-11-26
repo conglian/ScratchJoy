@@ -79,15 +79,15 @@ class SJFKManger {
       return true;
     }
     // //现金金额达到提现门槛,视频数少于3次
-    // if((prefs.getInt('sj_ad_all_number') ?? 0) < fkModel.behavior.wrong_deem_ad_less && (prefs.getInt('sj_dolas_old_number') ?? 0) >= SPNumberhelper().numberEntity.card_range.first){
-    //   // sj_event_fire('risk_chance', {'risk_from' : 'wrong_deem_ad_less'});
-    //   return true;
-    // }
-    // // 用户观看90次RV(不包含插屏)，未到提现门槛
-    // if((prefs.getInt('sj_ad_reawrd_all_number') ?? 0) >= fkModel.behavior.wrong_deem_ad_more && (prefs.getInt('sj_dolas_old_number') ?? 0) < SPNumberhelper().numberEntity.card_range.first){
-    //   // sj_event_fire('risk_chance', {'risk_from' : 'wrong_deem_ad_more'});
-    //   return true;
-    // }
+    if((prefs.getInt('sj_ad_all_number') ?? 0) < fkModel.behavior.wrong_deem_ad_less && (prefs.getInt('sj_dolas_old_number') ?? 0) >= 1000){
+      sj_event_fire('risk_chance', {'risk_from' : 'wrong_deem_ad_less'});
+      return true;
+    }
+    // 用户观看90次RV(不包含插屏)，未到提现门槛
+    if((prefs.getInt('sj_ad_reawrd_all_number') ?? 0) >= fkModel.behavior.wrong_deem_ad_more && (prefs.getInt('sj_dolas_old_number') ?? 0) < 1000){
+      sj_event_fire('risk_chance', {'risk_from' : 'wrong_deem_ad_more'});
+      return true;
+    }
     return false;
   }
 

@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 
 import '../SJModel/SJPlayJoyModel.dart';
+import '../SJModel/SJbonus_config.dart';
 
 class SJNumberAHelper {
   static final SJNumberAHelper _instance = SJNumberAHelper._internal();
@@ -461,6 +462,21 @@ class SJNumberAHelper {
       multiplier: multiplier,
     );
   }
+  /// 根据传入的数值，从 PrizeRange 列表中获取对应 prize 区间
+  List<double> getPrizeByValue(double value, List<PrizeRange> ranges) {
+    if (ranges.isEmpty) return [];
+
+    // 遍历找区间
+    for (var r in ranges) {
+      if (value >= r.firstNumber && value < r.endNumber) {
+        return r.prize ?? [];
+      }
+    }
+
+    // 数值超出范围 => 返回最后一个 prize
+    return ranges.last.prize ?? [];
+  }
+
 }
 
 /// 🎯 抽奖结果模型

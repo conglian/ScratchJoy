@@ -4,6 +4,8 @@ import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 
+import '../SJDilaog/SJDialog.dart';
+import '../main.dart';
 import 'SJAdManager.dart';
 import 'SJTBAInfoTool.dart';
 
@@ -32,7 +34,7 @@ class SJNoticeHelp {
       onDidReceiveNotificationResponse: (response) {
         'nf click response:${response}'.log();
         final String? payload = response.payload;
-        sj_event_fire('inform_c', {'type': payload ?? ''});
+        sj_event_fire('all_noti_c', {'type': payload ?? ''});
         if(payload == null)return;
       },
     );
@@ -48,7 +50,7 @@ class SJNoticeHelp {
       bool didNotificationLaunchApp =
           notificationAppLaunchDetails.didNotificationLaunchApp ?? false;
       if (didNotificationLaunchApp) {
-        sj_event_fire('inform_c', {'type': notificationResponse?.payload ?? ''});
+        sj_event_fire('all_noti_c', {'type': notificationResponse?.payload ?? ''});
       }
     }
 
@@ -57,7 +59,7 @@ class SJNoticeHelp {
       sj_event_fire('push_status', {});
     }else{
       "nf no permission".log();
-      // NavigationService().navigatorKey.currentContext?.tipShow(SJPopNoticeDialog());
+      navigatorKey.currentContext?.tipShow(SJPopNoticeDialog());
     }
     "nf has permission".log();
     _initLifecycleListener();
@@ -74,20 +76,43 @@ class SJNoticeHelp {
   _spinitNotificationCount() async {
     try {
       int locals = await AndroidFlutterLocalNotificationsPlugin()
-          .extractMessageReceivedNum("fix");
+          .extractMessageReceivedNum("noti1");
       "==initNotificationCount==localcount:$locals==".log();
       if (locals > 0) {
         for (int i = 0; i < locals; i++) {
-          sj_event_fire('inform_p', {'type' : "fix"});
+          sj_event_fire('all_noti_t', {'type' : "noti1"});
         }
       }
-
+      int locals2 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("noti2");
+      "==initNotificationCount==localcount:$locals2==".log();
+      if (locals2 > 0) {
+        for (int i = 0; i < locals2; i++) {
+          sj_event_fire('all_noti_t', {'type' : "noti2"});
+        }
+      }
+      int locals3 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("noti3");
+      "==initNotificationCount==localcount:$locals3==".log();
+      if (locals3 > 0) {
+        for (int i = 0; i < locals3; i++) {
+          sj_event_fire('all_noti_t', {'type' : "noti3"});
+        }
+      }
+      int locals4 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("noti4");
+      "==initNotificationCount==localcount:$locals4==".log();
+      if (locals4 > 0) {
+        for (int i = 0; i < locals4; i++) {
+          sj_event_fire('all_noti_t', {'type' : "noti4"});
+        }
+      }
       int fcms = await AndroidFlutterLocalNotificationsPlugin()
           .extractMessageReceivedNum("fcm");
       "==initNotificationCount==localcount:$fcms==".log();
       if (fcms > 0) {
         for (int i = 0; i < fcms; i++) {
-          sj_event_fire('inform_p', {'type' : "fcm"});
+          sj_event_fire('all_noti_t', {'type' : "fcm"});
         }
       }
 
@@ -96,7 +121,7 @@ class SJNoticeHelp {
       "==initNotificationCount==localcount:$unlocks==".log();
       if (unlocks > 0) {
         for (int i = 0; i < unlocks; i++) {
-          sj_event_fire('inform_p', {'type' : "unlock"});
+          sj_event_fire('all_noti_t', {'type' : "unlock"});
         }
       }
     } catch (e) {
@@ -146,7 +171,7 @@ class SJNoticeHelp {
         const Duration(minutes: 23),
         notificationDetails: details,
         scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
+        payload: "noti1"
     );
   }
 
@@ -180,7 +205,7 @@ class SJNoticeHelp {
         const Duration(minutes: 49),
         notificationDetails: details,
         scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
+        payload: "noti2"
     );
   }
 
@@ -214,7 +239,7 @@ class SJNoticeHelp {
         const Duration(minutes: 61),
         notificationDetails: details,
         scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
+        payload: "noti3"
     );
   }
 
@@ -248,7 +273,7 @@ class SJNoticeHelp {
         const Duration(minutes: 30),
         notificationDetails: details,
         scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "fix"
+        payload: "noti4"
     );
   }
 
@@ -342,13 +367,13 @@ class SJNoticeHelp {
         // 执行前台逻辑
         sj_session_fire();
         if (!SJAdManager().is_ad_play) {
-          // SJAdManager().sj_showAd(true, 'kmrol_launch', NavigationService().bottomNavKey.currentContext!, (hasCache){
-          //   if (!hasCache) {
-          //
-          //   }
-          // }, (finished){
-          //
-          // });
+          SJAdManager().sj_showAd(true, 'scxji_launch', navigatorKey.currentContext!, (hasCache){
+            if (!hasCache) {
+
+            }
+          }, (finished){
+
+          });
         }
       }
     });

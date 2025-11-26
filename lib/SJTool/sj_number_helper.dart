@@ -22,6 +22,8 @@ class SJNumberHelpers {
 
   RootModel? intModel;
 
+  TaskRootModel? last_taskModel;
+
   TaskRootModel? taskModel;
 
   ProbabilityConfig? probabilityConfigModel;
@@ -33,6 +35,7 @@ class SJNumberHelpers {
     await _sjloadtaskDataFromLocate();
     await _sjloadprobabilityDataFromLocate();
     await _sjloadwinup_numberDataFromLocate();
+    await _sjloadlsattaskDataFromLocate();
   }
 
   Future<void> _sjloadintDataFromLocate() async {
@@ -51,6 +54,15 @@ class SJNumberHelpers {
       taskModel = TaskRootModel.fromJson(jsonMap);
     }
     "ScratchJoy task json = ${taskModel}".log();
+  }
+
+  Future<void> _sjloadlsattaskDataFromLocate() async {
+    if (last_taskModel == null) {
+      String jsonString = await rootBundle.loadString("c130_withdraw_last_task".jsons());
+      Map<String, dynamic> jsonMap = json.decode(jsonString);
+      last_taskModel = TaskRootModel.fromJson(jsonMap);
+    }
+    "ScratchJoy task json = ${last_taskModel}".log();
   }
 
   Future<void> _sjloadprobabilityDataFromLocate() async {
@@ -81,10 +93,13 @@ class SJNumberHelpers {
         break;
       }
     }
+    'range=$range'.log();
+    if (SJLocalProvider.instance.sj_dolas_number >= 1000){
+      return true;
+    }
 
     if (range <= 0.0) {
-      // 如果不在任何区间，默认返回 true
-      return true;
+      return false;
     }
 
     double point = range.toDouble() ?? 0.0;

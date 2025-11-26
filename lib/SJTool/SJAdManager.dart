@@ -51,13 +51,13 @@ class SJAdManager {
   // 请求所有广告id
   sj_load() async {
     // 展示上限
-    if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
-      return;
-    }
+    // if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
+    //   return;
+    // }
     // 风控
-    if (await SJFKManger().sj_checkAllStatus()){
-      return;
-    }
+    // if (await SJFKManger().sj_checkAllStatus()){
+    //   return;
+    // }
     // 添加代理流只能加一次
     if (!listenerend){
       listenerend = true;
@@ -162,7 +162,7 @@ class SJAdManager {
     }
     if (isint){
       sj_event_fire(
-        "kmrol_ad_chance",
+        "scxji_ad_chance",
         {"ad_pos_id": placeId ?? "",
           'ad_format' : 'interstitial',
         },
@@ -170,7 +170,7 @@ class SJAdManager {
       // 插屏比价结果
       if (intSucAds.isEmpty){
         sj_event_fire(
-          "kmrol_ad_impression_fail",
+          "scxji_ad_impression_fail",
           {"ad_pos_id": placeId ?? "",
             'ad_format' : 'interstitial'},
         );
@@ -211,7 +211,7 @@ class SJAdManager {
       }
     } else {
       sj_event_fire(
-        "kmrol_ad_chance",
+        "scxji_ad_chance",
         {"ad_pos_id": placeId ?? "",
           'ad_format' : 'reward',
         },
@@ -221,7 +221,7 @@ class SJAdManager {
       if (SJAdHelpers().ad_Entity?.scxji_switch == true){
         if (rewardSucAds.isEmpty && intSucAds.isEmpty && !isint){
           sj_event_fire(
-            "kmrol_ad_impression_fail",
+            "scxji_ad_impression_fail",
             {"ad_pos_id": placeId ?? "",
               'ad_format' : 'reward'},
           );
@@ -347,7 +347,7 @@ class SJAdManager {
               }
             } else {
               sj_event_fire(
-                "kmrol_ad_impression_fail",
+                "scxji_ad_impression_fail",
                 {"ad_pos_id": placeId ?? "",
                   'ad_format' : 'reward'},
               );
@@ -362,7 +362,7 @@ class SJAdManager {
         // false 不需要和插屏一起比价
         if (rewardSucAds.isEmpty){
           sj_event_fire(
-            "kmrol_ad_impression_fail",
+            "scxji_ad_impression_fail",
             {"ad_pos_id": placeId ?? "",
               'ad_format' : 'reward'},
           );
@@ -453,7 +453,7 @@ class SJAdManager {
               intSucAds.add(ads);
             }
           }
-          sj_event_fire('kmrol_ad_return', {
+          sj_event_fire('scxji_ad_return', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : ad.adFormat,
             'ad_platform' : 'max',
@@ -463,7 +463,7 @@ class SJAdManager {
         },
         onAdLoadFailedCallback: (adUnitId, error) {
           "scratchjoy ad Int Load Failed ${adUnitId} error=${error}".log();
-          sj_event_fire('kmrol_ad_return_fail', {
+          sj_event_fire('scxji_ad_return_fail', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'interstitial',
             'ad_platform' : 'max',
@@ -479,20 +479,20 @@ class SJAdManager {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_all_numberName, SJLocalProvider.instance.sj_ad_all_number + 1);
           if (SJLocalProvider.instance.sj_ad_show_number % 5 == 0 && SJLocalProvider.instance.sj_ad_show_number > 0) {
             sj_event_fire(
-              "cash_ad_detail",
+              "pv_dall",
               {
                 "ad": SJLocalProvider.instance.sj_ad_show_number ?? "",
               },
             );
           }
           sj_ad_fire({
-            "baldwin": ad.revenue * 1000000,
-            "cursive": ad.networkName,
-            "furnish": "max",
-            "pay": ad.adUnitId,
-            "apoplexy": placeId ?? "",
-            "revelry": ad.adFormat,
-            "oriole" : ad.revenuePrecision,
+            "salesian": ad.revenue * 1000000,
+            "taproot": ad.networkName,
+            "puffy": "max",
+            "made": ad.adUnitId,
+            "afflict": placeId ?? "",
+            "maladapt": ad.adFormat,
+            "cornet" : ad.revenuePrecision,
           });
           "scratchjoy ad int show Success ${ad.adUnitId} revenue=${ad.revenue}".log();
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
@@ -512,7 +512,7 @@ class SJAdManager {
         },
         onAdHiddenCallback: (ad) {
           is_ad_play = false;
-          sj_event_fire('kmrol_ad_imp_close', {
+          sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : ad.adFormat,
             'ad_platform' : 'max',
@@ -549,7 +549,7 @@ class SJAdManager {
               rewardSucAds.add(ads);
             }
           }
-          sj_event_fire('kmrol_ad_return', {
+          sj_event_fire('scxji_ad_return', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : ad.adFormat,
             'ad_platform' : 'max',
@@ -559,7 +559,7 @@ class SJAdManager {
         },
         onAdLoadFailedCallback: (adUnitId, error) {
           "scratchjoy ad reward Load Failed ${adUnitId} error=${error}".log();
-          sj_event_fire('kmrol_ad_return_fail', {
+          sj_event_fire('scxji_ad_return_fail', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'reward',
             'ad_platform' : 'max',
@@ -591,20 +591,20 @@ class SJAdManager {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_numberName, SJLocalProvider.instance.sj_ad_show_number + 1);
           if (SJLocalProvider.instance.sj_ad_show_number % 5 == 0 && SJLocalProvider.instance.sj_ad_show_number > 0) {
             sj_event_fire(
-              "cash_ad_detail",
+              "pv_dall",
               {
                 "ad": SJLocalProvider.instance.sj_ad_show_number ?? "",
               },
             );
           }
           sj_ad_fire({
-            "baldwin": ad.revenue * 1000000,
-            "cursive": ad.networkName,
-            "furnish": "max",
-            "pay": ad.adUnitId,
-            "apoplexy": placeId ?? "",
-            "revelry": ad.adFormat,
-            "oriole" : ad.revenuePrecision,
+            "salesian": ad.revenue * 1000000,
+            "taproot": ad.networkName,
+            "puffy": "max",
+            "made": ad.adUnitId,
+            "afflict": placeId ?? "",
+            "maladapt": ad.adFormat,
+            "cornet" : ad.revenuePrecision,
           });
           "scratchjoy ad reward show Success ${ad.adUnitId} revenue=${ad.revenue}".log();
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
@@ -644,7 +644,7 @@ class SJAdManager {
           if (this.finishIntAd != null) {
             this.finishIntAd!(true);
           }
-          sj_event_fire('kmrol_ad_imp_close', {
+          sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : ad.adFormat,
             'ad_platform' : 'max',
@@ -673,7 +673,7 @@ class SJAdManager {
         case RewardedStatus.rewardedVideoDidFailToLoad:
           print("flutter rewardedVideoDidFailToLoad ---- placementID: ${value.placementID} ---- errStr:${value.requestMessage}");
           sj_load();
-          sj_event_fire('kmrol_ad_return_fail', {
+          sj_event_fire('scxji_ad_return_fail', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'interstitial',
             'ad_platform' : 'topon',
@@ -691,7 +691,7 @@ class SJAdManager {
               rewardSucAds.add(ads);
             }
           }
-          sj_event_fire('kmrol_ad_return', {
+          sj_event_fire('scxji_ad_return', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'reward',
             'ad_platform' : 'topon',
@@ -722,7 +722,7 @@ class SJAdManager {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_numberName, SJLocalProvider.instance.sj_ad_show_number + 1);
           if (SJLocalProvider.instance.sj_ad_show_number % 5 == 0 && SJLocalProvider.instance.sj_ad_show_number > 0) {
             sj_event_fire(
-              "cash_ad_detail",
+              "pv_dall",
               {
                 "ad": SJLocalProvider.instance.sj_ad_show_number ?? "",
               },
@@ -735,12 +735,12 @@ class SJAdManager {
           final revenue = value.extraMap["publisher_revenue"] ?? 0;
           final network = value.extraMap["network_name"];
           sj_ad_fire({
-            "baldwin": revenue * 1000000,
-            "cursive": network,
-            "furnish": "topon",
-            "pay": value.placementID,
-            "apoplexy": placeId ?? "",
-            "revelry": "reward",
+            "salesian": revenue * 1000000,
+            "taproot": network,
+            "puffy": "topon",
+            "made": value.placementID,
+            "afflict": placeId ?? "",
+            "maladapt": "reward",
           });
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
           break;
@@ -751,7 +751,7 @@ class SJAdManager {
       //广告播放失败
         case RewardedStatus.rewardedVideoDidFailToPlay:
           sj_event_fire(
-            "kmrol_ad_impression_fail",
+            "scxji_ad_impression_fail",
             {"ad_pos_id": placeId ?? ""},
           );
           "scratchjoy ad Reward did faild to display ${value.requestMessage}".log();
@@ -779,7 +779,7 @@ class SJAdManager {
           break;
       //广告被关闭
         case RewardedStatus.rewardedVideoDidClose:
-          sj_event_fire('kmrol_ad_imp_close', {
+          sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'reward',
             'ad_platform' : 'topon',
@@ -837,7 +837,7 @@ class SJAdManager {
         case InterstitialStatus.interstitialAdFailToLoadAD:
           print("flutter interstitialAdFailToLoadAD ---- placementID: ${value.placementID} ---- errStr:${value.requestMessage}");
           sj_load();
-          sj_event_fire('kmrol_ad_return_fail', {
+          sj_event_fire('scxji_ad_return_fail', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'interstitial',
             'ad_platform' : 'topon',
@@ -855,7 +855,7 @@ class SJAdManager {
               intSucAds.add(ads);
             }
           }
-          sj_event_fire('kmrol_ad_return', {
+          sj_event_fire('scxji_ad_return', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'reward',
             'ad_platform' : 'topon',
@@ -882,7 +882,7 @@ class SJAdManager {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_numberName, SJLocalProvider.instance.sj_ad_show_number + 1);
           if (SJLocalProvider.instance.sj_ad_show_number % 5 == 0 && SJLocalProvider.instance.sj_ad_show_number > 0) {
             sj_event_fire(
-              "cash_ad_detail",
+              "pv_dall",
               {
                 "ad": SJLocalProvider.instance.sj_ad_show_number ?? "",
               },
@@ -895,12 +895,12 @@ class SJAdManager {
           final revenue = value.extraMap["publisher_revenue"] ?? 0;
           final network = value.extraMap["network_name"];
           sj_ad_fire({
-            "baldwin": revenue * 1000000,
-            "cursive": network,
-            "furnish": "topon",
-            "pay": value.placementID,
-            "apoplexy": placeId ?? "",
-            "revelry": "interstitial",
+            "salesian": revenue * 1000000,
+            "taproot": network,
+            "puffy": "topon",
+            "made": value.placementID,
+            "afflict": placeId ?? "",
+            "maladapt": "interstitial",
           });
           SJSDKHelpers().sj_sendintTopOnAdToSdk(value.extraMap);
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
@@ -909,7 +909,7 @@ class SJAdManager {
         case InterstitialStatus.interstitialFailedToShow:
           print("flutter interstitialFailedToShow ---- placementID: ${value.placementID} ---- errStr:${value.requestMessage}");
           sj_event_fire(
-            "kmrol_ad_impression_fail",
+            "scxji_ad_impression_fail",
             {"ad_pos_id": placeId ?? ""},
           );
           "scratchjoy ad Reward did faild to display ${value.requestMessage}".log();
@@ -930,7 +930,7 @@ class SJAdManager {
       //广告被关闭
         case InterstitialStatus.interstitialAdDidClose:
           is_ad_play = false;
-          sj_event_fire('kmrol_ad_imp_close', {
+          sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'interstitial',
             'ad_platform' : 'topon',

@@ -2,19 +2,24 @@ import 'dart:math';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:scratchjoy/SJTool/SJAdManager.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_img.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 
+import '../SJDilaog/SJDialog.dart';
 import '../SJTool/SJAdAHelp.dart';
+import '../SJTool/sj_number_helper.dart';
 import 'SJHome.dart';
 import 'SJScratchA.dart';
 import 'SJScratchB.dart';
 
 class CardShuffleAnimation extends StatefulWidget {
   final bool is_start;
-  const CardShuffleAnimation({super.key, required this.is_start});
+  final String souce_fromat;
+  const CardShuffleAnimation({super.key, required this.is_start, required this.souce_fromat});
   @override
   _CardShuffleAnimationState createState() => _CardShuffleAnimationState();
 }
@@ -43,6 +48,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
   @override
   void initState() {
     super.initState();
+
+    sj_event_fire('probability_pop', {'open_type' :  widget.is_start ? 0 : 1, 'from_type' : widget.souce_fromat});
 
     _moveController = AnimationController(
       vsync: this,
@@ -231,7 +238,31 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     } else if (_middleCardIndex == 2) {
       await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '90');
     }
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, SJLocalProvider.instance.sj_tx_probability_index + 1);
     setState(() {});
+    await showOneTxTask();
+    await showTwoTxTask();
+  }
+
+  // 第一段任务提醒
+  Future<void> showOneTxTask() async {// 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
+      if (!mounted) return;
+      context.tipShow(SJPopTask3Dialog());
+    }
+  }
+
+  // 第二段任务完成
+  Future<void> showTwoTxTask() async {// 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+      sj_event_fire('cash_queue', {});
+    }
   }
 
   Widget _buildCard(String frontImage, String backImage,
@@ -340,13 +371,24 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
               SizedBox(height: 70.h),
             if(!_isFlipped)
               InkWell(
-               onTap: _startShuffle,
+               onTap: (){
+                 if (!SJLocalProvider.instance.sj_new_guide){
+                   _startShuffle();
+                 } else {
+                   sj_event_fire('probability_pop_up', {});
+                     // 看ad-重新刷新
+                     SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
+                       _startShuffle();
+                     });
+                 }
+               },
                child: SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_allin_btn' : 'sj_up_btn', width: 260, height: 74),
               ),
             if(_isFlipped)
               InkWell(
                 onTap: () async {
                   if (_middleCardIndex == 0){
+                    sj_event_fire('probability_pop_play_now', {});
                     Navigator.pop(context, 1);
                     if (!SJLocalProvider.instance.sj_new_guide) {
                       SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_new_guideName, true);
@@ -361,15 +403,11 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                       );
                     }
                   } else {
+                    sj_event_fire('probability_pop_continue_up', {});
                     // 看ad-重新刷新
-                    SJAdAHelper().show(context, (hasCache){
-                      if (!hasCache){
-                        SJAdAHelper().resetBlock();
-                      }
-                    }, (finished) async {
-                      SJAdAHelper().resetBlock();
+                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished) async {
                       Navigator.pop(context);
-                      var code = await context.tipShow(CardShuffleAnimation(is_start: true));
+                      var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
                       if (code == 1){
                         SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
                       }
@@ -388,7 +426,13 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                   if (_isShuffling == true){
                     return;
                   }
-                  Navigator.pop(context);
+                  if (SJNumberHelpers().checkProbability()){
+                    SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){}, (finished){
+                      Navigator.pop(context);
+                    });
+                  } else {
+                    Navigator.pop(context);
+                  }
                 },
                 child: Center(
                   child: SJImg(name: 'sj_nothanks_btn', width: 124, height: 20),
@@ -417,20 +461,31 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
             child: InkWell(
               onTap: (){
                 // 看ad-重新刷新
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
-                }, (finished) async {
-                  SJAdAHelper().resetBlock();
+                SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished) async {
                   Navigator.pop(context);
-                  var code = await context.tipShow(CardShuffleAnimation(is_start: true));
+                  var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
                   if (code == 1){
                     SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
                   }
                 });
               },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+          ),
+        if(!_isFlipped)
+          Positioned(
+            top: 555.h,
+            right: 60.w,
+            child: Visibility(
+              visible: SJLocalProvider.instance.sj_new_guide,
+              child: InkWell(
+                  onTap: (){
+                    // 看ad-重新刷新
+                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
+                      _startShuffle();
+                    });
+                  },
+                  child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            ),
           ),
         AnimatedBuilder(
           animation: _slideAnimation,

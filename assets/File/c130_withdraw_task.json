@@ -3,40 +3,10 @@
     [
       {
         "name": "scratch",
-        "num": 20
-      },
-      {
-        "name": "login",
-        "num": 2
-      }
-    ],
-    [
-      {
-        "name": "dice",
         "num": 10
       },
       {
-        "name": "probability",
-        "num": 10
-      }
-    ],
-    [
-      {
-        "name": "scratch",
-        "num": 30
-      },
-      {
         "name": "dice",
-        "num": 5
-      }
-    ],
-    [
-      {
-        "name": "scratch",
-        "num": 30
-      },
-      {
-        "name": "login",
         "num": 3
       }
     ],

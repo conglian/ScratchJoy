@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 import 'package:scratchjoy/SJDilaog/SJDialog.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
+import 'package:scratchjoy/SJTool/sj_numberBHelper.dart' hide SJ3x3Result;
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
@@ -1655,7 +1657,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
             height: 89,
             child: InkWell(
               onTap: (){
-                if (SJLocalProvider.instance.sj_box_index >= 3){
+                if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
                   context.tipShow(SJBoxOpenDiaologWidget());
                 } else {
                   SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
@@ -1687,7 +1689,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                                 child: Consumer<SJLocalProvider>(
                                     builder: (context, provider, child) {
                                       return  Container(
-                                        width: 67 * (provider.sj_box_index / 3.0), // 根据进度变化
+                                        width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
                                         height: 11,
                                         decoration: const BoxDecoration(
                                           gradient: LinearGradient(
@@ -1715,6 +1717,8 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
           SizedBox(width: 4.w),
           InkWell(
               onTap: (){
+                sj_event_fire('scratch_card', {'type' : 'aut'});
+                sj_event_fire('scratch_card_aut', {});
                 SJScratchUpdateNotificationService.sendToDomandNumberNotification(1);
               },
               child: SJImg(name: 'sj_revall_btn', width: 200, height: 80),
@@ -1725,7 +1729,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (builder) {
-                      return SJDiceRollWidget();
+                      return SJDiceRollWidget(souce_fromat: 'card',);
                     },
                   ),
                 );
@@ -1816,7 +1820,7 @@ class _BouncySJImgState extends State<BouncySJImg>
       scale: _scaleAnim,
       child: InkWell(
         onTap: () async {
-          var code = await context.tipShow(CardShuffleAnimation(is_start: false));
+          var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'card',));
           if (code == 1){
             SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
           }

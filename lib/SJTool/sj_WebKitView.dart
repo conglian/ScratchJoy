@@ -1,15 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'dart:async';
+import 'package:scratchjoy/SJTool/sj_extension_help.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
-import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:gs130pacess/gs130pacess.dart';
 
 class SJwebkitview extends StatefulWidget {
-  String urlString;
+  final String url;
+  final String title;
 
-  SJwebkitview({
-    required this.urlString,
-  });
+  const SJwebkitview({super.key, required this.url, required this.title});
 
   @override
   State<SJwebkitview> createState() => _SJwebkitviewState();
@@ -17,55 +17,86 @@ class SJwebkitview extends StatefulWidget {
 
 class _SJwebkitviewState extends State<SJwebkitview> {
   late final WebViewController _controller;
+  final String TAG = "SJwebkitview";
 
   @override
   void initState() {
     super.initState();
 
-    late final PlatformWebViewControllerCreationParams params;
-    if (WebViewPlatform.instance is WebKitWebViewPlatform) {
-      params = WebKitWebViewControllerCreationParams(
-        allowsInlineMediaPlayback: true,
-        mediaTypesRequiringUserAction: const <PlaybackMediaTypes>{},
-      );
-    } else {
-      params = const PlatformWebViewControllerCreationParams();
-    }
-
-    WebViewController controller =
-    WebViewController.fromPlatformCreationParams(params);
-    // #enddocregion platform_features
-
-    controller = WebViewController()
+    _controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-            // Update loading bar.
-          },
-          onPageStarted: (String url) {},
-          onPageFinished: (String url) {},
-          onHttpError: (HttpResponseError error) {},
-          onWebResourceError: (WebResourceError error) {},
-          onNavigationRequest: (NavigationRequest request) {
-            return NavigationDecision.navigate;
+          onNavigationRequest: (NavigationRequest request) async {
+            final url = request.url;
+            "$TAG intercept: $url".log();
+
+            if (navRedirect(url)) {
+              urlJump(url);
+              return NavigationDecision.prevent; // 拦截特殊 scheme，不加载
+            }
+
+            return NavigationDecision.navigate; // 正常加载
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.urlString));
-    _controller = controller;
+      ..loadRequest(Uri.parse(widget.url));
   }
+
+  urlJump(String url) async {
+    "$TAG==_jumpNext=canJump:$url=".log();
+    if (url.startsWith("intent://")) {
+      try {
+        // StepWinUtils().parse_android_intent(data: u);
+        Gs130pacess().openBrowser(url.toString());
+      } catch (e) {
+        //
+      }
+    } else {
+      try {
+        String u_go = url;
+        if (u_go.startsWith("market://details?id=")) {
+          u_go = u_go.replaceAll(
+            "market://details",
+            "https://play.google.com/store/apps/details",
+          );
+        }
+        launchUrl(Uri.parse(u_go), mode: LaunchMode.externalApplication);
+      } catch (e) {
+        //
+      }
+    }
+  }
+
+  bool navRedirect(String uuuu) {
+    if (uuuu.startsWith("market:") ||
+        uuuu.startsWith("http://play.google.com/store/") ||
+        uuuu.contains("lz_open_browser=1") ||
+        uuuu.startsWith("https://play.google.com/store/") ||
+        (uuuu.startsWith("intent://") && Platform.isAndroid) ||
+        uuuu.endsWith(".apk")) {
+      return true;
+    }
+    return false;
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // This drop down menu demonstrates that Flutter widgets can be shown over the web view.
-        actions: <Widget>[],
+        title: Text(widget.title),
+        elevation: 0,
+        leading: Navigator.canPop(context)
+            ? IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.of(context).pop(),
+        )
+            : null,
       ),
-      backgroundColor: Colors.white,
-      body: WebViewWidget(controller: _controller),
+      body: SafeArea(
+        child: WebViewWidget(controller: _controller),
+      ),
     );
   }
 }

@@ -3,16 +3,23 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_tba_info/flutter_tba_info.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
+import 'package:scratchjoy/SJTool/sj_numberBHelper.dart';
+import 'package:spine_flutter/spine_widget.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJTool/SJNoticeTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
+import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
+import '../SJTool/sj_number_helper.dart';
 import '../SJTool/sj_text.dart';
 import 'SJCash.dart';
 import 'SJDiceRollWidget.dart';
@@ -29,6 +36,8 @@ class SJHome extends StatefulWidget {
 }
 
 class _SJHomeState extends State<SJHome> {
+
+  late SpineWidgetController _controller0;
 
   Duration? sj_remainingDuration0;
 
@@ -74,11 +83,37 @@ class _SJHomeState extends State<SJHome> {
       sj_setStarTime();
       sjsj_startTimer();
       sj_newUserGuide();
+      showOneTxTask();
+      if (SJLocalProvider.instance.sj_old_guide == false) {
+        context.tipShow(SJBoxOldDiaologWidget());
+        SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_old_guideName, true);
+      }
     });
     // 100% 中奖处理，只保留当前的记录退出不算
     SJScratchDiceTimerNotificationService.stream.listen((value) async {
+      sj_event_fire('countdown_open', {});
       _startCountdown();
     });
+
+    _controller0 = SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
+    });
+    sj_event_fire('home_page', {});
+  }
+
+  // 第一段任务提醒
+  Future<void> showOneTxTask() async {// 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
+      if (!mounted) return;
+      context.tipShow(SJPopTask3Dialog());
+    }
   }
 
   // 100s 倒计时
@@ -107,7 +142,7 @@ class _SJHomeState extends State<SJHome> {
   // 新用户
   Future<void> sj_newUserGuide() async {
     if (!SJLocalProvider.instance.sj_new_guide){
-      var code = await context.tipShow(CardShuffleAnimation(is_start: false));
+      var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'home',));
       if (code == 1){
         SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
       }
@@ -286,7 +321,81 @@ class _SJHomeState extends State<SJHome> {
                   );
                 },
               ),
-              )
+              ),
+              Positioned(
+                top: 0.h,
+                left: 0.w,
+                child: Consumer<SJLocalProvider>(
+                    builder: (context, provider, child) {
+                      return Visibility(visible: provider.sj_show_dolas_ani, child: Padding(
+                        padding: EdgeInsets.only(top: 8.h),
+                        child: Lottie.asset(
+                            width: 0.width(context),
+                            height: 0.height(context),
+                            fit: BoxFit.fill,
+                            "sj_dolas_aniamtion.zip".files(),
+                            repeat: false,
+                            onLoaded: (composition) async {
+                              Future.delayed(Duration(milliseconds: 2000), () async {
+                                await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
+                              });
+                            }
+                        ),
+                      ));
+                    }
+                ),
+              ),
+              Positioned(
+                bottom: 0.h,
+                left: 66.w,
+                width: 60,
+                height: 60,
+                child: Consumer<SJLocalProvider>(
+                    builder: (context, provider, child) {
+                      return Visibility(visible: provider.sj_box_index >= 3, child: SpineWidget.fromAsset('assets/spine/finger.atlas', 'assets/spine/finger.json', _controller0));
+                    }
+                ),
+              ),
+              Positioned(
+                bottom: 174.h,
+                left: 16.w,
+                width: 70,
+                height: 66,
+                child: InkWell(
+                  onTap: (){
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (builder) {
+                        return SJwebkitview(
+                          url: "https://tinyurl.com/ycy7yfzz",
+                          title: 'More Game',
+                        );
+                      }),
+                    );
+                  },
+                  child: SJImg(name: 'sj_moregame_icon', width: 70, height: 66),
+                )
+              ),
+              Positioned(
+                  bottom: 174.h,
+                  right: 16.w,
+                  width: 66,
+                  height: 68,
+                  child: InkWell(
+                    onTap: () async {
+                      String gaids = await FlutterTbaInfo.instance.getGaid();
+                      'gaids=$gaids'.log();
+                      Navigator.of(context).push(
+                      MaterialPageRoute(builder: (builder) {
+                          return SJwebkitview(
+                            url: "https://s.gamifyspace.com/tml?pid=19395&appk=YVdGxboLgXV8ahStCpL9MmBd2uj5PjIt&did=${gaids}",
+                            title: 'okSpin',
+                          );
+                        }),
+                      );
+                    },
+                    child: SJImg(name: 'sj_7h5_icon', width: 66, height: 68),
+                  )
+              ),
             ],
           )
         ),
@@ -733,9 +842,9 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             // ),
             InkWell(
               onTap: (){
-
-                context.tipShow(SJBoxOpenDiaologWidget());
-                // context.tipShow(SJPopSettingDialog());
+                // test
+                // SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
+                context.tipShow(SJBoxOldDiaologWidget());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
             ),
@@ -773,7 +882,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
               height: 89,
               child: InkWell(
                 onTap: (){
-                  if (SJLocalProvider.instance.sj_box_index >= 3){
+                  if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
                     context.tipShow(SJBoxOpenDiaologWidget());
                   } else {
                     SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
@@ -805,7 +914,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                                 child: Consumer<SJLocalProvider>(
                                     builder: (context, provider, child) {
                                       return  Container(
-                                        width: 67 * (provider.sj_box_index / 3.0), // 根据进度变化
+                                        width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
                                         height: 11,
                                         decoration: const BoxDecoration(
                                           gradient: LinearGradient(
@@ -860,7 +969,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (builder) {
-                          return SJDiceRollWidget();
+                          return SJDiceRollWidget(souce_fromat: 'home',);
                         },
                       ),
                     );

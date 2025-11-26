@@ -2,16 +2,13 @@ import 'package:json_annotation/json_annotation.dart';
 
 part 'SJbonus_config.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class BonusConfig {
   @JsonKey(name: 'extra_bonus')
   final BonusItem extraBonus;
 
   @JsonKey(name: 'gold_rush')
   final BonusItem goldRush;
-
-  @JsonKey(name: 'lucku_moment')
-  final BonusItem luckuMoment;
 
   @JsonKey(name: 'secret_stash')
   final BonusItem secretStash;
@@ -25,26 +22,29 @@ class BonusConfig {
   @JsonKey(name: 'sweet_time')
   final BonusItem sweetTime;
 
+  @JsonKey(name: 'lucky_moment')
+  final BonusItem luckyMoment; // 修正原来拼写错误 lucku_moment
+
   @JsonKey(name: 'dice_numeric')
-  final List<int> diceNumeric;
+  final List<DiceNumericItem> diceNumeric;
+
+  @JsonKey(name: 'box_reward')
+  final List<PrizeRange> boxReward;
 
   @JsonKey(name: 'box_interval')
   final int boxInterval;
 
-  @JsonKey(name: 'box_reward')
-  final List<int> boxReward;
-
   BonusConfig({
     required this.extraBonus,
     required this.goldRush,
-    required this.luckuMoment,
     required this.secretStash,
     required this.superMultiple,
     required this.fortuneRush,
     required this.sweetTime,
+    required this.luckyMoment,
     required this.diceNumeric,
-    required this.boxInterval,
     required this.boxReward,
+    required this.boxInterval,
   });
 
   factory BonusConfig.fromJson(Map<String, dynamic> json) =>
@@ -53,16 +53,13 @@ class BonusConfig {
   Map<String, dynamic> toJson() => _$BonusConfigToJson(this);
 }
 
-@JsonSerializable()
+@JsonSerializable(explicitToJson: true)
 class BonusItem {
   @JsonKey(name: 'winup_number')
   final int winupNumber;
 
-  /// pop: [44, 47]
   final List<int>? pop;
 
-  /// 可为 point, point_1x, point_2x... 等
-  @JsonKey(name: 'point')
   final double? point;
 
   @JsonKey(name: 'point_1x')
@@ -83,15 +80,14 @@ class BonusItem {
   @JsonKey(name: 'point_50x')
   final double? point50x;
 
-  /// null 字段也需要保留
   @JsonKey(name: 'null')
   final double? nullValue;
 
   @JsonKey(name: 'dice_probability')
   final double? diceProbability;
 
-  /// prize: [40, 50]
-  final List<int>? prize;
+  /// 这里 prize 是一个区间数组，不是 List<int>
+  final List<PrizeRange>? prize;
 
   BonusItem({
     required this.winupNumber,
@@ -112,4 +108,48 @@ class BonusItem {
       _$BonusItemFromJson(json);
 
   Map<String, dynamic> toJson() => _$BonusItemToJson(this);
+}
+
+@JsonSerializable()
+class PrizeRange {
+  @JsonKey(name: 'first_number')
+  final int firstNumber;
+
+  final List<double>? prize;
+
+  @JsonKey(name: 'end_number')
+  final int endNumber;
+
+  PrizeRange({
+    required this.firstNumber,
+    required this.prize,
+    required this.endNumber,
+  });
+
+  factory PrizeRange.fromJson(Map<String, dynamic> json) =>
+      _$PrizeRangeFromJson(json);
+
+  Map<String, dynamic> toJson() => _$PrizeRangeToJson(this);
+}
+
+@JsonSerializable()
+class DiceNumericItem {
+  @JsonKey(name: 'first_number')
+  final int firstNumber;
+
+  final List<int> values;
+
+  @JsonKey(name: 'end_number')
+  final int endNumber;
+
+  DiceNumericItem({
+    required this.firstNumber,
+    required this.values,
+    required this.endNumber,
+  });
+
+  factory DiceNumericItem.fromJson(Map<String, dynamic> json) =>
+      _$DiceNumericItemFromJson(json);
+
+  Map<String, dynamic> toJson() => _$DiceNumericItemToJson(this);
 }

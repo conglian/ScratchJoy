@@ -1,5 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
+import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import '../SJModel/SJTXModel.dart';
+import '../main.dart';
 
 class SJLocalProvider extends ChangeNotifier {
   // 1. 私有构造函数（禁止外部直接创建实例）
@@ -11,7 +19,7 @@ class SJLocalProvider extends ChangeNotifier {
   // 3. 提供全局访问点
   static SJLocalProvider get instance => _instance;
 
-  // SJTXModel txEntity = SJTXModel();
+  SJTXModel txEntity = SJTXModel();
 
   String sj_Scratch_timeKey_0 = '';
   String sj_Scratch_timeKey_1 = '';
@@ -52,6 +60,9 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_dolas_800 = false;
   bool sj_dolas_1000 = false;
   bool sj_100_timer_star = false;
+  bool sj_txing_status = false;
+  bool sj_tx_first_status = false;
+  bool sj_tx_last_status = false;
 
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
@@ -91,7 +102,11 @@ class SJLocalProvider extends ChangeNotifier {
   int sj_scrach_end_number_6 = 0; // 存储的本地值
   int sj_currentNumberIndex = 0;
   int sj_domand_number = 0;
-
+  int sj_tx_card_first = 0;
+  int sj_tx_dice_index = 0;
+  int sj_login_index = 0;
+  int sj_tx_probability_index = 0;
+  int sj_scratch_not_award_number = 0;
 
   String get sj_currentNumberIndexName => 'sj_currentNumberIndex';
   String get sj_dice_numberName => 'sj_dice_number';
@@ -132,11 +147,38 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_100_timer_starName => 'sj_100_timer_star';
   String get sj_dolas_numberName => 'sj_dolas_number';
   String get sj_card_numberName => 'sj_card_number';
+  String get sj_show_dolas_aniName => 'sj_show_dolas_ani';
+  String get sj_box_indexName => 'sj_box_index';
+  String get sj_txing_statusName => 'sj_txing_status';
+  String get sj_tx_ing_numberName => 'sj_tx_ing_number';
+  String get sj_account_seled_indexName => 'sj_account_seled_index';
+  String get sj_tx_ing_accountName => 'sj_tx_ing_account';
+  String get sj_tx_bubble_indexName => 'sj_tx_bubble_index';
+  String get sj_tx_card_indexName => 'sj_tx_card_index';
+  String get sj_tx_wheel_indexName => 'sj_tx_wheel_index';
+  String get sj_tx_box_indexName => 'sj_tx_box_index';
+  String get sj_tx_task_indexName => 'sj_tx_task_index';
+  String get sj_tx_card_firstName => 'sj_tx_card_first';
+  String get sj_account_idName => 'sj_account_id';
+  String get sj_tx_dice_indexName => 'sj_tx_dice_index';
+  String get sj_login_indexName => 'sj_login_index';
+  String get sj_tx_probability_indexName => 'sj_tx_probability_index';
+  String get sj_tx_first_statusName => 'sj_tx_first_status';
+  String get sj_tx_last_statusName => 'sj_tx_last_status';
+  String get sj_current_rankingName => 'sj_current_ranking';
+  String get sj_all_rankingName => 'sj_all_ranking';
+  String get sj_old_guideName => 'sj_old_guide';
+  String get sj_scratch_not_award_numberName => 'sj_scratch_not_award_number';
+  String get sj_cloak_statusName => 'sj_cloak_status';
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     // 从本地读取值（key自定义，需与存储时一致）
+    sj_tx_probability_index = prefs.getInt('sj_tx_probability_index') ?? 0;
+    sj_login_index = prefs.getInt('sj_login_index') ?? 0;
+    sj_tx_dice_index = prefs.getInt('sj_tx_dice_index') ?? 0;
+    sj_tx_card_first = prefs.getInt('sj_tx_card_first') ?? 0;
     sj_domand_number = prefs.getInt('sj_domand_number') ?? 0;
     sj_dice_number = prefs.getInt('sj_dice_number') ?? 0;
     sj_card_number = prefs.getInt('sj_card_number') ?? 0;
@@ -152,6 +194,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_tx_task_index = prefs.getInt('sj_tx_task_index') ?? 0;
     sj_tx_ing_account = prefs.getInt('sj_tx_ing_account') ?? 0;
     sj_tx_ing_number = prefs.getInt('sj_tx_ing_number') ?? 0;
+    sj_scratch_not_award_number = prefs.getInt('sj_scratch_not_award_number') ?? 0;
     sj_account_seled_index = prefs.getInt('sj_account_seled_index') ?? 0;
     sj_scrach_unlock_index_0 = prefs.getInt('sj_scrach_unlock_index_0') ?? 0;
     sj_scrach_unlock_index_1 = prefs.getInt('sj_scrach_unlock_index_1') ?? 0;
@@ -161,6 +204,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_key_number = prefs.getInt('sj_key_number') ?? 0;
     sj_bg_music = prefs.getBool('sj_bg_music') ?? true;
     sj_sound_music = prefs.getBool('sj_sound_music') ?? true;
+    sj_txing_status = prefs.getBool('sj_txing_status') ?? false;
     sj_login_status = prefs.getBool('sj_login_status') ?? false;
     sj_cloak_status = prefs.getBool('sj_cloak_status') ?? false;
     sj_fk_number_status = prefs.getBool('sj_fk_number_status') ?? false;
@@ -177,6 +221,9 @@ class SJLocalProvider extends ChangeNotifier {
     sj_dolas_800 = prefs.getBool('sj_dolas_800') ?? false;
     sj_dolas_1000 = prefs.getBool('sj_dolas_1000') ?? false;
     sj_100_timer_star = prefs.getBool('sj_100_timer_star') ?? false;
+    sj_tx_first_status = prefs.getBool('sj_tx_first_status') ?? false;
+    sj_tx_last_status = prefs.getBool('sj_tx_last_status') ?? false;
+
     sj_ad_reawrd_all_number = prefs.getInt('sj_ad_reawrd_all_number') ?? 0;
     sj_ad_all_number = prefs.getInt('sj_ad_all_number') ?? 0;
     sj_dolas_number = prefs.getInt('sj_dolas_number') ?? 0;
@@ -210,19 +257,18 @@ class SJLocalProvider extends ChangeNotifier {
     sj_Scratch_timeKey_6 = prefs.getString('sj_Scratch_timeKey_6') ?? '';
     sj_ratio_str = prefs.getString('sj_ratio_str') ?? '90';
     sj_account_id = prefs.getString('sj_account_id') ?? '';
-    sj_tx_list =
-        prefs.getString("sj_tx_list") ?? "";
+    sj_tx_list = prefs.getString("sj_tx_list") ?? "";
     // init tx
-    // if (sj_tx_list.isEmpty) {
-    //   String jsonTXString = await rootBundle.loadString("sj_tx_list".jsons());
-    //   Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
-    //   prefs.setString('sj_tx_list',jsonTXString);
-    //   txEntity = SPTXModel.fromJson(json_tx);
-    // } else {
-    //   String jsonTXString = prefs.getString('sj_tx_list') ?? "";
-    //   Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
-    //   txEntity = SPTXModel.fromJson(json_tx);
-    // }
+    if (sj_tx_list.isEmpty) {
+      String jsonTXString = await rootBundle.loadString("sj_tx_list".jsons());
+      Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
+      prefs.setString('sj_tx_list',jsonTXString);
+      txEntity = SJTXModel.fromJson(json_tx);
+    } else {
+      String jsonTXString = prefs.getString('sj_tx_list') ?? "";
+      Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
+      txEntity = SJTXModel.fromJson(json_tx);
+    }
     notifyListeners(); // 加载完成后通知UI更新
   }
 
@@ -238,6 +284,13 @@ class SJLocalProvider extends ChangeNotifier {
   Future<void> updateint(String key, int value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(key, value);
+    if (key == SJLocalProvider.instance.sj_dolas_numberName && value > 0){
+      trigger.check(SJLocalProvider.instance.sj_dolas_number, onTrigger: (level) {
+        print("触发 → 达到 $level");
+        sj_event_fire('cash_dall', {'money' : level});
+      });
+      await updateBool(sj_show_dolas_aniName, true);
+    }
     init();
     notifyListeners();
   }
@@ -260,12 +313,12 @@ class SJLocalProvider extends ChangeNotifier {
 
 
   Future<void> updateTXInStatus(int status) async {
-    // SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
-    // txEntity.tx_info[sj_tx_ing_account].tx_list[sj_tx_ing_number].status = status;
-    // sharedPreferences.setString('sj_tx_list', jsonEncode(txEntity.toJson()));
-    // String jsonTXString = sharedPreferences.getString('sj_tx_list') ?? "";
-    // Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
-    // txEntity = SPTXModel.fromJson(json_tx);
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    txEntity.tx_info[sj_tx_ing_account].tx_list[sj_tx_ing_number].status = status;
+    sharedPreferences.setString('sj_tx_list', jsonEncode(txEntity.toJson()));
+    String jsonTXString = sharedPreferences.getString('sj_tx_list') ?? "";
+    Map<String, dynamic> json_tx = jsonDecode(jsonTXString);
+    txEntity = SJTXModel.fromJson(json_tx);
   }
 
 }

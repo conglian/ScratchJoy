@@ -1,18 +1,21 @@
 import 'dart:async';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
 import 'package:scratchjoy/SJDilaog/SJDialog.dart';
-import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
+import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
+import 'package:scratchjoy/SJTool/sj_NumberHelper.dart' hide SJ3x3Result;
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
+import 'package:spine_flutter/spine_widget.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_img.dart';
+import '../SJTool/sj_numberBHelper.dart';
 import '../SJTool/sj_scratch_card_image_prize.dart';
 import '../SJTool/sj_text.dart';
 import 'SJDiceRollWidget.dart';
@@ -31,6 +34,8 @@ class SJScratchB extends StatefulWidget {
 
 class _SJScratchBState extends State<SJScratchB> {
 
+  late SpineWidgetController _controller0;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -39,6 +44,12 @@ class _SJScratchBState extends State<SJScratchB> {
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作
+    });
+
+    _controller0 = SpineWidgetController(onInitialized: (controller) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        controller.animationState.setAnimationByName(0, "animation", true);
+      });
     });
   }
 
@@ -78,6 +89,40 @@ class _SJScratchBState extends State<SJScratchB> {
                 SJBottomDetailsBarWidget(),
               ],
             ),
+            Positioned(
+              top: 0.h,
+              left: 0.w,
+              child: Consumer<SJLocalProvider>(
+                  builder: (context, provider, child) {
+                    return Visibility(visible: provider.sj_show_dolas_ani, child: Padding(
+                      padding: EdgeInsets.only(top: 8.h),
+                      child: Lottie.asset(
+                          width: 0.width(context),
+                          height: 0.height(context),
+                          fit: BoxFit.fill,
+                          "sj_dolas_aniamtion.zip".files(),
+                          repeat: false,
+                          onLoaded: (composition) async {
+                            Future.delayed(Duration(milliseconds: 2000), (){
+                              SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
+                            });
+                          }
+                      ),
+                    ));
+                  }
+              ),
+            ),
+            Positioned(
+              bottom: 0.h,
+              left: 66.w,
+              width: 60,
+              height: 60,
+              child: Consumer<SJLocalProvider>(
+                  builder: (context, provider, child) {
+                    return Visibility(visible: provider.sj_box_index >= 3, child: SpineWidget.fromAsset('assets/spine/finger.atlas', 'assets/spine/finger.json', _controller0));
+                  }
+              ),
+            ),
           ],
         ),
       ),
@@ -102,19 +147,19 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
 
   bool is_100ratio = false;
 
-  SJPlayJoyResult extra_bonusResult = SJNumberAHelper().generateextra_bonusNumbers();
+  SJPlayJoyResult extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers();
 
-  SJ3x3Result goldRushResult = SJNumberAHelper().generate3x3NumbersWithPrizeAndDice();
+  SJ3x3Result goldRushResult = SJNumberBHelper().generate3x3NumbersWithPrizeAndDice();
 
-  SJPlayJoyResult lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+  SJPlayJoyResult lucku_momentResult = SJNumberBHelper().generatelucku_momentNumbers();
 
-  SJsecret_stashResult  secret_stashResult = SJNumberAHelper().generatesecret_stashStash();
+  SJsecret_stashResult  secret_stashResult = SJNumberBHelper().generatesecret_stashStash();
 
-  SJsuperMultipleResult superMultipleResult = SJNumberAHelper().generateSuperMultiple();
+  SJsuperMultipleResult superMultipleResult = SJNumberBHelper().generateSuperMultiple();
 
-  SJfortuneRushResult fortuneRushResult = SJNumberAHelper().generateFortuneRush();
+  SJfortuneRushResult fortuneRushResult = SJNumberBHelper().generateFortuneRush();
 
-  SJSweetTimeResult sweetTimeResult = SJNumberAHelper().generateSweetTime();
+  SJSweetTimeResult sweetTimeResult = SJNumberBHelper().generateSweetTime();
 
   @override
   void initState() {
@@ -124,37 +169,37 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
     SJScratchProbabilityUpNotificationService.stream.listen((value) async {
       if (widget.type == 0){
         setState(() {
-          extra_bonusResult = SJNumberAHelper().generateextra_bonusNumbers(forceWin: true);
+          extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 1){
         setState(() {
-          goldRushResult = SJNumberAHelper().generate3x3NumbersWithPrizeAndDice(forceWin: true);
+          goldRushResult = SJNumberBHelper().generate3x3NumbersWithPrizeAndDice(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 2){
         setState(() {
-          lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers(forceWin: true);
+          lucku_momentResult = SJNumberBHelper().generatelucku_momentNumbers(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 3){
         setState(() {
-          secret_stashResult = SJNumberAHelper().generatesecret_stashStash(forceWin: true);
+          secret_stashResult = SJNumberBHelper().generatesecret_stashStash(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 4){
         setState(() {
-          superMultipleResult = SJNumberAHelper().generateSuperMultiple(forceWin: true);
+          superMultipleResult = SJNumberBHelper().generateSuperMultiple(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 5){
         setState(() {
-          fortuneRushResult = SJNumberAHelper().generateFortuneRush(forceWin: true);
+          fortuneRushResult = SJNumberBHelper().generateFortuneRush(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 6){
         setState(() {
-          sweetTimeResult = SJNumberAHelper().generateSweetTime(forceWin: true);
+          sweetTimeResult = SJNumberBHelper().generateSweetTime(forceWin: true);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       }
@@ -185,13 +230,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (extra_bonusResult.isWin) {
-                var bols = await showAwardWidget(SJNumberHelpers().bonusConfigModel!.extraBonus.pop!, extra_bonusResult.winMatchNumbers[extra_bonusResult
-                    .winIndex]);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.extraBonus.pop!, extra_bonusResult.winMatchNumbers[extra_bonusResult
+                    .winIndex], 'extra_bonus');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
                     extra_bonusResult =
-                        SJNumberAHelper().generateextra_bonusNumbers();
+                        SJNumberBHelper().generateextra_bonusNumbers();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -207,13 +253,15 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                   }
 
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
                     extra_bonusResult =
-                        SJNumberAHelper().generateextra_bonusNumbers();
+                        SJNumberBHelper().generateextra_bonusNumbers();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -227,6 +275,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -289,7 +338,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 180, top: 12, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.extraBonus.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.extraBonus.winupNumber,
                     duration: 800,
                     fontSize: 32.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -351,12 +400,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (goldRushResult.isWin) {
-                showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize, 'gold_rush');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
                     goldRushResult =
-                        SJNumberAHelper().generate3x3NumbersWithPrizeAndDice();
+                        SJNumberBHelper().generate3x3NumbersWithPrizeAndDice();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -371,13 +421,15 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
                     goldRushResult =
-                        SJNumberAHelper().generate3x3NumbersWithPrizeAndDice();
+                        SJNumberBHelper().generate3x3NumbersWithPrizeAndDice();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -391,6 +443,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -453,7 +506,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 132, top: 10, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.goldRush.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.goldRush.winupNumber,
                     duration: 800,
                     fontSize: 32.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -515,11 +568,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (lucku_momentResult.isWin) {
-               showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckuMoment.pop!, lucku_momentResult.winMatchNumbers.first);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckyMoment.pop!, lucku_momentResult.winMatchNumbers.first, 'lucky_moment');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+                    lucku_momentResult = SJNumberBHelper().generatelucku_momentNumbers();
                     'lucku_momentResult.winIndex=${lucku_momentResult.winIndex}'.log();
                   });
                   SJScratchUpdateNotificationService
@@ -535,12 +589,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+                    lucku_momentResult = SJNumberBHelper().generatelucku_momentNumbers();
                     'lucku_momentResult.winIndex=${lucku_momentResult.winIndex}'.log();
                   });
                   SJScratchUpdateNotificationService
@@ -555,6 +611,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -639,7 +696,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 180, top: 0, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.luckuMoment.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.luckyMoment.winupNumber,
                     duration: 800,
                     fontSize: 32.0,
                     gradientColors: ['#FEFFED'.color(), '#FFD900'.color()],
@@ -701,11 +758,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (secret_stashResult.isWin) {
-                showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier, 'secret_stash');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    secret_stashResult = SJNumberAHelper().generatesecret_stashStash();
+                    secret_stashResult = SJNumberBHelper().generatesecret_stashStash();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -720,12 +778,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    secret_stashResult = SJNumberAHelper().generatesecret_stashStash();
+                    secret_stashResult = SJNumberBHelper().generatesecret_stashStash();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -739,6 +799,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -808,7 +869,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 160, top: 30, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.secretStash.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.secretStash.winupNumber,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFFFFF'.color(), '#FFEE91'.color()],
@@ -863,11 +924,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (superMultipleResult.isWin) {
-                showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier, 'super_multiple');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    superMultipleResult = SJNumberAHelper().generateSuperMultiple();
+                    superMultipleResult = SJNumberBHelper().generateSuperMultiple();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -882,12 +944,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    superMultipleResult = SJNumberAHelper().generateSuperMultiple();
+                    superMultipleResult = SJNumberBHelper().generateSuperMultiple();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -901,6 +965,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -955,7 +1020,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 0, top: 0, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.superMultiple.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.superMultiple.winupNumber,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -1010,11 +1075,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (fortuneRushResult.isWin) {
-                showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, fortuneRushResult.prizeValues[fortuneRushResult.winRow]);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, fortuneRushResult.prizeValues[fortuneRushResult.winRow], 'fortune_rush');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    fortuneRushResult = SJNumberAHelper().generateFortuneRush();
+                    fortuneRushResult = SJNumberBHelper().generateFortuneRush();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -1029,12 +1095,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    fortuneRushResult = SJNumberAHelper().generateFortuneRush();
+                    fortuneRushResult = SJNumberBHelper().generateFortuneRush();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -1048,7 +1116,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
-
+                  showRatioDilog();
                 }
               }
             });
@@ -1130,7 +1198,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 160, top: 28, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.fortuneRush.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.fortuneRush.winupNumber,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -1192,11 +1260,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (sweetTimeResult.isWin) {
-                showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, sweetTimeResult.prizeValues[sweetTimeResult.winningRow]);
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+                showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, sweetTimeResult.prizeValues[sweetTimeResult.winningRow], 'sweet_time');
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    sweetTimeResult = SJNumberAHelper().generateSweetTime();
+                    sweetTimeResult = SJNumberBHelper().generateSweetTime();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -1211,12 +1280,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     showLevelDialog();
                   }
               } else {
+                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
+                if (!mounted) return;
                 var code = await context.tipShow(SJPopUnAwardDialog());
                 if(code >= 0){
                   setState(() {
                     shai_anim = false;
                     star_awarad = false;
-                    sweetTimeResult = SJNumberAHelper().generateSweetTime();
+                    sweetTimeResult = SJNumberBHelper().generateSweetTime();
                   });
                   SJScratchUpdateNotificationService
                       .sendToDomandNumberNotification(0);
@@ -1230,6 +1301,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_numberName, SJLocalProvider.instance.sj_Level_number + 1);
                     showLevelDialog();
                   }
+                  showRatioDilog();
                 }
               }
             });
@@ -1301,7 +1373,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 160, top: 10, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.sweetTime.winupNumber,
+                    value: SJNumberBHelper().numberEntity!.sweetTime.winupNumber,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -1344,11 +1416,20 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
     }
     return SizedBox();
   }
+  // 是否显示概率栏
+  Future<void> showRatioDilog() async {
+    if (SJLocalProvider.instance.sj_scratch_not_award_number == 2){
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
+      if (!mounted) return;
+      context.tipShow(SJPopRatioDialog());
+    }
+  }
   void showLevelDialog(){
     context.tipShow(SJPopLevelADialog());
   }
   // 展示奖励弹框
-  Future<void> showAwardWidget(List<int> pops, int award) async {
+  Future<void> showAwardWidget(List<int> pops, int award, String types) async {
+    sj_event_fire('scratch_card_suc', {});
     bool isShow = false;
     bool isShowThree = false;
 
@@ -1367,14 +1448,20 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         SJLocalProvider.instance.sj_card_numberName,
         SJLocalProvider.instance.sj_card_number + 1,
     );
+    await SJLocalProvider.instance.updateint(
+      SJLocalProvider.instance.sj_box_indexName,
+      SJLocalProvider.instance.sj_box_index + 1,
+    );
+    if(!mounted)return;
     // 调用弹框
-    final code = await (context.tipShow(
+    await (context.tipShow(
       SJPopYouWinBDialog(
         award: award,
         is_show: isShow,
         is_showThree: isShowThree,
+        type: types,
       ),
-    ) as Future<int?>);
+    ));
   }
   // 进入下一个主题
   void popToNextScratch(){
