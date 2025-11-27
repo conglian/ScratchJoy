@@ -89,8 +89,8 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
       });
       if (widget.is_show){
         Future.delayed(Duration(milliseconds: 1000), () async {
-          if (mounted){
-            Navigator.pop(context);
+          if (navigatorKey.currentContext!.mounted){
+            Navigator.pop(navigatorKey.currentContext!);
             navigatorKey.currentContext!.tipShow(SJPopSuperWinBDialog(award: widget.award, is_show: widget.is_showThree, type: widget.type));
           }
         });
@@ -312,9 +312,9 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
         }
       });
       Future.delayed(Duration(milliseconds: 1000), () async {
-        if (widget.is_show && mounted){
-          Navigator.pop(context);
-          context.tipShow(SJPopEpicWinBDialog(award: widget.award, type: widget.type));
+        if (widget.is_show && navigatorKey.currentContext!.mounted){
+          Navigator.pop(navigatorKey.currentContext!);
+          navigatorKey.currentContext!.tipShow(SJPopEpicWinBDialog(award: widget.award, type: widget.type));
         }
       });
     });
@@ -2992,11 +2992,11 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
 
   var _openThree = false;
 
-  var doals_one = 20.0;
+  var doals_one = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
 
-  var doals_two = 30.0;
+  var doals_two = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
 
-  var doals_three = 40.0;
+  var doals_three = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
 
   var open_index = 0.0;
 
@@ -3487,7 +3487,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
 
   var _openOne = false;
 
-  var doals_one = 20.0;
+  var doals_one = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
 
   var open_index = 0.0;
 

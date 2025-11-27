@@ -39,47 +39,37 @@ class SJNumberHelpers {
   }
 
   Future<void> _sjloadintDataFromLocate() async {
-    if (intModel == null) {
-      String jsonString = await rootBundle.loadString("c130_ad_int".jsons());
-      Map<String, dynamic> jsonMap = json.decode(jsonString);
-      intModel = RootModel.fromJson(jsonMap);
-    }
+    String jsonString = await rootBundle.loadString("c130_ad_int".jsons());
+    Map<String, dynamic> jsonMap = json.decode(jsonString);
+    intModel = RootModel.fromJson(jsonMap);
     "ScratchJoy int json = ${intModel}".log();
   }
 
   Future<void> _sjloadtaskDataFromLocate() async {
-    if (taskModel == null) {
       String jsonString = await rootBundle.loadString("c130_withdraw_task".jsons());
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       taskModel = TaskRootModel.fromJson(jsonMap);
-    }
     "ScratchJoy task json = ${taskModel}".log();
   }
 
   Future<void> _sjloadlsattaskDataFromLocate() async {
-    if (last_taskModel == null) {
       String jsonString = await rootBundle.loadString("c130_withdraw_last_task".jsons());
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       last_taskModel = TaskRootModel.fromJson(jsonMap);
-    }
     "ScratchJoy task json = ${last_taskModel}".log();
   }
 
   Future<void> _sjloadprobabilityDataFromLocate() async {
-    if (probabilityConfigModel == null) {
       String jsonString = await rootBundle.loadString("probability_reset".jsons());
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       probabilityConfigModel = ProbabilityConfig.fromJson(jsonMap);
-    }
     "ScratchJoy probabilityConfig json = ${probabilityConfigModel}".log();
   }
 
   Future<void> _sjloadwinup_numberDataFromLocate() async {
-    if (bonusConfigModel == null) {
       String jsonString = await rootBundle.loadString("winup_number".jsons());
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       bonusConfigModel = BonusConfig.fromJson(jsonMap);
-    }
     "ScratchJoy winup_number json = ${bonusConfigModel}".log();
   }
 
@@ -108,5 +98,49 @@ class SJNumberHelpers {
     double rand = Random().nextDouble(); // 0.0 ~ 1.0
     return rand <= point;
   }
+
+  /// 获取宝箱气泡奖励值
+  int getPrizeWithBoxorBubble() {
+    for (var item in bonusConfigModel!.boxReward) {
+      int start = item.firstNumber;
+      int end = item.endNumber;
+
+      if (SJLocalProvider.instance.sj_dolas_number >= start && SJLocalProvider.instance.sj_dolas_number < end) {
+        double min = item.prize!.first;
+        double max = item.prize!.last;
+        return _randomBetween(min, max);
+      }
+    }
+
+    /// 如果超出所有区间，返回最后一段
+    var last = bonusConfigModel!.boxReward.last;
+    return _randomBetween(
+      last.prize!.first,
+      last.prize!.last,
+    );
+  }
+
+  /// 生成[min, max]之间随机整数（兼容 double）
+  int _randomBetween(double min, double max) {
+    final r = Random();
+    return min.toInt() + r.nextInt(max.toInt() - min.toInt() + 1);
+  }
+
+  // 获取骰子显示的数值
+  List<int> getDiceValueByBalance() {
+    for (var item in bonusConfigModel!.diceNumeric) {
+      int start = item.firstNumber;
+      int end = item.endNumber;
+
+      if (SJLocalProvider.instance.sj_dolas_number >= start && SJLocalProvider.instance.sj_dolas_number < end) {
+        return item.values;
+      }
+    }
+
+    /// 如果超出所有区间，取最后一个区间
+    var last = bonusConfigModel!.diceNumeric.last;
+    return last.values;
+  }
+
 
 }

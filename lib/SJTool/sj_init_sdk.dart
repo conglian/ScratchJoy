@@ -3,10 +3,20 @@ import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
+import 'package:scratchjoy/SJTool/sj_ad_help.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
+import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
+import 'package:scratchjoy/SJTool/sj_number_helper.dart';
+import '../SJModel/SJAdModel.dart';
+import '../SJModel/SJFkModel.dart';
+import '../SJModel/SJbonus_config.dart';
+import '../SJModel/SJint_ad_model.dart';
+import '../SJModel/SJprobability_config.dart';
+import '../SJModel/SJtask_model.dart';
 import 'SJAdAHelp.dart';
 import 'package:adjust_sdk/adjust.dart';
 import 'package:adjust_sdk/adjust_config.dart';
@@ -34,6 +44,7 @@ class SJSDKHelpers {
 
   Future<void> initSDK() async {
     _initAppMAX();
+    _sjinitloadFireBase();
   }
 
 
@@ -104,6 +115,114 @@ class SJSDKHelpers {
     };
     Adjust.initSdk(config);
     sj_event_fire('adjust_req', {});
+  }
+
+  void _sjinitloadFireBase() async {
+    final remoteConfig = FirebaseRemoteConfig.instance;
+    await remoteConfig.setConfigSettings(
+      RemoteConfigSettings(
+        fetchTimeout: const Duration(seconds: 10),
+        minimumFetchInterval: const Duration(hours: 1),
+      ),
+    );
+    "app firebase init".log();
+    "app firebase loading".log();
+    try {
+      await remoteConfig.fetchAndActivate();
+
+      final risk_control = remoteConfig.getValue('risk_control').asString();
+      if (risk_control != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(risk_control);
+          var fkEntity = SJFkModel.fromJson(jsonMap);
+          SJFKManger().fkModel = fkEntity;
+          "app firebase remoteconfig risk_control data ${jsonMap}".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final c130_ad_int = remoteConfig.getValue('c130_ad_int').asString();
+      if (c130_ad_int != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(c130_ad_int);
+          var fkEntity = RootModel.fromJson(jsonMap);
+          SJNumberHelpers().intModel = fkEntity;
+          "app firebase remoteconfig c130_ad_int data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final probability_reset = remoteConfig.getValue('probability_reset').asString();
+      if (probability_reset != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(probability_reset);
+          var fkEntity = ProbabilityConfig.fromJson(jsonMap);
+          SJNumberHelpers().probabilityConfigModel = fkEntity;
+          "app firebase remoteconfig probability_reset data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final winup_number = remoteConfig.getValue('winup_number').asString();
+      if (winup_number != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(winup_number);
+          var fkEntity = BonusConfig.fromJson(jsonMap);
+          SJNumberHelpers().bonusConfigModel = fkEntity;
+          "app firebase remoteconfig winup_number data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final c130_withdraw_task = remoteConfig.getValue('c130_withdraw_task').asString();
+      if (c130_withdraw_task != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(c130_withdraw_task);
+          var fkEntity = TaskRootModel.fromJson(jsonMap);
+          SJNumberHelpers().taskModel = fkEntity;
+          "app firebase remoteconfig c130_withdraw_task data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final c130_withdraw_last_task = remoteConfig.getValue('c130_withdraw_last_task').asString();
+      if (c130_withdraw_last_task != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(c130_withdraw_last_task);
+          var fkEntity = TaskRootModel.fromJson(jsonMap);
+          SJNumberHelpers().last_taskModel = fkEntity;
+          "app firebase remoteconfig c130_withdraw_last_task data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+      final scxji_ad_config = remoteConfig.getValue('scxji_ad_config').asString();
+      if (scxji_ad_config != ''){
+        try {
+          Map<String, dynamic> jsonMap = json.decode(scxji_ad_config);
+          var fkEntity = SJAdModel.fromJson(jsonMap);
+          SJAdHelpers().ad_Entity = fkEntity;
+          "app firebase remoteconfig scxji_ad_config data $jsonMap".log();
+        } catch (error) {
+          print("app firebase remoteconfig risk_control error ${error}");
+        }
+      }
+
+    } catch (e, s) {
+      print("RemoteConfig fetch error: $e");
+      sj_remoteConfigTryCount += 1;
+      if (sj_remoteConfigTryCount <= 60) {
+        Future.delayed(Duration(seconds: 1), () {
+          _sjinitloadFireBase();
+        });
+      }
+    }
   }
 
   // 上报收入

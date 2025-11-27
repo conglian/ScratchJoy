@@ -24,7 +24,7 @@ class SJFKManger {
   Future<void> initFKJson() async {
     'fkModel=$fkModel'.log();
     if (fkModel.behavior.ad_daily_show == 0) {
-      String jsonString = await rootBundle.loadString("sj_control".jsons());
+      String jsonString = await rootBundle.loadString("sj_control130".jsons());
       'risk_control=$jsonString'.log();
       Map<String, dynamic> jsonMap = json.decode(jsonString);
       fkModel = SJFkModel.fromJson(jsonMap);

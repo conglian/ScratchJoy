@@ -19,6 +19,7 @@ import '../SJTool/sj_numberBHelper.dart';
 import '../SJTool/sj_scratch_card_image_prize.dart';
 import '../SJTool/sj_text.dart';
 import 'SJDiceRollWidget.dart';
+import 'SJHome.dart';
 import 'SJScratchA.dart';
 import 'SJScratchB.dart';
 import 'SJScratchRatio.dart';
@@ -123,6 +124,7 @@ class _SJScratchBState extends State<SJScratchB> {
                   }
               ),
             ),
+            Positioned(child: SJBubbleButton()),
           ],
         ),
       ),

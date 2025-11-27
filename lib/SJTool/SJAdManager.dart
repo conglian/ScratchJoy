@@ -54,7 +54,7 @@ class SJAdManager {
     // if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
     //   return;
     // }
-    // 风控
+    // // 风控
     // if (await SJFKManger().sj_checkAllStatus()){
     //   return;
     // }
@@ -155,11 +155,11 @@ class SJAdManager {
       return;
     }
     // 风控
-    if (await SJFKManger().sj_checkAllStatus()){
-      SJDialogTool.toast(context, 'Something went wrong, please try again later.');
-      hasCache(false);
-      return;
-    }
+    // if (await SJFKManger().sj_checkAllStatus()){
+    //   SJDialogTool.toast(context, 'Something went wrong, please try again later.');
+    //   hasCache(false);
+    //   return;
+    // }
     if (isint){
       sj_event_fire(
         "scxji_ad_chance",

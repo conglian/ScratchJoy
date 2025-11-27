@@ -427,7 +427,9 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     return;
                   }
                   if (SJNumberHelpers().checkProbability()){
-                    SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){}, (finished){
+                    SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){
+                      Navigator.pop(context);
+                    }, (finished){
                       Navigator.pop(context);
                     });
                   } else {

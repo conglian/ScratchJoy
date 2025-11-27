@@ -33,6 +33,8 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
   int _currentFace = 1;
   int _finalFace = 1;
   bool _isRolling = false;
+  
+  List<int> diceNumbers = SJNumberHelpers().getDiceValueByBalance();
 
   // 跑马灯相关
   int _currentNumberIndex = SJLocalProvider.instance.sj_currentNumberIndex;
@@ -183,11 +185,11 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       } else {
         _isMarqueeRunning = false;
         _isRolling = false;
-        if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
+        if (diceNumbers[_currentNumberIndex] > 0) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
           if (!mounted) return;
           context.tipShow(SJPopEpicWinBDialog(
-              award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex], type: 'dice'));
+              award: diceNumbers[_currentNumberIndex], type: 'dice'));
         }
       }
     });
@@ -212,12 +214,12 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
     } else {
       _isMarqueeRunning = false;
       _isRolling = false;
-      if (SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex] > 0) {
+      if (diceNumbers[_currentNumberIndex] > 0) {
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
         await showTwoTxTask();
         if (!mounted) return;
         context.tipShow(SJPopEpicWinBDialog(
-            award: SJNumberAHelper().numberEntity.diceNumeric[_currentNumberIndex], type: 'dice'));
+            award: diceNumbers[_currentNumberIndex], type: 'dice'));
       }
     }
   }
@@ -381,7 +383,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                                     height: 20,
                                     child: SJGradientStrokeText(
                                       text:
-                                      '\$${SJNumberAHelper().numberEntity.diceNumeric[i] == 0 ? '  0' : SJNumberAHelper().numberEntity.diceNumeric[i]}',
+                                      '\$${diceNumbers[i] == 0 ? '  0' : diceNumbers[i]}',
                                       gradientColors: [
                                         '#FFFDE0'.color(),
                                         '#F8FF20'.color()

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:ScratchJoyFK/ScratchJoyFK.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -26,6 +27,7 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 Future<void> main() async {
   // 初始化Flutter绑定（确保async操作在runApp前执行）
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(true);
   // 捕获 Flutter 框架错误
   FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;

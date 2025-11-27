@@ -11,8 +11,10 @@ import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_numberBHelper.dart';
+import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import 'package:spine_flutter/spine_widget.dart';
 import '../SJDilaog/SJDialog.dart';
+import '../SJTool/SJAdManager.dart';
 import '../SJTool/SJNoticeTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
@@ -396,6 +398,7 @@ class _SJHomeState extends State<SJHome> {
                     child: SJImg(name: 'sj_7h5_icon', width: 66, height: 68),
                   )
               ),
+              Positioned(child: SJBubbleButton()),
             ],
           )
         ),
@@ -844,7 +847,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
               onTap: (){
                 // test
                 // SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
-                context.tipShow(SJBoxOldDiaologWidget());
+                context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
             ),
@@ -1004,6 +1007,153 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
           ],
         ),
     );
+  }
+}
+
+
+// 气泡
+class SJBubbleButton extends StatefulWidget {
+  const SJBubbleButton({super.key});
+
+  @override
+  _SJBubbleButtonState createState() => _SJBubbleButtonState();
+}
+
+class _SJBubbleButtonState extends State<SJBubbleButton>
+    with SingleTickerProviderStateMixin {
+
+  late AnimationController _controller;
+
+  double _top = 100;
+  double _left = 100;
+  double _dx = 100; // 每秒移动多少 px
+  double _dy = 80;
+
+  double _iconSize = 66;
+
+  bool _showPop = true;
+  double _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+
+  late double maxW, maxH;
+
+  late int _lastTime; // 用来计算 deltaTime
+
+  @override
+  void initState() {
+    super.initState();
+
+    _lastTime = DateTime.now().millisecondsSinceEpoch;
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(days: 10),
+    )..addListener(_onTick);
+
+    _controller.repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _onTick() {
+    if (!mounted) return;
+
+    final now = DateTime.now().millisecondsSinceEpoch;
+    final dt = (now - _lastTime) / 1000.0; // dt 秒
+    _lastTime = now;
+
+    maxW = MediaQuery.of(context).size.width - _iconSize;
+    maxH = MediaQuery.of(context).size.height - _iconSize - 100;
+
+    // 按时间移动，而不是按帧
+    _left += _dx * dt;
+    _top += _dy * dt;
+
+    if (_left <= 0) {
+      _left = 0;
+      _dx = -_dx;
+    } else if (_left >= maxW) {
+      _left = maxW;
+      _dx = -_dx;
+    }
+
+    if (_top <= 0) {
+      _top = 0;
+      _dy = -_dy;
+    } else if (_top >= maxH) {
+      _top = maxH;
+      _dy = -_dy;
+    }
+
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_showPop) return SizedBox.shrink();
+
+    return Padding(
+      padding: EdgeInsets.only(left: _left, top: _top),
+      child: GestureDetector(
+        onTap: _openPopPT,
+        child: SizedBox(
+          width: _iconSize,
+          height: _iconSize,
+          child: Container(
+            width: _iconSize,
+            height: _iconSize,
+            decoration: BoxDecoration(
+              image: SJDImg('sj_bubble_icon')
+            ),
+            child: Column(
+              children: [
+                Spacer(),
+                SJStrokeText(
+                  text: '\$$_pptReward',
+                  size: 14,
+                  color: '#FFF3BD'.color(),
+                  weight: FontWeight.w400,
+                  skWidth: 1,
+                  skColor: '#000000'.color(),
+                )
+              ],
+            ),
+          )
+        ),
+      ),
+    );
+  }
+
+  void _openPopPT() {
+    sj_event_fire('bubble_c', {});
+    SJAdManager().sj_showAd(false, 'scxji_bubble_rv', context, (hasCache) {
+      _hidePoPT();
+    }, (finished) {
+      _hidePoPT();
+      SJLocalProvider.instance.updateint(
+        SJLocalProvider.instance.sj_dolas_numberName,
+        SJLocalProvider.instance.sj_dolas_number + _pptReward.toInt(),
+      );
+    });
+  }
+
+  void _hidePoPT() {
+    _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+    if (mounted) {
+      setState(() {
+        _showPop = false;
+      });
+    }
+    Future.delayed(const Duration(seconds: 5), () {
+      if (mounted) {
+        setState(() {
+          _showPop = true;
+        });
+      }
+    });
   }
 }
 
