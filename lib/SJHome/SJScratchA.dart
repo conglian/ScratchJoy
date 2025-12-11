@@ -11,6 +11,7 @@ import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import 'package:scratchjoy/SJTool/sj_numberBHelper.dart' hide SJ3x3Result;
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
+import 'package:scratchjoy/main.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_img.dart';
@@ -18,6 +19,8 @@ import '../SJTool/sj_scratch_card_image_prize.dart';
 import '../SJTool/sj_text.dart';
 import 'SJCash.dart';
 import 'SJDiceRollWidget.dart';
+import 'SJHome.dart';
+import 'SJScratchB.dart';
 import 'SJScratchRatio.dart';
 
 enum sj_scratchtype {
@@ -84,7 +87,7 @@ class _SJScratchAState extends State<SJScratchA> {
             ),
             Column(
               children: [
-                SJDetailsBarWidget(),
+                SJDetailsBarWidget(isCash: false),
                 Spacer(),
                 SJBottomDetailsBarWidget(),
               ],
@@ -198,7 +201,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
              if (extra_bonusResult.isWin) {
                var code = await context.tipShow(SJPopYouWinADialog(
                    award: extra_bonusResult.winMatchNumbers[extra_bonusResult
-                       .winIndex]));
+                       .winIndex].toInt()));
                if (code >= 0) {
                  setState(() {
                    shai_anim = false;
@@ -532,7 +535,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               }
               if (lucku_momentResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: lucku_momentResult.winMatchNumbers.first));
+                    award: lucku_momentResult.winMatchNumbers.first.toInt()));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -721,7 +724,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               }
               if (secret_stashResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier));
+                    award: (secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier).toInt()));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -886,7 +889,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               }
               if (superMultipleResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier));
+                    award: (superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier).toInt()));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -1453,403 +1456,5 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
     } else {
       Navigator.pop(context);
     }
-  }
-}
-
-class SJDetailsBarWidget extends StatefulWidget {
-  SJDetailsBarWidget({super.key});
-  @override
-  State<SJDetailsBarWidget> createState() => _SJDetailsBarWidgetState();
-}
-
-class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Container(
-      width: 0.width(context),
-      height: 118,
-      decoration: BoxDecoration(
-          image: SJDImg('sj_nav_bg')
-      ),
-      child: Padding(
-        padding: EdgeInsets.only(top: 34),
-        child: Row(
-          children: [
-            SizedBox(width: 12,),
-            SizedBox(
-                width: 124,
-                height: 49,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Container(
-                          width: 124,
-                          height: 32,
-                          decoration: BoxDecoration(
-                              image: SJDImg('sj_nav_pro_bg')
-                          ),
-                          child: Consumer<SJLocalProvider>(
-                            builder: (context, provider, child) {
-                              return InkWell(
-                                onTap: (){
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (builder) {
-                                        return SJCash();
-                                      },
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: 2.0, left: 32.12),
-                                  child: Center(
-                                    child: SJGradientNumberRoller(
-                                      value: provider.sj_dolas_number,
-                                      duration: 800,
-                                      fontSize: 20.0,
-                                      gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
-                                      borderColor: '#FFFFFF'.color(),
-                                      borderWidth: 0.0,
-                                      decimalPlaces: 0,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
-                      ),
-                    ),
-                    SJImg(name: 'sj_dolas_icon', width: 49, height: 49,)
-                  ],
-                )
-            ),
-            SizedBox(width: 11.0),
-            SizedBox(
-                width: 147,
-                height: 40,
-                child: Stack(
-                  children: [
-                    Padding(
-                      padding: EdgeInsets.only(top: 4, left: 19),
-                      child: Container(
-                        width: 131,
-                        height: 32,
-                        decoration: BoxDecoration(
-                            image: SJDImg('sj_nav_pro_bg')
-                        ),
-                        child: Consumer<SJLocalProvider>(
-                          builder: (context, provider, child) {
-                            return Stack(
-                              children: [
-                                Positioned(
-                                  left: 4,
-                                  top: 4,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(20),
-                                    child: ShaderMask(
-                                      shaderCallback: (Rect bounds) {
-                                        return LinearGradient(
-                                          begin: Alignment.topCenter,
-                                          end: Alignment.bottomCenter,
-                                          colors: [
-                                            '#8D1C47'.color(),
-                                            '#F71C65'.color(),
-                                            '#EA0B58'.color(),
-                                            '#6C092E'.color(),
-                                          ],
-                                        ).createShader(bounds);
-                                      },
-                                      child: Padding(
-                                        padding: EdgeInsets.only(top: 0),
-                                        child: SizedBox(
-                                          width: 120,
-                                          height: 24,
-                                          child: LinearProgressIndicator(
-                                            value: provider.sj_Level_inedx / 5.0,
-                                            minHeight: 24,
-                                            backgroundColor: Colors.transparent,
-                                            valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.only(top: 4, left: 19),
-                      child: SizedBox(
-                        width: 131,
-                        height: 32,
-                        child: Consumer<SJLocalProvider>(
-                          builder: (context, provider, child) {
-                            return Center(
-                              child: SJText(text: 'LV.${provider.sj_Level_number}', size: 16, color: '#FFEAEA'.color(), weight: FontWeight.w700),
-                            );
-                          },
-                        ),
-                      ),
-                    ),
-                    Container(
-                      width: 55,
-                      height: 40,
-                      decoration: BoxDecoration(
-                          image: SJDImg('sj_lev_bg')
-                      ),
-                      child: Center(
-                        child: Consumer<SJLocalProvider>(
-                          builder: (context, provider, child) {
-                            return Padding(
-                                padding: EdgeInsets.only(top: 0.0, left: 0),
-                                child: SJText(text: '${provider.sj_Level_number}', size: 16, color: '#FFFFFF'.color(), weight: FontWeight.w700)
-                            );
-                          },
-                        ),
-                      ),
-                    )
-                  ],
-                )
-            ),
-            Spacer(),
-            InkWell(
-              onTap: (){
-                 Navigator.pop(context);
-              },
-              child: SJImg(name: 'sj_home_btn', width: 34, height: 34,),
-            ),
-            SizedBox(width: 21,)
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SJBottomDetailsBarWidget extends StatefulWidget {
-  SJBottomDetailsBarWidget({super.key});
-  @override
-  State<SJBottomDetailsBarWidget> createState() => _SJBottomDetailsBarWidgetState();
-}
-
-class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
-
-  @override
-  Widget build(BuildContext context) {
-
-    return Container(
-      width: 0.width(context),
-      height: 89,
-      decoration: BoxDecoration(
-          image: SJDImg('sj_tbabar_bg')
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 16.w),
-          SizedBox(
-            width: 100,
-            height: 89,
-            child: InkWell(
-              onTap: (){
-                if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
-                  context.tipShow(SJBoxOpenDiaologWidget());
-                } else {
-                  SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
-                }
-              },
-              child: Stack(
-                children: [
-                  Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
-                  Positioned(top: 68,child:Stack(
-                    children: [
-                      // 背景图 71 × 15
-                      SizedBox(
-                        width: 71,
-                        height: 15,
-                        child: SJImg(name: 'sj_box_pro_bg'),
-                      ),
-                      // 进度条（居中）67 × 11
-                      Positioned(
-                        left: (71 - 67) / 2,  // = 2 px
-                        top: 1,   // = 2 px
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Container(
-                            width: 67,
-                            height: 11,
-                            color: Colors.transparent,
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Consumer<SJLocalProvider>(
-                                    builder: (context, provider, child) {
-                                      return  Container(
-                                        width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
-                                        height: 11,
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                            colors: [
-                                              Color(0xFFFDEB5A),
-                                              Color(0xFFFFC700),
-                                              Color(0xFFB87400),
-                                            ],
-                                          ),
-                                        ),
-                                      );
-                                    })
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ))
-                ],
-              ),
-            ),
-          ),
-          SizedBox(width: 4.w),
-          InkWell(
-              onTap: (){
-                sj_event_fire('scratch_card', {'type' : 'aut'});
-                sj_event_fire('scratch_card_aut', {});
-                SJScratchUpdateNotificationService.sendToDomandNumberNotification(1);
-              },
-              child: SJImg(name: 'sj_revall_btn', width: 200, height: 80),
-            ),
-          Spacer(),
-            InkWell(
-              onTap: (){
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (builder) {
-                      return SJDiceRollWidget(souce_fromat: 'card',);
-                    },
-                  ),
-                );
-              },
-              child: SizedBox(
-                width: 65,
-                height: 65,
-                key: targetimageKey,
-                child: Padding(
-                  padding: EdgeInsets.only(top: 8),
-                  child: Stack(
-                    children: [
-                      SJImg(name: 'sj_shai_icon'),
-                      Positioned(right: 0,child: Container(
-                        width: 20,
-                        height: 20,
-                        decoration: BoxDecoration(
-                            image: SJDImg('sj_home_jiao_bg')
-                        ),
-                        child: Center(
-                          child: Consumer<SJLocalProvider>(
-                            builder: (context, provider, child) {
-                              return SJText(text: SJLocalProvider.instance.sj_100_timer_star == true ? '∞' : '${provider.sj_dice_number}', size: 14, color: '#FFE6AF'.color(), weight: FontWeight.w700);
-                            },
-                          ),
-                        ),
-                      ))
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          SizedBox(width: 16.w),
-        ],
-      ),
-    );
-  }
-}
-
-class BouncySJImg extends StatefulWidget {
-  const BouncySJImg({super.key});
-
-  @override
-  State<BouncySJImg> createState() => _BouncySJImgState();
-}
-
-class _BouncySJImgState extends State<BouncySJImg>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller;
-  late final Animation<double> _scaleAnim;
-
-  @override
-  void initState() {
-    super.initState();
-
-    // 再加快节奏：500ms 一次循环（更明显更灵动）
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    // 调整幅度和曲线，使弹性更Q更自然
-    _scaleAnim = Tween(begin: 0.98, end: 1.07)
-        .chain(CurveTween(curve: Curves.easeInOut))
-        .animate(_controller);
-
-    // 循环呼吸动画
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _controller.reverse();
-      } else if (status == AnimationStatus.dismissed) {
-        _controller.forward();
-      }
-    });
-
-    _controller.forward();
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ScaleTransition(
-      scale: _scaleAnim,
-      child: InkWell(
-        onTap: () async {
-          var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'card',));
-          if (code == 1){
-            SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
-          }
-        },
-        child:Consumer<SJLocalProvider>(
-          builder: (context, provider, child) {
-            return SJImg(
-              name: 'sj_${provider.sj_ratio_str}%_btn',
-              width: 318,
-              height: 48,
-            );
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class SJScratchProbabilityUpNotificationService {
-  static final StreamController<int> _streamController =
-  StreamController<int>.broadcast();
-
-  static Stream<int> get stream => _streamController.stream;
-
-  static void sendToDomandNumberNotification(int value) {
-    _streamController.sink.add(value);
-  }
-
-  static void close() {
-    _streamController.close();
   }
 }

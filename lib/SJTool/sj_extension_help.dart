@@ -217,6 +217,10 @@ extension OtherExtension on int {
     }
     return '0$n';
   }
+  double to2Double(num value) {
+    return double.parse(value.toStringAsFixed(2));
+  }
+
 }
 
 extension IterableExtension<E> on Iterable<E> {
@@ -269,7 +273,113 @@ extension TipShow on BuildContext {
               ));
         });
   }
+
 }
+extension TipShow2 on BuildContext {
+  Future tipShow2(Widget child, {Color? bc}) {
+    return showGeneralDialog(
+      context: this,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 250),
+      pageBuilder: (_, __, ___) {
+        return WillPopScope(
+          onWillPop: () async => false, // 🚫 禁止返回键 & 左滑返回
+          child: _AnimatedDialogWrapper(
+            child: child,
+            background: bc ?? Colors.black.withOpacity(0.7),
+          ),
+        );
+      },
+    );
+  }
+}
+
+
+class _AnimatedDialogWrapper extends StatefulWidget {
+  final Widget child;
+  final Color background;
+
+  const _AnimatedDialogWrapper({
+    required this.child,
+    required this.background,
+  });
+
+  @override
+  State<_AnimatedDialogWrapper> createState() => _AnimatedDialogWrapperState();
+}
+
+class _AnimatedDialogWrapperState extends State<_AnimatedDialogWrapper>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _ctrl;
+  late Animation<double> _bgOpacity;
+  late Animation<double> _scale;
+  late Animation<double> _childOpacity;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 250),
+    );
+
+    _bgOpacity = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+
+    _scale = Tween(begin: 0.85, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOutBack),
+    );
+
+    _childOpacity = Tween(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _ctrl, curve: Curves.easeOut),
+    );
+
+    _ctrl.forward();
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _ctrl,
+      builder: (_, __) {
+        return Stack(
+          children: [
+            // 背景蒙层渐变（不闪烁）
+            Opacity(
+              opacity: _bgOpacity.value,
+              child: Container(color: widget.background),
+            ),
+
+            // 弹框本体
+            Center(
+              child: Transform.scale(
+                scale: _scale.value,
+                child: Opacity(
+                  opacity: _childOpacity.value,
+                  child: Dialog(
+                    insetPadding: EdgeInsets.zero,
+                    backgroundColor: Colors.transparent,
+                    child: widget.child,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
 class BoomUniqueStringUtil {
   BoomUniqueStringUtil._internal();
 

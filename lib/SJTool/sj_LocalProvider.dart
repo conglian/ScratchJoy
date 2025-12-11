@@ -48,6 +48,7 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_scratch_guide = true;
   bool sj_old_guide = true;
   bool sj_new_guide = false;
+  bool is_end_Scratch = true;
   bool sj_show_dolas_ani = false;
   bool sj_show_bubble = false;
   bool sj_show_box_guide = false;
@@ -59,16 +60,24 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_fk_ad_short_close = false;
   bool sj_dolas_800 = false;
   bool sj_dolas_1000 = false;
+  bool sj_yunying_3 = false;
+  bool sj_yunying_1 = false;
   bool sj_100_timer_star = false;
   bool sj_txing_status = false;
   bool sj_tx_first_status = false;
   bool sj_tx_last_status = false;
-
+  bool sj_show_box_tips = false;
+  bool sj_first_box_tips = false;
+  bool sj_first_show_cash = false;
+  bool sj_open_tx = false;
+  bool sj_tx_task2_tips = false;
+  bool sj_last_tx_end = false;
+  bool sj_show_box = false;
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
   int sj_scrach_unlock_index_1 = 0; // 存储的本地值
   int sj_ad_all_number = 0;
-  int sj_dolas_number = 0;
+  double sj_dolas_number = 0.0;
   int sj_dolas_old_number = 0;
   int sj_ad_reawrd_all_number = 0;
   int sj_ad_short_show_number = 0;
@@ -170,6 +179,18 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_old_guideName => 'sj_old_guide';
   String get sj_scratch_not_award_numberName => 'sj_scratch_not_award_number';
   String get sj_cloak_statusName => 'sj_cloak_status';
+  String get sj_show_box_tipsName => 'sj_show_box_tips';
+  String get sj_first_box_tipsName => 'sj_first_box_tips';
+  String get sj_first_show_cashName => 'sj_first_show_cash';
+  String get sj_scratch_guideName => 'sj_scratch_guide';
+  String get sj_open_txName => 'sj_open_tx';
+  String get sj_tx_task2_tipsName => 'sj_tx_task2_tips';
+  String get sj_last_tx_endName => 'sj_last_tx_end';
+  String get is_end_ScratchName => 'is_end_Scratch';
+  String get sj_yunying_1Name => 'sj_yunying_1';
+  String get sj_yunying_3Name => 'sj_yunying_3';
+  String get sj_show_boxName => 'sj_show_box';
+
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
   Future<void> init() async {
@@ -206,7 +227,12 @@ class SJLocalProvider extends ChangeNotifier {
     sj_sound_music = prefs.getBool('sj_sound_music') ?? true;
     sj_txing_status = prefs.getBool('sj_txing_status') ?? false;
     sj_login_status = prefs.getBool('sj_login_status') ?? false;
+    sj_open_tx = prefs.getBool('sj_open_tx') ?? false;
+    sj_show_box = prefs.getBool('sj_show_box') ?? false;
+    is_end_Scratch = prefs.getBool('is_end_Scratch') ?? true;
     sj_cloak_status = prefs.getBool('sj_cloak_status') ?? false;
+    sj_show_box_tips = prefs.getBool('sj_show_box_tips') ?? false;
+    sj_first_box_tips = prefs.getBool('sj_first_box_tips') ?? false;
     sj_fk_number_status = prefs.getBool('sj_fk_number_status') ?? false;
     sj_fk_decvice_status = prefs.getBool('sj_fk_decvice_status') ?? false;
     sj_fk_ad_short_show = prefs.getBool('sj_fk_ad_short_show') ?? false;
@@ -223,10 +249,14 @@ class SJLocalProvider extends ChangeNotifier {
     sj_100_timer_star = prefs.getBool('sj_100_timer_star') ?? false;
     sj_tx_first_status = prefs.getBool('sj_tx_first_status') ?? false;
     sj_tx_last_status = prefs.getBool('sj_tx_last_status') ?? false;
-
+    sj_first_show_cash = prefs.getBool('sj_first_show_cash') ?? false;
+    sj_tx_task2_tips = prefs.getBool('sj_tx_task2_tips') ?? false;
+    sj_last_tx_end = prefs.getBool('sj_last_tx_end') ?? false;
+    sj_yunying_3 = prefs.getBool('sj_yunying_3') ?? false;
+    sj_yunying_1 = prefs.getBool('sj_yunying_1') ?? false;
     sj_ad_reawrd_all_number = prefs.getInt('sj_ad_reawrd_all_number') ?? 0;
     sj_ad_all_number = prefs.getInt('sj_ad_all_number') ?? 0;
-    sj_dolas_number = prefs.getInt('sj_dolas_number') ?? 0;
+    sj_dolas_number = prefs.getDouble('sj_dolas_number') ?? 0.0;
     sj_dolas_old_number = prefs.getInt('sj_dolas_old_number') ?? 0;
     sj_ad_show_index = prefs.getInt('sj_ad_show_index') ?? 0;
     sj_Level_number = prefs.getInt('sj_Level_number') ?? 1;
@@ -284,13 +314,6 @@ class SJLocalProvider extends ChangeNotifier {
   Future<void> updateint(String key, int value) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setInt(key, value);
-    if (key == SJLocalProvider.instance.sj_dolas_numberName && value > 0){
-      trigger.check(SJLocalProvider.instance.sj_dolas_number, onTrigger: (level) {
-        print("触发 → 达到 $level");
-        sj_event_fire('cash_dall', {'money' : level});
-      });
-      await updateBool(sj_show_dolas_aniName, true);
-    }
     init();
     notifyListeners();
   }
@@ -298,7 +321,17 @@ class SJLocalProvider extends ChangeNotifier {
   // 通用double
   Future<void> updatedouble(String key, double value) async {
     final prefs = await SharedPreferences.getInstance();
+    if (key == SJLocalProvider.instance.sj_dolas_numberName && sj_dolas_number <= 0){
+      await updateBool(sj_first_show_cashName, true);
+    }
     await prefs.setDouble(key, value);
+    if (key == SJLocalProvider.instance.sj_dolas_numberName && value > 0){
+      trigger.check(SJLocalProvider.instance.sj_dolas_number.toInt(), onTrigger: (level) {
+        print("触发 → 达到 $level");
+        sj_event_fire('cash_dall', {'money' : level});
+      });
+      await updateBool(sj_show_dolas_aniName, true);
+    }
     init();
     notifyListeners();
   }

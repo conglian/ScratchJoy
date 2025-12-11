@@ -100,7 +100,7 @@ class SJNumberHelpers {
   }
 
   /// 获取宝箱气泡奖励值
-  int getPrizeWithBoxorBubble() {
+  double getPrizeWithBoxorBubble() {
     for (var item in bonusConfigModel!.boxReward) {
       int start = item.firstNumber;
       int end = item.endNumber;
@@ -108,16 +108,16 @@ class SJNumberHelpers {
       if (SJLocalProvider.instance.sj_dolas_number >= start && SJLocalProvider.instance.sj_dolas_number < end) {
         double min = item.prize!.first;
         double max = item.prize!.last;
-        return _randomBetween(min, max);
+        return 0.to2Double(_randomBetween(min, max));
       }
     }
 
     /// 如果超出所有区间，返回最后一段
     var last = bonusConfigModel!.boxReward.last;
-    return _randomBetween(
+    return 0.to2Double(_randomBetween(
       last.prize!.first,
       last.prize!.last,
-    );
+    ));
   }
 
   /// 生成[min, max]之间随机整数（兼容 double）

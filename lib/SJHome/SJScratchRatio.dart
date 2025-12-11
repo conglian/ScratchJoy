@@ -7,6 +7,7 @@ import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_img.dart';
+import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import 'package:scratchjoy/SJTool/sj_text.dart';
 
 import '../SJDilaog/SJDialog.dart';
@@ -113,9 +114,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
       }
     });
 
-    // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      // 在这里执行需要更新UI的操作
       if (widget.is_start){
         _startShuffle();
       }
@@ -142,17 +141,15 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
           }
         }
         if (!SJLocalProvider.instance.sj_new_guide) {
-          // 根据中奖卡重新排列位置，让它在中间
           for (int i = 0; i < 3; i++) {
             if (i == _middleCardIndex) {
-              _cardPositions[i] = 0; // 中间位置
+              _cardPositions[i] = 0;
             } else if (i == 0) {
-              _cardPositions[i] = -120; // 左边
+              _cardPositions[i] = -120;
             } else {
-              _cardPositions[i] = 520;  // 右边
+              _cardPositions[i] = 520;
             }
           }
-          // 更新左右卡旋转角度
           _leftRotation = -20;
           _rightRotation = 20;
         }
@@ -218,7 +215,12 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     _targetWinIndex = 0;
     _isShuffling = true;
     _isFlipped = false;
-
+    if (SJLocalProvider.instance.sj_bg_music){
+      SJMP3Player().pauseBackground();
+    }
+    if (SJLocalProvider.instance.sj_sound_music){
+      SJMP3Player().playEffect9();
+    }
     _moveController.forward(from: 0);
   }
 
@@ -226,11 +228,17 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     setState(() {
       _isFlipped = true;
     });
+    if (SJLocalProvider.instance.sj_bg_music){
+      SJMP3Player().playBackground();
+    }
+    if (SJLocalProvider.instance.sj_sound_music){
+      SJMP3Player().pauseEffect9();
+    }
 
     await _flipController.forward(from: 0);
     await _scaleController.forward(from: 0);
     await _scaleController.animateTo(0.25,
-        duration: const Duration(milliseconds: 100)); // 缩小到 1.1 倍
+        duration: const Duration(milliseconds: 100));
     if (_middleCardIndex == 0){
       await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '100');
     } else if (_middleCardIndex == 1) {
@@ -244,24 +252,34 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     await showTwoTxTask();
   }
 
-  // 第一段任务提醒
-  Future<void> showOneTxTask() async {// 判断第一段任务是否完成
-    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+  Future<void> showOneTxTask() async {
+    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_open_tx == true) {
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
       if (!mounted) return;
-      context.tipShow(SJPopTask3Dialog());
+      if (SJLocalProvider.instance.sj_tx_task2_tips == false && homeKey.currentState!.ctx.mounted) {
+        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+      }
     }
   }
 
-  // 第二段任务完成
-  Future<void> showTwoTxTask() async {// 判断第一段任务是否完成
-    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
+  Future<void> showTwoTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false) {
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
       sj_event_fire('cash_queue', {});
+    }
+    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_last_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
     }
   }
 
@@ -298,11 +316,11 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                   fit: BoxFit.cover,
                 ),
                 borderRadius: BorderRadius.circular(8),
-                boxShadow: isMiddle && _isFlipped
+                boxShadow: (isMiddle && _isFlipped && _middleCardIndex == 0)
                     ? [
                   BoxShadow(
-                    color: Colors.yellow.withOpacity(1), // 黄色浓
-                    blurRadius: 20, // 发光范围大
+                    color: Colors.yellow.withOpacity(1),
+                    blurRadius: 20,
                     spreadRadius: 1,
                   )
                 ]
@@ -347,13 +365,13 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
               opacity: _centerFadeAnimation,
               child: SJImg(name: 'sj_xing_center', width: 375, height: 375)),
         ),
-          Column(
+        Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (_isFlipped)
               SJImg(name:'sj_100top2_icon', width: 323, height: 158),
             if (!_isFlipped)
-             SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_newtips_icon' :  'sj_hide100_top', width: 273, height: 182),
+              SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_newtips_icon' :  'sj_hide100_top', width: 273, height: 182),
             SizedBox(height: 52.h),
             GestureDetector(
               onTap: _startShuffle,
@@ -371,18 +389,17 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
               SizedBox(height: 70.h),
             if(!_isFlipped)
               InkWell(
-               onTap: (){
-                 if (!SJLocalProvider.instance.sj_new_guide){
-                   _startShuffle();
-                 } else {
-                   sj_event_fire('probability_pop_up', {});
-                     // 看ad-重新刷新
-                     SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
-                       _startShuffle();
-                     });
-                 }
-               },
-               child: SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_allin_btn' : 'sj_up_btn', width: 260, height: 74),
+                onTap: (){
+                  if (!SJLocalProvider.instance.sj_new_guide){
+                    _startShuffle();
+                  } else {
+                    sj_event_fire('probability_pop_up', {});
+                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
+                      _startShuffle();
+                    });
+                  }
+                },
+                child: SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_allin_btn' : 'sj_up_btn', width: 260, height: 74),
               ),
             if(_isFlipped)
               InkWell(
@@ -404,12 +421,11 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     }
                   } else {
                     sj_event_fire('probability_pop_continue_up', {});
-                    // 看ad-重新刷新
                     SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished) async {
                       Navigator.pop(context);
                       var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
                       if (code == 1){
-                        SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
+                        SJScratchProbabilityUpNotificationService.notify(0);
                       }
                     });
                   }
@@ -419,28 +435,28 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
             SizedBox(height: 20.h),
             if(!_isFlipped && _middleCardIndex != 0)
               SizedBox(
-              width: 200,
-              height: 38,
-              child: InkWell(
-                onTap: () {
-                  if (_isShuffling == true){
-                    return;
-                  }
-                  if (SJNumberHelpers().checkProbability()){
-                    SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){
+                width: 200,
+                height: 38,
+                child: InkWell(
+                  onTap: () {
+                    if (_isShuffling == true){
+                      return;
+                    }
+                    if (SJNumberHelpers().checkProbability()){
+                      SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){
+                        Navigator.pop(context);
+                      }, (finished){
+                        Navigator.pop(context);
+                      });
+                    } else {
                       Navigator.pop(context);
-                    }, (finished){
-                      Navigator.pop(context);
-                    });
-                  } else {
-                    Navigator.pop(context);
-                  }
-                },
-                child: Center(
-                  child: SJImg(name: 'sj_nothanks_btn', width: 124, height: 20),
+                    }
+                  },
+                  child: Center(
+                    child: SJImg(name: 'sj_nothanks_btn', width: 124, height: 20),
+                  ),
                 ),
               ),
-            ),
             if(_isFlipped && _middleCardIndex != 0)
               SizedBox(
                 width: 200,
@@ -456,51 +472,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
               ),
           ],
         ),
-        if(_isFlipped && _middleCardIndex != 0)
-          Positioned(
-            top: _isFlipped && _middleCardIndex != 0 ? 600.h : 559.h,
-            right: 60.w,
-            child: InkWell(
-              onTap: (){
-                // 看ad-重新刷新
-                SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished) async {
-                  Navigator.pop(context);
-                  var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
-                  if (code == 1){
-                    SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
-                  }
-                });
-              },
-                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
-          ),
-        if(!_isFlipped)
-          Positioned(
-            top: 555.h,
-            right: 60.w,
-            child: Visibility(
-              visible: SJLocalProvider.instance.sj_new_guide,
-              child: InkWell(
-                  onTap: (){
-                    // 看ad-重新刷新
-                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
-                      _startShuffle();
-                    });
-                  },
-                  child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
-            ),
-          ),
-        AnimatedBuilder(
-          animation: _slideAnimation,
-          builder: (context, child) {
-            return Positioned(
-              top: _slideAnimation.value,
-              left: 0,
-              right: 0,
-              child: child!,
-            );
-          },
-          child: SJImg(name: 'sj_xing_top', width: 375, height: 358),
-        ),
+        Positioned(right: 55.w,bottom: 208.h,child: Visibility(visible: !_isFlipped && SJLocalProvider.instance.sj_new_guide,child: SJImg(name: 'sj_rv_icon', width: 55, height: 55,))),
+        Positioned(right: 55.w,bottom: 152.h,child: Visibility(visible: _middleCardIndex != 0 && _isFlipped,child: SJImg(name: 'sj_rv_icon', width: 55, height: 55,))),
       ],
     );
   }

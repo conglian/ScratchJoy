@@ -5,6 +5,10 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
     id ("com.google.gms.google-services")
     id("com.google.firebase.crashlytics") version "3.0.6" apply false
+    id("applovin-quality-service")
+}
+applovin {
+    apiKey = "krw1Xc9M0vKxNQ7E1FQRLQX4RST2gVJT3mK0Vk3rXtC1Es9E0PFzdFJLTygKDrE8Ak9cAp5MPSf1DK8tcG6Cnt"
 }
 
 android {
@@ -34,7 +38,7 @@ android {
         versionName = flutter.versionName
         minSdkVersion(27)
         targetSdkVersion(36)
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.1"
     }
 
@@ -65,6 +69,8 @@ flutter {
 }
 
 dependencies {
+    // facebook
+    implementation ("com.facebook.android:facebook-android-sdk:latest.release")
     // When using the BoM, you don't specify versions in Firebase library dependencies
     implementation("com.google.firebase:firebase-crashlytics-ndk")
     implementation("com.google.firebase:firebase-analytics")

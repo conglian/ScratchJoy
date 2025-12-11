@@ -15,7 +15,7 @@ import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_mp3_player.dart';
 import '../SJTool/sj_number_helper.dart';
-import 'SJScratchA.dart';
+import 'SJScratchB.dart';
 
 class SJDiceRollWidget extends StatefulWidget {
   final String souce_fromat;
@@ -187,9 +187,15 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         _isRolling = false;
         if (diceNumbers[_currentNumberIndex] > 0) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
+          await showTwoTxTask();
           if (!mounted) return;
-          context.tipShow(SJPopEpicWinBDialog(
-              award: diceNumbers[_currentNumberIndex], type: 'dice'));
+          int code = await context.tipShow(SJPopEpicWinBDialog(
+              award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice'));
+          if (code >= 0){
+            setState(() {
+              diceNumbers = SJNumberHelpers().getDiceValueByBalance();
+            });
+          }
         }
       }
     });
@@ -218,17 +224,31 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
         await showTwoTxTask();
         if (!mounted) return;
-        context.tipShow(SJPopEpicWinBDialog(
-            award: diceNumbers[_currentNumberIndex], type: 'dice'));
+        int code = await context.tipShow(SJPopEpicWinBDialog(
+            award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice'));
+        if (code >= 0){
+          setState(() {
+            diceNumbers = SJNumberHelpers().getDiceValueByBalance();
+          });
+        }
       }
     }
   }
 
   // 第二段任务完成
-  Future<void> showTwoTxTask() async {// 判断第一段任务是否完成
-    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
+  Future<void> showTwoTxTask() async {
+    // 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false) {
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
       sj_event_fire('cash_queue', {});
+    }
+    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_last_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
     }
   }
 
@@ -278,7 +298,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
             decoration: BoxDecoration(image: SJDImg('sj_shai_bg')),
             child: Column(
               children: [
-                SJDetailsBarWidget(),
+                SJDetailsBarWidget(isCash: false),
                 Container(
                   width: 375.w,
                   height: 502.h,
@@ -440,12 +460,12 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                     padding: EdgeInsets.only(top: 8.h),
                     child: Lottie.asset(
                         width: 0.width(context),
-                        height: 0.height(context),
+                        height: 720.h,
                         fit: BoxFit.fill,
                         "sj_dolas_aniamtion.zip".files(),
                         repeat: false,
                         onLoaded: (composition) async {
-                          Future.delayed(Duration(milliseconds: 2000), (){
+                          Future.delayed(Duration(milliseconds: 1800), (){
                             SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
                           });
                         }

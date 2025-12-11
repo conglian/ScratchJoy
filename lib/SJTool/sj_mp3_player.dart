@@ -21,6 +21,8 @@ class SJMP3Player {
   final AudioPlayer effect7Player = AudioPlayer();
   final AudioPlayer effect8Player = AudioPlayer();
   final AudioPlayer effect9Player = AudioPlayer();
+  final AudioPlayer effect10Player = AudioPlayer();
+  final AudioPlayer effect11Player = AudioPlayer();
 
   // 播放背景音频
   Future<void> playBackground() async {
@@ -175,9 +177,9 @@ class SJMP3Player {
     await effect8Player.resume();
   }
 
-  // 播放特效音频
+  // 播放特效音频 - 抽卡
   Future<void> playEffect9() async {
-    String path = "sj_award3".mp3files();
+    String path = "sj_chou1".mp3files();
     await effect9Player.setReleaseMode(ReleaseMode.loop);
     await effect9Player.play(AssetSource(path));
   }
@@ -192,6 +194,40 @@ class SJMP3Player {
     await effect9Player.resume();
   }
 
+  // 播放特效音频 - 抽卡
+  Future<void> playEffect10() async {
+    String path = "sj_award3".mp3files();
+    await effect10Player.setReleaseMode(ReleaseMode.loop);
+    await effect10Player.play(AssetSource(path));
+  }
+
+  // 暂停特效音频
+  Future<void> pauseEffect10() async {
+    await effect10Player.pause();
+  }
+
+  // 恢复特效音频
+  Future<void> resumeEffect10() async {
+    await effect10Player.resume();
+  }
+
+  // 播放特效音频 - 刮卡
+  Future<void> playEffect11() async {
+    String path = "sj_guaka".mp3files();
+    await effect11Player.setReleaseMode(ReleaseMode.loop);
+    await effect11Player.play(AssetSource(path));
+  }
+
+  // 暂停特效音频
+  Future<void> pauseEffect11() async {
+    await effect11Player.pause();
+  }
+
+  // 恢复特效音频
+  Future<void> resumeEffect11() async {
+    await effect11Player.resume();
+  }
+
   // 释放资源
   Future<void> dispose() async {
     await backgroundPlayer.dispose();
@@ -204,5 +240,7 @@ class SJMP3Player {
     await effect7Player.dispose();
     await effect8Player.dispose();
     await effect9Player.dispose();
+    await effect10Player.dispose();
+    await effect11Player.dispose();
   }
 }    

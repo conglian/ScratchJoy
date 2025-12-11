@@ -20,6 +20,7 @@ import '../SJHome/SJCash.dart';
 import '../SJHome/SJDiceRollWidget.dart';
 import '../SJHome/SJHome.dart';
 import '../SJHome/SJScratchA.dart';
+import '../SJHome/SJScratchB.dart';
 import '../SJTool/SJAdAHelp.dart';
 import '../SJTool/SJAdManager.dart';
 import '../SJTool/SJTBAInfoTool.dart';
@@ -33,7 +34,7 @@ class SJPopYouWinBDialog extends StatefulWidget {
   final bool is_show;
   final bool is_showThree;
   final String type;
-  final int award;
+  final double award;
   SJPopYouWinBDialog({super.key, required this.award, required this.is_show, required this.is_showThree, required this.type});
   @override
   State<SJPopYouWinBDialog> createState() => SJPopdiceBwardDialogState();
@@ -49,12 +50,17 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      playbgmusic();
+    });
     sj_event_fire('coin_pop', {'source_from' : widget.type});
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
       });
     });
+    // 恢复概率
+    SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
 
     // 匀速旋转动画
     _controller = AnimationController(
@@ -76,24 +82,49 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
     _scaleAnimation2 = Tween(begin: 1.0, end: 1.2)
         .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (SJLocalProvider.instance.sj_sound_music){
-        await SJMP3Player().pauseBackground();
-        await SJMP3Player().playEffect4();
-      }
-      Future.delayed(Duration(milliseconds: 1000), () async {
-        await SJMP3Player().pauseEffect4();
-        if (SJLocalProvider.instance.sj_bg_music){
-          await SJMP3Player().playBackground();
-        }
-      });
-      if (widget.is_show){
-        Future.delayed(Duration(milliseconds: 1000), () async {
-          if (navigatorKey.currentContext!.mounted){
-            Navigator.pop(navigatorKey.currentContext!);
-            navigatorKey.currentContext!.tipShow(SJPopSuperWinBDialog(award: widget.award, is_show: widget.is_showThree, type: widget.type));
-          }
+    if (widget.is_show) {
+      Future.delayed(const Duration(milliseconds: 1450), () async {
+        if (!mounted) return;
+
+        // 先关闭当前弹窗
+        Navigator.of(context).pop(0);
+
+        // 等待 pop 完成
+        await Future.delayed(const Duration(milliseconds: 16)); // 一帧即可
+
+        // homeKey 可能为 null，要先判断
+        final homeState = homeKey.currentState;
+        if (homeState == null) return;
+
+        final homeCtx = homeState.ctx;
+        if (!homeCtx.mounted) return;
+
+        // 在下一帧调用 tipShow2（最安全）
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!homeCtx.mounted) return;
+
+          homeCtx.tipShow2(
+            SJPopSuperWinBDialog(
+              award: widget.award,
+              is_show: widget.is_showThree,
+              type: widget.type,
+            ),
+          );
         });
+      });
+    }
+
+  }
+
+  Future<void> playbgmusic() async {
+    if (SJLocalProvider.instance.sj_sound_music){
+      await SJMP3Player().pauseBackground();
+      await SJMP3Player().playEffect4();
+    }
+    Future.delayed(Duration(milliseconds: 1500), () async {
+      await SJMP3Player().pauseEffect4();
+      if (SJLocalProvider.instance.sj_bg_music && !widget.is_show){
+        await SJMP3Player().playBackground();
       }
     });
   }
@@ -147,20 +178,28 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             ),
           ),
           Positioned(top: 320.h, left: (0.width(context) - 165) * 0.5, child: SJImg(name: 'sj_dolas_big_1', width: 165, height: 165)),
-          Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
             visible: !widget.is_show,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                   SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    if(!hasCache){
+                      if (!mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   }, (finished) async {
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                    Navigator.pop(context, 1);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    if (!context.mounted) return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-                    poptxTaskContent();
                   });
                 },
                 child: Container(
@@ -168,7 +207,7 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                   decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                   child: Stack(
                     children: [
-                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * 2).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                     ],
                   ),
                 )
@@ -180,17 +219,25 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             child: Visibility(
               visible: !widget.is_show,
               child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-重新刷新
                     SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
-                      if (!mounted)return;
-                      Navigator.pop(context, 0);
+                      if(!hasCache){
+                        if (!mounted)return;
+                        Navigator.of(context).pop(0);
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }
                     }, (finished) async {
-                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      if (!context.mounted) return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
-                      poptxTaskContent();
                     });
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
@@ -199,29 +246,36 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
           Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
             visible: !widget.is_show,
             child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
               onTap: () async {
                 sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   // 看ad-重新刷新
                   SJAdManager().sj_showAd(true, 'scxji_carreward_int', context, (hasCache){
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    if(!hasCache){
+                      if (!mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   }, (finished) async {
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    if (!context.mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-                    poptxTaskContent();
                   });
-                  
+
                 } else {
-                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
-                  poptxTaskContent();
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!context.mounted)return;
+                  Navigator.of(context).pop(0);
+                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               },
-              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
             ),
           )),
         ],
@@ -229,25 +283,11 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
     );
   }
 
-  // 运营逻辑添加
-  Future<void> poptxTaskContent() async {
-    if(SJLocalProvider.instance.sj_card_number == 3){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
-    } else if (SJLocalProvider.instance.sj_card_number == 6){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
-    }
-  }
 }
 
 class SJPopSuperWinBDialog extends StatefulWidget {
   final bool is_show;
-  final int award;
+  final double award;
   final String type;
   SJPopSuperWinBDialog({super.key, required this.award, required this.is_show, required this.type});
   @override
@@ -261,25 +301,19 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
   late final Animation<double> _scaleAnimation;
   late final AnimationController _scaleController2;
   late spine.SpineWidgetController _controller0;
-  late spine.SpineWidgetController _controller1;
 
   @override
   void initState() {
     super.initState();
     sj_event_fire('coin_pop', {'source_from' : widget.type});
-
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      playmusic();
+    });
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
       });
     });
-
-    _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.animationState.setAnimationByName(0, "animation", true);
-      });
-    });
-
     // 匀速旋转动画
     _controller = AnimationController(
       vsync: this,
@@ -299,25 +333,43 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
+    if (widget.is_show) {
+      Future.delayed(const Duration(milliseconds: 1450), () async {
+        if (!mounted) return;
+        // 关闭当前弹窗
+        Navigator.of(context).pop(0);
+        // 等待 pop 完成（用下一帧最安全）
+        await Future.delayed(const Duration(milliseconds: 16));
+        final homeState = homeKey.currentState;
+        if (homeState == null) return;
+        final homeCtx = homeState.ctx;
+        if (!homeCtx.mounted) return;
+        // 下一帧执行，避免 overlay 冲突
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (!homeCtx.mounted) return;
+          homeCtx.tipShow2(
+            SJPopEpicWinBDialog(
+              award: widget.award,
+              type: widget.type,
+            ),
+          );
+        });
+      });
+    }
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (SJLocalProvider.instance.sj_sound_music){
-        await SJMP3Player().pauseBackground();
-        await SJMP3Player().playEffect4();
-      }
-      Future.delayed(Duration(milliseconds: 1000), () async {
-        await SJMP3Player().pauseEffect4();
-        if (SJLocalProvider.instance.sj_bg_music){
-          await SJMP3Player().playBackground();
-        }
-      });
-      Future.delayed(Duration(milliseconds: 1000), () async {
-        if (widget.is_show && navigatorKey.currentContext!.mounted){
-          Navigator.pop(navigatorKey.currentContext!);
-          navigatorKey.currentContext!.tipShow(SJPopEpicWinBDialog(award: widget.award, type: widget.type));
-        }
-      });
-    });
+  }
+
+  Future<void> playmusic() async {
+    if (SJLocalProvider.instance.sj_sound_music){
+    await SJMP3Player().playEffect8();
+  }
+  Future.delayed(Duration(milliseconds: 1500), () async {
+    await SJMP3Player().pauseEffect8();
+    if (SJLocalProvider.instance.sj_bg_music && !widget.is_show){
+      await SJMP3Player().playBackground();
+    }
+  });
+
   }
 
   void playAwardmp3(){
@@ -368,22 +420,29 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
               child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
             ),
           ),
-          Positioned(top: 320.h, left: (0.width(context) - 190) * 0.5, child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190)),
-          Positioned(top: 465.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 320.h, left: (0.width(context) - 190) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190))),
+          Positioned(top: 465.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
             visible: !widget.is_show,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                   SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    if(!hasCache){
+                      if (!mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   }, (finished) async {
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    if (!context.mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-                    poptxTaskContent();
                   });
                 },
                 child: Container(
@@ -391,7 +450,7 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                   decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                   child: Stack(
                     children: [
-                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * 2).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                     ],
                   ),
                 )
@@ -403,18 +462,25 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
             child: Visibility(
               visible: !widget.is_show,
               child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     sj_event_fire('coin_pop_c', {'source_from' : widget.type});
-                    // 看ad-重新刷新
+                    // 看ad-
                     SJAdManager().sj_showAd(false, 'scxji_carreward_rv', context, (hasCache){
-                      if (!mounted)return;
-                      Navigator.pop(context, 0);
+                      if(!hasCache){
+                        if (!mounted)return;
+                        Navigator.of(context).pop(0);
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }
                     }, (finished) async {
-                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                      if (!mounted)return;
-                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      if (!context.mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
-                      poptxTaskContent();
                     });
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
@@ -423,28 +489,36 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
           Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
             visible: !widget.is_show,
             child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
               onTap: () async {
                 sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   // 看ad-重新刷新
                   SJAdManager().sj_showAd(true, 'scxji_carreward_int', context, (hasCache){
-                    Navigator.pop(context, 0);
+                    if(!hasCache){
+                      if (!mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   }, (finished) async {
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    if (!context.mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-                    poptxTaskContent();
                   });
 
                 } else {
-                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
-                  poptxTaskContent();
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!context.mounted)return;
+                  Navigator.of(context).pop(0);
+                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               },
-              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+              child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
             ),
           )),
         ],
@@ -452,24 +526,10 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
     );
   }
 
-  // 运营逻辑添加
-  Future<void> poptxTaskContent() async {
-    if(SJLocalProvider.instance.sj_card_number == 3){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
-    } else if (SJLocalProvider.instance.sj_card_number == 6){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
-    }
-  }
 }
 
 class SJPopEpicWinBDialog extends StatefulWidget {
-  final int award;
+  final double award;
   final String type;
   SJPopEpicWinBDialog({super.key, required this.award, required this.type});
   @override
@@ -489,7 +549,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
   void initState() {
     super.initState();
     sj_event_fire('coin_pop', {'source_from' : widget.type});
-
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      playbgMUsic();
+    });
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
@@ -521,20 +583,18 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
+  }
 
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (SJLocalProvider.instance.sj_sound_music){
-        await SJMP3Player().pauseBackground();
-        await SJMP3Player().playEffect4();
-      }
-      Future.delayed(Duration(milliseconds: 1000), () async {
-        await SJMP3Player().pauseEffect4();
+  Future<void> playbgMUsic() async {
+    if (SJLocalProvider.instance.sj_sound_music){
+      await SJMP3Player().playEffect10();
+      Future.delayed(Duration(milliseconds: 2000), () async {
+        await SJMP3Player().pauseEffect10();
         if (SJLocalProvider.instance.sj_bg_music){
           await SJMP3Player().playBackground();
         }
       });
-    });
+    }
   }
 
   void playAwardmp3(){
@@ -582,20 +642,27 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
             width: 300, height: 300,
             child: spine.SpineWidget.fromAsset('assets/spine/epiclight.atlas', 'assets/spine/epiclight.json', _controller1),
           ),
-          Positioned(top: 320.h, left: (0.width(context) - 259) * 0.5, child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192)),
-          Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 320.h, left: (0.width(context) - 259) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192))),
+          Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 572.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
               onTap: (){
                 sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                 SJAdManager().sj_showAd(false, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', context, (hasCache){
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
+                  if(!hasCache){
+                    if (!mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  }
                 }, (finished) async {
-                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                  if (!context.mounted)return;
+                  Navigator.of(context).pop(0);
+                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
-                  poptxTaskContent();
                 });
               },
               child: Container(
@@ -603,74 +670,73 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                 child: Stack(
                   children: [
-                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * 2).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                   ],
                 ),
               )
           )),
           Positioned(
-            top: 556.h,
+            top: 544.h,
             right: 60.w,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                   // 看ad-重新刷新
                   SJAdManager().sj_showAd(false, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', context, (hasCache){
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    if(!hasCache){
+                      if (!mounted)return;
+                      Navigator.of(context).pop(0);
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   }, (finished) async {
-                    SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                    if (!mounted)return;
-                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    if (!context.mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-                    poptxTaskContent();
                   });
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
           Positioned(top: 572.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
             onTap: () async {
               sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
               if (SJNumberHelpers().checkProbability()) {
                 // 看ad-重新刷新
                 SJAdManager().sj_showAd(true, widget.type == 'dice' ? 'scxji_dicereward_int' : 'scxji_carreward_int', context, (hasCache){
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
+                  if(!hasCache){
+                    if (!mounted)return;
+                    Navigator.of(context).pop(0);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  }
                 }, (finished) async {
-                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                  if (!mounted)return;
-                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  if (!context.mounted)return;
+                  Navigator.of(context).pop(0);
+                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
-                  poptxTaskContent();
                 });
 
               } else {
-                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                if (!mounted)return;
-                Navigator.pop(context, 0);
-                poptxTaskContent();
+                await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                if (!context.mounted)return;
+                Navigator.of(context).pop(0);
+                SJScratchNextNotificationService.sendToDomandNumberNotification(0);
               }
             },
-            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
           )),
         ],
       ),
     );
-  }
-
-  // 运营逻辑添加
-  Future<void> poptxTaskContent() async {
-    if(SJLocalProvider.instance.sj_card_number == 3){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitAccountDialog());
-    } else if (SJLocalProvider.instance.sj_card_number == 6){
-      navigatorKey.currentContext!.tipShow(SJPopSubmitLastDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXDiceDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
-      navigatorKey.currentContext!.tipShow(SJPopTXWallerDialog());
-    }
   }
 }
 // 广告上线
@@ -725,6 +791,10 @@ class SJPopAdLimitDialogState extends State<SJPopAdLimitDialog> {
                       image: SJDImg('sj_ok_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.pop(context);
                     },
@@ -738,7 +808,11 @@ class SJPopAdLimitDialogState extends State<SJPopAdLimitDialog> {
             top: (0.height(context) - 370.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -807,6 +881,10 @@ class SJPopAdNotWiFiDialogState extends State<SJPopAdNotWiFiDialog> {
                       image: SJDImg('sj_try_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       sj_event_fire('network_no_c', {});
                       Navigator.pop(context);
@@ -821,7 +899,11 @@ class SJPopAdNotWiFiDialogState extends State<SJPopAdNotWiFiDialog> {
             top: (0.height(context) - 370.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -890,6 +972,10 @@ class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
                       image: SJDImg('sj_try_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.pop(context);
                       sj_event_fire('ad_retry_c', {});
@@ -905,7 +991,11 @@ class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
             top: (0.height(context) - 370.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -975,6 +1065,10 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                       image: SJDImg('sj_alls_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: () async {
                       sj_event_fire('noti_confirm_pop_allow', {});
                       Navigator.pop(context, 1);
@@ -982,7 +1076,7 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                         type: AppSettingsType.notification,
                       );
                       sj_event_fire('noti_confirm_pop_suc', {});
-                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 10);
+                      SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 10);
                     },
                   ),
                 ),
@@ -990,6 +1084,10 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                   width: 197.w,
                   height: 40.h,
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: () async {
                       sj_event_fire('noti_confirm_pop_skip', {});
                       Navigator.pop(context, 0);
@@ -1005,7 +1103,11 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
             top: (0.height(context) - 370.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -1062,6 +1164,10 @@ class SJPopNotAwardDialogState extends State<SJPopNotAwardDialog> {
                       image: SJDImg('sj_try_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.pop(context);
                     },
@@ -1075,7 +1181,11 @@ class SJPopNotAwardDialogState extends State<SJPopNotAwardDialog> {
             top: (0.height(context) - 310.h) * 0.47,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -1113,17 +1223,17 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
             width: 329.w,
             height: 398.h,
             decoration: BoxDecoration(
-                image:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? SJDImg('sj_task_4_bg') : SJDImg('sj_task_3_bg')
+                image:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num) ? SJDImg('sj_task_4_bg') : SJDImg('sj_task_3_bg')
             ),
             child: Column(
               children: [
                 SizedBox(height: 29.h,),
-                SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? 'Human Verfication' : 'Compliance Check', size: 24, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num) ? 'Human Verfication' : 'Compliance Check', size: 24, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                 SizedBox(height: 89.0.h,),
                 SizedBox(
                   width: 278.w,
                   height: 88.h,
-                  child: Center(child: SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().taskModel!.task.first.last.num) ? 'Please complete human verfication before withdrawing' :  'Your withdrawal is pending compliance review. Complete the required steps to validate your accountand release funds.', size: 18, color: '#000000'.color(), weight: FontWeight.w400, maxLines: 4, align: TextAlign.center)),
+                  child: Center(child: SJText(text:(SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num) ? 'Please complete human verfication before withdrawing' :  'Your withdrawal is pending compliance review. Complete the required steps to validate your accountand release funds.', size: 18, color: '#000000'.color(), weight: FontWeight.w400, maxLines: 4, align: TextAlign.center)),
                 ),
                 SizedBox(height: 27.h,),
                 Container(
@@ -1167,7 +1277,11 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
             top: (0.height(context) - 398.h) * 0.35,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -1179,23 +1293,23 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
   List<String> _getTxTaskString(){
     String text1 = '';
     String text2 = '';
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
       text2 =
       'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
-          .taskModel!
-          .task.first.last.num} treasure chests';
+          .last_taskModel!
+          .task.first.last.num} Card';
       text1 =
       'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
-          .taskModel!
-          .task.first.first.num} Dice';
-    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+          .last_taskModel!
+          .task.first.first.num} Box';
+    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().last_taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
       text2 =
       'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
-          .taskModel!
+          .last_taskModel!
           .task.last.last.num} probability cards';
       text1 =
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
-          .taskModel!
+          .last_taskModel!
           .task.last.first.num} Dice';
     }
     return [text1, text2];
@@ -1204,24 +1318,24 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
   List<bool> _getTxTaskStatus(){
     bool text1 = false;
     bool text2 = false;
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
-      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num) {
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num) {
         text1 = false;
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
         text2 = false;
       } else {
         text2 = true;
       }
-    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
-      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num) {
+    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().last_taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().last_taskModel!.task.last.first.num) {
         text1 = false;
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;
@@ -1293,6 +1407,10 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
                       image: SJDImg('sj_boost_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       sj_event_fire('probability_tips_pop_c', {});
                       Navigator.pop(context, 1);
@@ -1304,6 +1422,10 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
                   width: 197.w,
                   height: 40.h,
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: () async {
                       sj_event_fire('probability_tips_pop_close', {});
                       Navigator.pop(context, 0);
@@ -1319,7 +1441,12 @@ class SJPopRatioDialogState extends State<SJPopRatioDialog> {
             top: (0.height(context) - 383.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                onTap: (){
               sj_event_fire('probability_tips_pop_close', {});
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
@@ -1392,7 +1519,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                     SizedBox(height: 29.h),
                     SJText(text: 'Withdrawal Amount', size: 18.spMax, color: '#42401E'.color(), weight: FontWeight.w400),
                     SizedBox(height: 9.h),
-                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number}', size: 48.spMax, color: '#0B851C'.color(), weight: FontWeight.w400),
+                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number.toStringAsFixed(2)}', size: 48.spMax, color: '#0B851C'.color(), weight: FontWeight.w400),
                     SizedBox(height: 52.h),
                     Row(
                       children: [
@@ -1461,7 +1588,11 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                           image: SJDImg('sj_confim_btn')
                       ),
                       child: InkWell(
-                        onTap: (){
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: () async {
                           Navigator.pop(context);
                           context.tipShow(SJPopTXLoadingDialog());
                         },
@@ -1557,6 +1688,7 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
     super.initState();
     sj_event_fire('cash_task_pop', {});
     sj_event_fire('cash_task_s', {});
+    sj_event_fire('withdrawal_progress', {});
   }
 
   @override
@@ -1573,7 +1705,12 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
               Row(
                 children: [
                   Spacer(),
-                  InkWell(onTap: (){
+                  InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
+                      onTap: (){
                     Navigator.pop(context);
                   }, child: SJImg(name: 'sj_close_btn', width: 45, height: 48,)),
                   SizedBox(width: 20.w,),
@@ -1849,10 +1986,12 @@ class SJPopTXSafetyDialogState extends State<SJPopTXSafetyDialog> {
 
     // ✅ 2 秒后关闭弹窗
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted){
-        Navigator.of(context).pop();
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
         context.tipShow(SJPopTXLastDialog());
-      }
+      });
     });
 
   }
@@ -1893,7 +2032,7 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
   @override
   void initState() {
     super.initState();
-
+    sj_event_fire('security_pop', {});
   }
 
   @override
@@ -1911,6 +2050,10 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
                 children: [
                   Spacer(),
                   InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.pop(context);
                     },
@@ -1943,9 +2086,9 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
                       child: Row(
                         children: [
                           SizedBox(width: 13.w,),
-                          SJText(text: 'XXXXXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          SJText(text: _getTxTaskString2().first, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                           Spacer(),
-                          SJImg(name: 'sj_seletecd_s', width: 29.w, height: 29.w,),
+                          SJImg(name: 'sj_seletecd_n', width: 29.w, height: 29.w,),
                           SizedBox(width: 9.w,),
                         ],
                       ),
@@ -1960,12 +2103,13 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
                       child: Row(
                         children: [
                           SizedBox(width: 13.w,),
-                          SJText(text: 'XXXXXXXXXX', size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                          SJText(text: _getTxTaskString2().last, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                           Spacer(),
                           SJImg(name: 'sj_seletecd_n', width: 29.w, height: 29.w,),
                           SizedBox(width: 9.w,),
                         ],
                       ),
+
                     )
                   ],
                 ),
@@ -1975,6 +2119,31 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
         ],
       ),
     );
+  }
+
+  List<String> _getTxTaskString2(){
+    String text1 = '';
+    String text2 = '';
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
+      text2 =
+      'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
+          .last_taskModel!
+          .task.first.last.num} Card';
+      text1 =
+      'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
+          .last_taskModel!
+          .task.first.first.num} Box';
+    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().last_taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
+      text2 =
+      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+          .last_taskModel!
+          .task.last.last.num} probability cards';
+      text1 =
+      'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
+          .last_taskModel!
+          .task.last.first.num} Dice';
+    }
+    return [text1, text2];
   }
 
 }
@@ -2008,6 +2177,10 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
                 children: [
                   Spacer(),
                   InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.pop(context);
                     },
@@ -2036,6 +2209,10 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
                     SizedBox(width: 284.w, height:58.h,child: SJText(text: 'Keep growing your wealth while you wait!', size: 24.sp, color: '#038605'.color(), weight: FontWeight.w400,maxLines: 2, align: TextAlign.center,)),
                     SizedBox(height: 44.h,),
                     InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
                       onTap: (){
                         Navigator.pop(context);
                       },
@@ -2055,7 +2232,8 @@ class SJPopTXSulsDialogState extends State<SJPopTXSulsDialog> {
 // 发起提现
 class SJPopSubmitOneDialog extends StatefulWidget {
   final int number_index;
-  SJPopSubmitOneDialog({super.key, required this.number_index});
+  final bool is_tx;
+  SJPopSubmitOneDialog({super.key, required this.number_index, required this.is_tx});
   @override
   State<SJPopSubmitOneDialog> createState() => SJPopSubmitOneDialogState();
 }
@@ -2064,7 +2242,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
   
   int seletecd_index = 0;
 
-  final TextEditingController _controller = TextEditingController();
+  final TextEditingController _controller = TextEditingController(text: SJLocalProvider.instance.sj_account_id.length > 0 ? SJLocalProvider.instance.sj_account_id : '');
 
   FocusNode _focusNode = FocusNode();
 
@@ -2074,6 +2252,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
   void initState() {
     super.initState();
     sj_event_fire('cash_page_c', {});
+    sj_event_fire('withdrawal_information', {});
   }
 
   @override
@@ -2106,6 +2285,10 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                     SJText(text: 'Payment Information', size: 18.sp, color: '#42401E'.color(), weight: FontWeight.w400),
                     SizedBox(height: 18.h,),
                     InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
                       onTap: (){
                         setState(() {
                           seletecd_index = 0;
@@ -2115,6 +2298,10 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                     ),
                     SizedBox(height: 12.h,),
                     InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
                       onTap: (){
                         setState(() {
                           seletecd_index = 1;
@@ -2141,7 +2328,7 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                         controller: _controller,
                         focusNode: _focusNode,
                         decoration:  InputDecoration(
-                          labelText: 'E.G. 123456789@abc.com',
+                          labelText: seletecd_index == 0 ? 'E.G. 123456789@abc.com' : '1234567890',
                           labelStyle: TextStyle(
                             color: '#9A9881'.color(), // 设置字体颜色为蓝色
                             fontSize: 13.0,     // 可选：设置字体大小
@@ -2180,27 +2367,30 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                     ),
                     SizedBox(height: 30.h,),
                     InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      hoverColor: Colors.transparent,
+                      focusColor: Colors.transparent,
                       onTap: () async {
                         if (_controller.text.isEmpty){
                           Navigator.pop(context);
                           SJDialogTool.toast(context, 'Please Enter Your Account.');
                         } else {
                           Navigator.pop(context);
+                          await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_account_idName, _controller.text);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_numberName, widget.number_index);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_account_seled_indexName, seletecd_index);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_accountName, seletecd_index);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number - tx_list[widget.number_index]);
+                          if(!widget.is_tx) return;
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
+                          await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number - tx_list[widget.number_index]);
                           await SJLocalProvider.instance.updateTXInStatus(1);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-                          await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_account_idName, _controller.text);
-                          if (SJLocalProvider.instance.sj_dolas_number >= 1000){
-                            if(mounted){
-                              context.tipShow(SJPopTXWallerDialog());
-                            }
+                          if(homeKey.currentState!.ctx.mounted){
+                            homeKey.currentState!.ctx.tipShow(SJPopAccountConfinDialog());
                           }
                         }
                       },
@@ -2231,7 +2421,7 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
   @override
   void initState() {
     super.initState();
-
+    sj_event_fire('withdrawal_popfill', {});
     _controller1 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
@@ -2297,16 +2487,24 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
               ),
               SizedBox(height: 25.h,),
               InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   Navigator.pop(context);
-                  context.tipShow(SJPopTXTipsDialog());
+                  context.tipShow(SJPopSubmitOneDialog(number_index: 0, is_tx: false));
                 },
                 child: SJImg(name: 'sj_secure_btn', width: 260.w, height: 74.h,),
               ),
               InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     Navigator.pop(context);
-                    context.tipShow(SJPopTXTipsDialog());
+                    context.tipShow(SJPopSubmitOneDialog(number_index: 0, is_tx: false));
                   },
                   child: SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],),)
               ),
@@ -2357,24 +2555,53 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
 // 运营3
 class SJPopSubmitLastDialog extends StatefulWidget {
   SJPopSubmitLastDialog({super.key});
+
   @override
   State<SJPopSubmitLastDialog> createState() => SJPopSubmitLastDialogState();
 }
 
-class SJPopSubmitLastDialogState extends State<SJPopSubmitLastDialog> {
+class SJPopSubmitLastDialogState extends State<SJPopSubmitLastDialog> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<Offset> _bgAnimation;
+  late Animation<Offset> _textAnimation;
 
   @override
   void initState() {
     super.initState();
 
-    // ✅ 2 秒后关闭弹窗
+    // 初始化动画控制器
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
+
+    // 背景图片从左到右
+    _bgAnimation = Tween<Offset>(
+      begin: const Offset(-1.0, 0), // 左边屏幕外
+      end: Offset.zero, // 最终位置
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    // 文字图片从右到左
+    _textAnimation = Tween<Offset>(
+      begin: const Offset(1.0, 0), // 右边屏幕外
+      end: Offset.zero, // 最终位置
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
+
+    // 开始动画
+    _controller.forward();
+
     Future.delayed(const Duration(seconds: 2), () {
-      if (mounted){
-        Navigator.of(context).pop();
-        context.tipShow(SJPopTXTipsDialog());
-      }
+        if (!mounted) return;
+        Navigator.of(context).pop();   // ✔ 正确，关闭当前 dialog
+        context.tipShow(SJPopTXTipsDialog()); // ✔ 正确，继续显示下一个提示
     });
 
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
   }
 
   @override
@@ -2385,24 +2612,28 @@ class SJPopSubmitLastDialogState extends State<SJPopSubmitLastDialog> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-                Container(
-                  width: 379.w,
-                  height: 200.h,
-                  decoration: BoxDecoration(
-                    image: SJDImg('sj_tx_3_bg')
-                  ),
-                  child: SJImg(name: 'sj_tx_3_center'),
-                )
-              ],
+          // 背景图片
+          SlideTransition(
+            position: _bgAnimation,
+            child: SizedBox(
+              width: 379.w,
+              height: 200.h,
+              child: SJImg(name: 'sj_yunying3_bg'),
             ),
+          ),
+          // 文字图片
+          SlideTransition(
+            position: _textAnimation,
+            child: SizedBox(
+              width: 309.w,
+              height: 81,
+              child: SJImg(name: 'sj_yunying3_text'),
+            ),
+          ),
         ],
       ),
     );
   }
-
 }
 
 // 提现不足
@@ -2463,6 +2694,10 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
                       image: SJDImg('sj_try_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       sj_event_fire('cash_not_pop_c', {});
                       Navigator.pop(context);
@@ -2477,7 +2712,12 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
             top: (0.height(context) - 370.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                onTap: (){
               sj_event_fire('cash_not_pop_c', {});
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
@@ -2497,6 +2737,13 @@ class SJPopTXTipsDialog extends StatefulWidget {
 }
 
 class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    sj_event_fire('remind_pop', {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -2529,7 +2776,7 @@ class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
                         text: 'Your withdrawal progress is ahead of',
                       ),
                       TextSpan(
-                        text: ' ${SJLocalProvider.instance.sj_dolas_number / 1000}% ',
+                        text: ' ${(SJLocalProvider.instance.sj_dolas_number / 1000).toStringAsFixed(2)}% ',
                         style: TextStyle(color: '#65DE38'.color()),
                       ),
                       TextSpan(
@@ -2549,7 +2796,7 @@ class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
                 child: Column(
                   children: [
                     SizedBox(height: 31.h,),
-                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number}', size: 40.sp, color: '#4C3117'.color(), weight: FontWeight.w400),
+                    SJText(text: '\$${SJLocalProvider.instance.sj_dolas_number.toStringAsFixed(2)}', size: 40.sp, color: '#4C3117'.color(), weight: FontWeight.w400),
                   ],
                 ),
               ),
@@ -2584,7 +2831,7 @@ class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
                                 text: 'Just',
                               ),
                               TextSpan(
-                                text: ' \$${1000 - SJLocalProvider.instance.sj_dolas_number} ',
+                                text: ' \$${(1000 - SJLocalProvider.instance.sj_dolas_number).toStringAsFixed(2)} ',
                                 style: TextStyle(color: '#C61013'.color()),
                               ),
                               TextSpan(
@@ -2601,8 +2848,13 @@ class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
               ),
               SizedBox(height: 22.w,),
               InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   Navigator.pop(context);
+                  sj_event_fire('remind_pop_c', {});
                 },
                 child: SJImg(name: 'sj_gets_btn', width: 260.w, height: 74.h,),
               ),
@@ -2620,7 +2872,12 @@ class SJPopTXTipsDialogState extends State<SJPopTXTipsDialog> {
                       children: [
                         Spacer(),
                         InkWell(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            focusColor: Colors.transparent,
                           onTap: (){
+                            sj_event_fire('remind_pop_c', {});
                             Navigator.pop(context);
                             Navigator.of(context).push(
                               MaterialPageRoute(
@@ -2685,6 +2942,7 @@ class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
   @override
   void initState() {
     // TODO: implement initState
+    sj_event_fire('infinite_dice', {});
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
@@ -2798,7 +3056,12 @@ class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
               ),
               SizedBox(height: 11.h,),
               InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
+                  sj_event_fire('infinite_dice_c', {'from' : 'dice'});
                   Navigator.pop(context);
                   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_100_timer_starName, true);
                   SJScratchDiceTimerNotificationService.sendToDomandNumberNotification(0);
@@ -2826,7 +3089,12 @@ class SJPopTXDiceDialogState extends State<SJPopTXDiceDialog> {
                         children: [
                           Spacer(),
                           InkWell(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              focusColor: Colors.transparent,
                               onTap: (){
+                                sj_event_fire('infinite_dice_c', {'from' : 'cash'});
                                 Navigator.pop(context);
                                 SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_100_timer_starName, true);
                                 SJScratchDiceTimerNotificationService.sendToDomandNumberNotification(0);
@@ -2943,25 +3211,35 @@ class SJPopTXWallerDialogState extends State<SJPopTXWallerDialog> {
               ),
               SizedBox(height: 11.h,),
               InkWell(
-                onTap: (){
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                onTap: () async {
                   sj_event_fire('meet_withdraw_c', {});
                   Navigator.pop(context);
-                  if (SJLocalProvider.instance.sj_account_id.isEmpty) {
-                    context.tipShow(SJPopSubmitOneDialog(number_index: 0));
-                  } else {
-                    context.tipShow(SJPopAccountConfinDialog());
-                  }
+                  // if (SJLocalProvider.instance.sj_account_id.isEmpty) {
+                    if (!context.mounted) return;
+                    context.tipShow(SJPopSubmitOneDialog(number_index: 0, is_tx: true));
+                  // } else {
+                  //   await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
+                  //   if (!context.mounted) return;
+                  //   context.tipShow(SJPopAccountConfinDialog());
+                  // }
                 },
                 child: SJImg(name: 'sj_claim_btns', width: 260.w, height: 74.h,),
               ),
               SizedBox(height: 12.w,),
-              SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],onPressed: (){
+              SizedBox(width: 260.w, height: 45.h, child: SJUnderlineTextButton(text: 'Later On', fontSize: 20.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],onPressed: () async {
                 Navigator.pop(context);
-                if (SJLocalProvider.instance.sj_account_id.isEmpty) {
-                  context.tipShow(SJPopSubmitOneDialog(number_index: 0));
-                } else {
-                  context.tipShow(SJPopAccountConfinDialog());
-                }
+                // if (SJLocalProvider.instance.sj_account_id.isEmpty) {
+                  if (!context.mounted) return;
+                  context.tipShow(SJPopSubmitOneDialog(number_index: 0, is_tx: true));
+                // } else {
+                //   await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
+                //   if (!context.mounted) return;
+                //   context.tipShow(SJPopAccountConfinDialog());
+                // }
               },),)
             ],
           )
@@ -2992,11 +3270,11 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
 
   var _openThree = false;
 
-  var doals_one = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+  var doals_one = SJNumberHelpers().getPrizeWithBoxorBubble();
 
-  var doals_two = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+  var doals_two = SJNumberHelpers().getPrizeWithBoxorBubble();
 
-  var doals_three = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+  var doals_three = SJNumberHelpers().getPrizeWithBoxorBubble();
 
   var open_index = 0.0;
 
@@ -3012,16 +3290,11 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
 
   late spine.SpineWidgetController _controller5;
 
-  late spine.SpineWidgetController _controller6;
-
-  late spine.SpineWidgetController _controller7;
-
-  late spine.SpineWidgetController _controller8;
-
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    updateboxnumber();
     sj_event_fire('box_pop', {});
 
     _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
@@ -3060,32 +3333,29 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
       });
     });
 
-    _controller6 = spine.SpineWidgetController(onInitialized: (controller) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.animationState.setAnimationByName(0, "animation", true);
-      });
-    });
+  }
 
-    _controller7 = spine.SpineWidgetController(onInitialized: (controller) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.animationState.setAnimationByName(0, "animation", true);
-      });
-    });
-
-    _controller8 = spine.SpineWidgetController(onInitialized: (controller) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        controller.animationState.setAnimationByName(0, "animation", true);
-      });
-    });
-
+  Future<void> updateboxnumber() async {
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
   }
 
   openBox(){
+    if (SJLocalProvider.instance.sj_sound_music){
+      if (SJLocalProvider.instance.sj_bg_music){
+        SJMP3Player().pauseBackground();
+      }
+      SJMP3Player().playEffect6();
+    }
     setState(() {
       _showBottom = true;
       _showanimation = false;
     });
     Future.delayed(Duration(milliseconds: 1200), (){
+      SJMP3Player().resumeEffect6();
+      if (SJLocalProvider.instance.sj_bg_music){
+        SJMP3Player().playBackground();
+      }
+      if (!mounted)return;
       setState(() {
         if (!_openOne){
           _openOne = true;
@@ -3134,6 +3404,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
               width: 137.0.w,
               height: 113.0.h,
               child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_one;
                     _openOne = true;
@@ -3147,14 +3421,14 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
             visible: _openOne,
             child: Positioned(
               left: 62.w, top: 510.h,
-              width: 120.0.w,
+              width: 150.0.w,
               height: 30.h,
               child: SizedBox(
                 width: 120.0.w,
                 height: 30.h,
                 child: Row(
                   children: [
-                    SizedBox(width: 10.w,),
+                    SizedBox(width: 0.w,),
                     SJGradientNumberRoller(
                       value: doals_one,
                       duration: 1000,
@@ -3162,7 +3436,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
                       borderColor: '#601D09'.color(),
                       borderWidth: 1.0,
-                      decimalPlaces: 0, // 动态调整小数位
+                      decimalPlaces: 2, // 动态调整小数位
                     ),
                   ],
                 ),
@@ -3185,6 +3459,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
               width: 137.0.w,
               height: 113.0.h,
               child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   open_index = doals_two;
                   _openTwo = true;
@@ -3197,15 +3475,15 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
           Visibility(
             visible: _openTwo,
             child: Positioned(
-              right: 60.w, top: 510.h,
-              width: 120.0.w,
+              right: 30.w, top: 510.h,
+              width: 150.0.w,
               height: 30.h,
               child: SizedBox(
                 width: 120.0.w,
                 height: 30.h,
                 child: Row(
                   children: [
-                    SizedBox(width: 75.w,),
+                    SizedBox(width: 44.w,),
                     SJGradientNumberRoller(
                       value: doals_two,
                       duration: 1000,
@@ -3213,7 +3491,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
                       borderColor: '#601D09'.color(),
                       borderWidth: 1.0,
-                      decimalPlaces: 0, // 动态调整小数位
+                      decimalPlaces: 2, // 动态调整小数位
                     ),
                   ],
                 ),
@@ -3236,6 +3514,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
               width: 137.0.w,
               height: 113.0.h,
               child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   open_index = doals_three;
                   _openThree = true;
@@ -3248,15 +3530,15 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
           Visibility(
             visible: _openThree,
             child: Positioned(
-              right: (0.width(context) - 120.w) * 0.5, top: 364.h,
-              width: 120.0.w,
+              right: (0.width(context) - 178.w) * 0.5, top: 364.h,
+              width: 150.0.w,
               height: 30.h,
               child: SizedBox(
                 width: 120.0.w,
                 height: 30.h,
                 child: Row(
                   children: [
-                    SizedBox(width: 40.w,),
+                    SizedBox(width: 20.w,),
                     SJGradientNumberRoller(
                       value: doals_three,
                       duration: 1000,
@@ -3264,7 +3546,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
                       borderColor: '#601D09'.color(),
                       borderWidth: 1.0,
-                      decimalPlaces: 0, // 动态调整小数位
+                      decimalPlaces: 2, // 动态调整小数位
                     ),
                   ],
                 ),
@@ -3278,6 +3560,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                 width: 142.0.w,
                 height: 42.0.h,
                 child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_one;
                     _openOne = true;
@@ -3297,6 +3583,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                 width: 142.0.w,
                 height: 42.0.h,
                 child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_two;
                     _openTwo = true;
@@ -3316,6 +3606,10 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                 width: 142.0.w,
                 height: 42.0.h,
                 child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_three;
                     _openThree = true;
@@ -3392,17 +3686,26 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                     children: [
                       Center(
                         child: InkWell(
-                            onTap: (){
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            focusColor: Colors.transparent,
+                            onTap: () async {
                               sj_event_fire('box_pop_claim', {});
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_boxName,false);
                               SJAdManager().sj_showAd(false,'scxji_boxreward_rv', context, (hasCache){
                                 if (!hasCache) {
 
                                 }
                               }, (finished) async {
                                 var value = doals_one + doals_two + doals_three;
-                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
-                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                                await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
+                                await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
+                                 //
+                                 if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
+                                   await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+                                   await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+                                 }
                               });
                               Navigator.pop(context, 0);
                             }
@@ -3419,8 +3722,9 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                 right: (0.width(context) - 200) * 0.5, top: 652.h,
                 width: 200.0,
                 height: 52.0,
-                child: SJUnderlineTextButton(text: 'Claim \$${open_index}', fontSize: 20.sp,gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color()], underlineColor: '#C5A213'.color(), onPressed: () async {
+                child: SJUnderlineTextButton(text: 'Claim \$${open_index.toStringAsFixed(2)}', fontSize: 20.sp,gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color()], underlineColor: '#C5A213'.color(), onPressed: () async {
                   sj_event_fire('box_pop_claim', {});
+                  await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_boxName,false);
                   if (SJNumberHelpers().checkProbability()){
                     SJAdManager().sj_showAd(true,'scxji_boxreward_int', context, (hasCache){
                       if (!hasCache) {
@@ -3437,7 +3741,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       }
                        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                       SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                       SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
                     });
                   } else {
 
@@ -3451,7 +3755,7 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                     }
                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                      SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                     SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                     SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
                   }
                   Navigator.pop(context, 0);
                 },)
@@ -3520,15 +3824,29 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
         controller.animationState.setAnimationByName(0, "animation", true);
       });
     });
+    updateboxnumber();
+  }
 
+  Future<void> updateboxnumber() async {
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
   }
 
   openBox(){
+    if (SJLocalProvider.instance.sj_sound_music){
+      if (SJLocalProvider.instance.sj_bg_music){
+        SJMP3Player().pauseBackground();
+      }
+      SJMP3Player().playEffect6();
+    }
     setState(() {
       _showBottom = true;
       _showanimation = false;
     });
     Future.delayed(Duration(milliseconds: 1200), (){
+      SJMP3Player().resumeEffect6();
+      if (SJLocalProvider.instance.sj_bg_music){
+        SJMP3Player().playBackground();
+      }
       setState(() {
         if (!_openOne){
           _openOne = true;
@@ -3582,6 +3900,10 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
               width: 157.0.w,
               height: 133.0.h,
               child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_one;
                     _openOne = true;
@@ -3610,7 +3932,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                       gradientColors: ['#FFE386'.color(), '#FFFFFF'.color()],
                       borderColor: '#601D09'.color(),
                       borderWidth: 1.0,
-                      decimalPlaces: 0, // 动态调整小数位
+                      decimalPlaces: 2, // 动态调整小数位
                     ),
                   ],
                 ),
@@ -3624,6 +3946,10 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                 width: 142.0.w,
                 height: 42.0.h,
                 child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     open_index = doals_one;
                     _openOne = true;
@@ -3652,6 +3978,10 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                     children: [
                       Center(
                         child: InkWell(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            focusColor: Colors.transparent,
                             onTap: (){
                               sj_event_fire('box_pop_c', {});
                               if (SJNumberHelpers().checkProbability()){
@@ -3666,7 +3996,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                                   }
                                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                                   SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                                  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                                  SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
                                 });
                               } else {
 
@@ -3675,7 +4005,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                                   value = doals_one;
                                 }
                                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
-                                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value).toInt());
+                                SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
                               }
                               Navigator.pop(context, 0);
                             }
@@ -3825,6 +4155,10 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
           ),
           SizedBox(height: 58.h,),
           InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
             onTap: (){
               sj_event_fire('dice_page_not_find', {});
               // 返回根目录进度最近进入的页面
@@ -3834,7 +4168,7 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (builder) {
-                    return SJScratchA(
+                    return SJScratchB(
                         type: history_index);
                   },
                 ),
@@ -3962,6 +4296,10 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
           Positioned(top: 295.h, left: (0.width(context) - 211) * 0.5, child: SJImg(name: 'sj_dice_conten_3', width: 211, height: 211)),
           Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
               onTap: (){
                 Navigator.pop(context, 1);
                 SJAdAHelper().show(context, (hasCache){
@@ -3989,6 +4327,10 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
             top: 542.h,
             right: 60.w,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   // 看ad-重新刷新
                   SJAdAHelper().show(context, (hasCache){
@@ -4005,6 +4347,10 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
           Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
             onTap: () async {
               playAwardmp3();
               Navigator.pop(context, 0);
@@ -4066,6 +4412,10 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                                 width: 60,
                                 height: 40,
                                 child: InkWell(
+                                  splashColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  focusColor: Colors.transparent,
                                   onTap: () async {
                                     if (SJLocalProvider.instance.sj_sound_music){
                                       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_sound_musicName, false);
@@ -4104,6 +4454,10 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                                 width: 60,
                                 height: 40,
                                 child: InkWell(
+                                  splashColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  focusColor: Colors.transparent,
                                   onTap: () async {
                                     if (SJLocalProvider.instance.sj_bg_music){
                                       await SJMP3Player().pauseBackground();
@@ -4131,6 +4485,10 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                       image: SJDImg('sj_tohome_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.of(context).pop();
                     },
@@ -4144,6 +4502,10 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                       image: SJDImg('sj_prvity_btn')
                   ),
                   child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
                     onTap: (){
                       Navigator.of(context).pop();
                       Navigator.of(context).push(
@@ -4165,7 +4527,12 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
             top: (0.height(context) - 362.h) * 0.48,
             width: 45,
             height: 48,
-            child: InkWell(onTap: (){
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
+                onTap: (){
               Navigator.pop(context);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
@@ -4231,6 +4598,10 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
             top: 440.h,
             left: (MediaQuery.of(context).size.width - 260) * 0.5,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
               onTap: (){
                 Navigator.pop(context, 1);
                 // 看ad-重新刷新
@@ -4244,6 +4615,10 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
             top: 420.h,
             right: 60.w,
             child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,
                 onTap: (){
                   // 看ad-重新刷新
                   SJAdManager().sj_showAd(false, 'scxji_unlock_rv', context, (hasCache){}, (finished){
@@ -4252,17 +4627,31 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
-          Positioned(top: 528.h,left: (0.width(context) - 124) * 0.5, child: InkWell(
+          // Positioned(top: 528.h,left: (0.width(context) - 124) * 0.5, child: InkWell(
+          //   splashColor: Colors.transparent,
+          //   highlightColor: Colors.transparent,
+          //   hoverColor: Colors.transparent,
+          //   focusColor: Colors.transparent,
+          //   onTap: () async {
+          //      if (SJLocalProvider.instance.sj_domand_number >= 1000){
+          //        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
+          //        unlocklevelsluck();
+          //      } else {
+          //        Navigator.pop(context);
+          //        SJDialogTool.toast(context, 'Not enough coins? Go play games to earn more!');
+          //      }
+          //   },
+          //   child: SJImg(name: 'sj_spend_btn', width: 124, height: 22,),
+          // )),
+          Positioned(top: 528.h,left: (0.width(context) - 45) * 0.5, child: InkWell(
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+            focusColor: Colors.transparent,
             onTap: () async {
-               if (SJLocalProvider.instance.sj_domand_number >= 1000){
-                 await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
-                 unlocklevelsluck();
-               } else {
-                 Navigator.pop(context);
-                 SJDialogTool.toast(context, 'Not enough coins? Go play games to earn more!');
-               }
+              Navigator.pop(context);
             },
-            child: SJImg(name: 'sj_spend_btn', width: 124, height: 22,),
+            child: SJImg(name: 'sj_close_btn', width: 45, height: 48,),
           )),
         ],
       ),
@@ -4358,9 +4747,22 @@ class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog> {
               SizedBox(height: 43.h,),
               Center(
                 child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
                   onTap: (){
                     sj_event_fire('scratch_card_fail_pop_c', {});
-                    Navigator.pop(context, 0);
+                    Navigator.of(context).pop(0);
+                    if(SJNumberHelpers().checkProbability()){
+                      SJAdManager().sj_showAd(true, 'scxji_playagain_int', context, (hasCache){
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }, (finished){
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      });
+                    } else {
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                   },
                   child: SJImg(name: 'sj_playagin_btn', width: 262, height: 76,),
                 ),
@@ -4395,7 +4797,7 @@ class SJPopLevelADialogState extends State<SJPopLevelADialog>
     )..repeat();
 
     _timer = Timer(const Duration(milliseconds: 2000), () {
-      Navigator.pop(context);
+      Navigator.of(context).pop();   // ✔ 正确，关闭当前 dialog
     });
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (SJLocalProvider.instance.sj_sound_music){

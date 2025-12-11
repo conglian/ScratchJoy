@@ -22,7 +22,6 @@ import 'SJTool/sj_number_helper.dart';
 
 final trigger = SJThresholdTrigger();
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   // 初始化Flutter绑定（确保async操作在runApp前执行）
@@ -103,6 +102,13 @@ class _MyAppState extends State<MyApp> {
       splitScreenMode: true, // 支持平板分屏
       builder: (context, child) {
         return MaterialApp(
+          theme: ThemeData(
+          splashColor: Colors.transparent,
+          highlightColor: Colors.transparent,
+          hoverColor: Colors.transparent,
+          focusColor: Colors.transparent,
+          splashFactory: NoSplash.splashFactory, // 彻底取消水波纹
+          ),
           debugShowCheckedModeBanner: false,
           builder: (context, widget) {
             // 防止系统字体缩放影响

@@ -17,6 +17,7 @@ import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_init_sdk.dart';
 import '../main.dart';
+import 'package:scratchjoy/SJHome/SJHome.dart';
 
 
 class SJSratchJoyLaunch extends StatefulWidget {
@@ -41,7 +42,6 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
   Future<void> _setConfigDateInfoData() async {
     // text
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    _daydateString = '';
     _daydateString = prefs.getString('sj_day_date') ?? '';
     DateTime today = DateTime.now();
     String formattedDate = DateFormat('yyyy-MM-dd').format(today);
@@ -54,8 +54,8 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
     } else {
       if (_daydateString != formattedDate) {
         // 隔天
-        prefs.setString('sp_day_date', formattedDate);
-        prefs.setBool('sp_old_guide', false);
+        prefs.setString('sj_day_date', formattedDate);
+        prefs.setBool('sj_old_guide', false);
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, SJLocalProvider.instance.sj_login_index + 1);
       }
     }
@@ -108,9 +108,7 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
-                    builder: (builder) {
-                      return SJHome(key: navigatorKey);
-                    },
+                    builder: (_) => SJHome(key: homeKey),
                   ),
                 );
               },),
@@ -146,7 +144,7 @@ class _SJGradientProgressBarState extends State<SJGradientProgressBar>
     super.initState();
 
     _controller = AnimationController(
-      duration: const Duration(seconds: 3),
+      duration: const Duration(seconds: 12),
       vsync: this,
     );
 

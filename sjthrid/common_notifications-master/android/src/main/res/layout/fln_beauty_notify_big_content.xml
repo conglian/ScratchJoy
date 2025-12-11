@@ -47,7 +47,7 @@
                 android:layout_height="wrap_content"
                 android:maxLines="3"
                 android:textColor="#FFFFFF"
-                android:textSize="14sp"
+                android:textSize="18sp"
                 android:textStyle="bold"
                 tools:text="This is body" />
         </LinearLayout>

@@ -5,6 +5,7 @@ import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_ad_help.dart';
@@ -80,7 +81,8 @@ class SJSDKHelpers {
     var disId = await FlutterTbaInfo.instance.getDistinctId();
     'disId=$disId'.log();
     Adjust.addGlobalCallbackParameter('customer_user_id', disId);
-    final config = AdjustConfig(kReleaseMode ? appToken1 : appToken2, AdjustEnvironment.production);
+    final config = AdjustConfig(appToken1, AdjustEnvironment.production);
+    // final config = AdjustConfig(kReleaseMode ? appToken1 : appToken2, AdjustEnvironment.production);
     // 归因信息
     config.attributionCallback = (AdjustAttribution attributionChangedData) {
       print('[Adjust]: Attribution changed!');
@@ -129,6 +131,17 @@ class SJSDKHelpers {
     "app firebase loading".log();
     try {
       await remoteConfig.fetchAndActivate();
+
+      final scratchjoy_fb130 =
+      remoteConfig.getValue("130scratchjoy_fb").asString();
+      'scratchjoy_fb130=$scratchjoy_fb130'.log();
+      // facebook_init
+      if (scratchjoy_fb130 != ''){
+        Map<String, dynamic> jsonMap = json.decode(scratchjoy_fb130);
+        SJFacebookAnalytics.init(appId: jsonMap['app_id'], clientToken: jsonMap['client_token'], appName: jsonMap['app_name']);
+      } else {
+        SJFacebookAnalytics.init(appId: '1475766213481674', clientToken: '9becc07e1ef0cf1f14ea70c055f5167b', appName: 'C130_GP');
+      }
 
       final risk_control = remoteConfig.getValue('risk_control').asString();
       if (risk_control != ''){
@@ -233,7 +246,7 @@ class SJSDKHelpers {
       adjustAdRevenue.adRevenueNetwork = max.networkPlacement;
       adjustAdRevenue.adRevenuePlacement = max.placement;
       Adjust.trackAdRevenue(adjustAdRevenue);
-      await facebookAppEvents.logPurchase(amount: max.revenue, currency: 'USD');
+      await SJFacebookAnalytics.logPurchase(max.revenue, 'USD');
       "af logs:: af revenue success ${max.revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();
@@ -249,7 +262,7 @@ class SJSDKHelpers {
       adjustAdRevenue.setRevenue(revenue, 'USD');
       adjustAdRevenue.adRevenueNetwork = network;
       Adjust.trackAdRevenue(adjustAdRevenue);
-      await facebookAppEvents.logPurchase(amount: revenue, currency: 'USD');
+      await SJFacebookAnalytics.logPurchase(revenue, 'USD');
       "af logs:: af revenue success ${revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();
@@ -259,4 +272,29 @@ class SJSDKHelpers {
 
 }
 
+class SJFacebookAnalytics {
+
+  static final _channel = MethodChannel("com.example.scratchjoy/facebook");
+
+  /// 初始化 Facebook SDK（动态传入 appId、clientToken、appName）
+  static Future<void> init({
+    required String appId,
+    required String clientToken,
+    required String appName,
+  }) async {
+    await _channel.invokeMethod("initFacebook", {
+      "app_id": appId,
+      "client_token": clientToken,
+      "app_name": appName,
+    });
+  }
+
+  /// 购买打点（无参数）
+  static Future<void> logPurchase(double amount, String currency) async {
+    await _channel.invokeMethod("logPurchase", {
+      "amount": amount,
+      "currency": currency,
+    });
+  }
+}
 

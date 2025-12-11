@@ -171,10 +171,10 @@ class SJFKManger {
     Map<String, dynamic> customer = {
       'root' : root ? 1 : 0,
       'vpn' : vpn ? 1 : 0,
-      'sim' : sim ? 0 : 1,
+      'sim' : sim ? 1 : 0,
       'simulator' : simulator ? 1 : 0,
       'developer' : developer ? 1 : 0,
-      'googleplay' : googleplay ? 0 : 1,
+      'googleplay' : googleplay ? 1 : 0,
     };
     sj_event_fire('session_custom', customer);
 

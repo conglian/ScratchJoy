@@ -12,6 +12,7 @@ import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_numberBHelper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
+import 'package:scratchjoy/main.dart';
 import 'package:spine_flutter/spine_widget.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJTool/SJAdManager.dart';
@@ -25,11 +26,12 @@ import '../SJTool/sj_number_helper.dart';
 import '../SJTool/sj_text.dart';
 import 'SJCash.dart';
 import 'SJDiceRollWidget.dart';
-import 'SJScratchA.dart';
 import 'SJScratchB.dart';
 import 'SJScratchRatio.dart';
 
 var history_index = 0;
+
+final GlobalKey<_SJHomeState> homeKey = GlobalKey<_SJHomeState>();
 
 class SJHome extends StatefulWidget {
   SJHome({super.key});
@@ -38,6 +40,8 @@ class SJHome extends StatefulWidget {
 }
 
 class _SJHomeState extends State<SJHome> {
+
+  BuildContext get ctx => context;
 
   late SpineWidgetController _controller0;
 
@@ -96,7 +100,22 @@ class _SJHomeState extends State<SJHome> {
       sj_event_fire('countdown_open', {});
       _startCountdown();
     });
-
+    // push next
+    SJScratchPushNextNotificationService.stream.listen((value) async {
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
+      history_index = value;
+      if (!mounted)return;
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (builder) {
+            return SJScratchB(
+                type: value);
+          },
+        )
+      );
+      await Future.delayed(Duration(milliseconds: 50),(){});
+      poptxTaskContent();
+    });
     _controller0 = SpineWidgetController(onInitialized: (controller) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         controller.animationState.setAnimationByName(0, "animation", true);
@@ -105,16 +124,42 @@ class _SJHomeState extends State<SJHome> {
     sj_event_fire('home_page', {});
   }
 
+  // 运营逻辑添加
+  Future<void> poptxTaskContent() async {
+    await Future.delayed(Duration(milliseconds: 50),(){});
+    if(SJLocalProvider.instance.sj_card_number == 4 && SJLocalProvider.instance.sj_yunying_1 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_1Name, true);
+      if (!mounted) return;
+      context.tipShow(SJPopSubmitAccountDialog());
+    } else if (SJLocalProvider.instance.sj_card_number == 7 && SJLocalProvider.instance.sj_yunying_3 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_3Name, true);
+      if (!mounted) return;
+      context.tipShow(SJPopSubmitLastDialog());
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
+      if (!mounted) return;
+      context.tipShow(SJPopTXDiceDialog());
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
+      if (!mounted) return;
+      context.tipShow(SJPopTXWallerDialog());
+    }
+  }
+
   // 第一段任务提醒
   Future<void> showOneTxTask() async {// 判断第一段任务是否完成
-    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+    'SJLocalProvider.instance.sj_open_tx=${SJLocalProvider.instance.sj_open_tx}'.log();
+    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_open_tx == true) {
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
-      if (!mounted) return;
-      context.tipShow(SJPopTask3Dialog());
+      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      if (SJLocalProvider.instance.sj_tx_task2_tips == false && homeKey.currentState!.ctx.mounted) {
+        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+      }
     }
   }
 
@@ -146,7 +191,7 @@ class _SJHomeState extends State<SJHome> {
     if (!SJLocalProvider.instance.sj_new_guide){
       var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'home',));
       if (code == 1){
-        SJScratchProbabilityUpNotificationService.sendToDomandNumberNotification(0);
+        SJScratchProbabilityUpNotificationService.notify(0);
       }
     }
   }
@@ -302,28 +347,28 @@ class _SJHomeState extends State<SJHome> {
                   SJBottomBarWidget(),
                 ],
               ),
-              Positioned(left: 4.w,bottom: 56.h,child:
-              Consumer<SJLocalProvider>(
-                builder: (context, provider, child) {
-                  return Visibility(
-                    visible: provider.sj_box_index >= 3,
-                    child: Container(
-                      width: 285.w,
-                      height: 71.h,
-                      decoration: BoxDecoration(
-                          image: SJDImg('sj_box_tips')
-                      ),
-                      child: Column(
-                        children: [
-                          SizedBox(height: 15.h,),
-                          SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 18, color: '#7B4311'.color(), weight: FontWeight.w400)
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ),
+              // Positioned(left: 4.w,bottom: 56.h,child:
+              // Consumer<SJLocalProvider>(
+              //   builder: (context, provider, child) {
+              //     return Visibility(
+              //       visible: provider.sj_show_box_tips,
+              //       child: Container(
+              //         width: 285.w,
+              //         height: 71.h,
+              //         decoration: BoxDecoration(
+              //             image: SJDImg('sj_box_tips')
+              //         ),
+              //         child: Column(
+              //           children: [
+              //             SizedBox(height: 15.h,),
+              //             SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 18, color: '#7B4311'.color(), weight: FontWeight.w400)
+              //           ],
+              //         ),
+              //       ),
+              //     );
+              //   },
+              // ),
+              // ),
               Positioned(
                 top: 0.h,
                 left: 0.w,
@@ -333,12 +378,12 @@ class _SJHomeState extends State<SJHome> {
                         padding: EdgeInsets.only(top: 8.h),
                         child: Lottie.asset(
                             width: 0.width(context),
-                            height: 0.height(context),
+                            height: 720.h,
                             fit: BoxFit.fill,
                             "sj_dolas_aniamtion.zip".files(),
                             repeat: false,
                             onLoaded: (composition) async {
-                              Future.delayed(Duration(milliseconds: 2000), () async {
+                              Future.delayed(Duration(milliseconds: 1800), () async {
                                 await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
                               });
                             }
@@ -347,17 +392,31 @@ class _SJHomeState extends State<SJHome> {
                     }
                 ),
               ),
-              Positioned(
-                bottom: 0.h,
-                left: 66.w,
-                width: 60,
-                height: 60,
-                child: Consumer<SJLocalProvider>(
-                    builder: (context, provider, child) {
-                      return Visibility(visible: provider.sj_box_index >= 3, child: SpineWidget.fromAsset('assets/spine/finger.atlas', 'assets/spine/finger.json', _controller0));
-                    }
-                ),
-              ),
+              // Positioned(
+              //   bottom: 0.h,
+              //   left: 44.w,
+              //   width: 60,
+              //   height: 60,
+              //   child:Consumer<SJLocalProvider>(
+              //       builder: (context, provider, child) {
+              //         return  Visibility(visible: provider.sj_show_box_tips, child: InkWell(
+              //           onTap: () async {
+              //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
+              //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_box_tipsName, true);
+              //             if (!mounted) return;
+              //             context.tipShow(SJBoxOpenDiaologWidget());
+              //           },
+              //           child: Lottie.asset(
+              //             width: 80,
+              //             height: 80,
+              //             fit: BoxFit.fill,
+              //             "sj_shou_anmation.zip".files(),
+              //             repeat: true,
+              //           ),
+              //         ));
+              //       }
+              //   ),
+              // ),
               Positioned(
                 bottom: 174.h,
                 left: 16.w,
@@ -386,10 +445,10 @@ class _SJHomeState extends State<SJHome> {
                     onTap: () async {
                       String gaids = await FlutterTbaInfo.instance.getGaid();
                       'gaids=$gaids'.log();
-                      Navigator.of(context).push(
+                      Navigator.of(homeKey.currentState!.ctx).push(
                       MaterialPageRoute(builder: (builder) {
                           return SJwebkitview(
-                            url: "https://s.gamifyspace.com/tml?pid=19395&appk=YVdGxboLgXV8ahStCpL9MmBd2uj5PjIt&did=${gaids}",
+                            url: "https://s.gamifyspace.com/tml?pid=19585&appk=YVdGxboLgXV8ahStCpL9MmBd2uj5PjIt&did=${gaids}",
                             title: 'okSpin',
                           );
                         }),
@@ -432,8 +491,9 @@ class SJClickableImageList extends StatelessWidget {
           final img = imageNames[index];
           return GestureDetector(
             onTap: () async {
-              await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '90');
+              await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
               history_index = index;
+              if(!context.mounted)return;
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (builder) {
@@ -690,13 +750,13 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
           children: [
             SizedBox(width: 12,),
             SizedBox(
-                width: 124,
+                width: 155,
                 height: 49,
                 child: Stack(
                   children: [
                     Center(
                       child: Container(
-                          width: 124,
+                          width: 155,
                           height: 32,
                           decoration: BoxDecoration(
                               image: SJDImg('sj_nav_pro_bg')
@@ -705,7 +765,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                             builder: (context, provider, child) {
                               return InkWell(
                                 onTap: (){
-                                  Navigator.of(context).push(
+                                  Navigator.of(homeKey.currentState!.ctx).push(
                                     MaterialPageRoute(
                                       builder: (builder) {
                                         return SJCash();
@@ -723,7 +783,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                                       gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
                                       borderColor: '#FFFFFF'.color(),
                                       borderWidth: 0.0,
-                                      decimalPlaces: 0,
+                                      decimalPlaces: 2,
                                     ),
                                   ),
                                 ),
@@ -847,6 +907,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
               onTap: (){
                 // test
                 // SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
+                // context.tipShow(SJPopSubmitLastDialog());
                 context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
@@ -884,8 +945,9 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
               width: 100,
               height: 89,
               child: InkWell(
-                onTap: (){
+                onTap: () async {
                   if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
+                    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
                     context.tipShow(SJBoxOpenDiaologWidget());
                   } else {
                     SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
@@ -948,8 +1010,8 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
               child: Padding(
                 padding: EdgeInsets.only(top: 0),
                 child: InkWell(
-                  onTap: (){
-                    Navigator.of(context).push(
+                  onTap: ()  {
+                    Navigator.of(homeKey.currentState!.ctx).push(
                       MaterialPageRoute(
                         builder: (builder) {
                           return SJCash();
@@ -969,7 +1031,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 padding: EdgeInsets.only(top: 8, left: 5),
                 child: InkWell(
                   onTap: (){
-                    Navigator.of(context).push(
+                    Navigator.of(homeKey.currentState!.ctx).push(
                       MaterialPageRoute(
                         builder: (builder) {
                           return SJDiceRollWidget(souce_fromat: 'home',);
@@ -1032,11 +1094,15 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
   double _iconSize = 66;
 
   bool _showPop = true;
-  double _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+  double _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble();
 
   late double maxW, maxH;
 
   late int _lastTime; // 用来计算 deltaTime
+
+  late double screenWidth;
+
+  late double screenHeight;
 
   @override
   void initState() {
@@ -1053,6 +1119,14 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    screenWidth = MediaQuery.of(context).size.width;
+    screenHeight = MediaQuery.of(context).size.height;
+  }
+
+
+  @override
   void dispose() {
     _controller.dispose();
     super.dispose();
@@ -1065,8 +1139,8 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
     final dt = (now - _lastTime) / 1000.0; // dt 秒
     _lastTime = now;
 
-    maxW = MediaQuery.of(context).size.width - _iconSize;
-    maxH = MediaQuery.of(context).size.height - _iconSize - 100;
+    maxW = screenWidth - _iconSize;
+    maxH = screenHeight - _iconSize - 100;
 
     // 按时间移动，而不是按帧
     _left += _dx * dt;
@@ -1112,8 +1186,8 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
               children: [
                 Spacer(),
                 SJStrokeText(
-                  text: '\$$_pptReward',
-                  size: 14,
+                  text: '\$${_pptReward.toStringAsFixed(2)}',
+                  size: 12,
                   color: '#FFF3BD'.color(),
                   weight: FontWeight.w400,
                   skWidth: 1,
@@ -1132,16 +1206,16 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
     SJAdManager().sj_showAd(false, 'scxji_bubble_rv', context, (hasCache) {
       _hidePoPT();
     }, (finished) {
-      _hidePoPT();
-      SJLocalProvider.instance.updateint(
+      SJLocalProvider.instance.updatedouble(
         SJLocalProvider.instance.sj_dolas_numberName,
-        SJLocalProvider.instance.sj_dolas_number + _pptReward.toInt(),
+        SJLocalProvider.instance.sj_dolas_number + _pptReward,
       );
+      _hidePoPT();
     });
   }
 
   void _hidePoPT() {
-    _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble().toDouble();
+    _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble();
     if (mounted) {
       setState(() {
         _showPop = false;
@@ -1161,6 +1235,33 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
 class SJScratchDiceTimerNotificationService {
   static final StreamController<int> _streamController =
   StreamController<int>.broadcast();
+
+  static Stream<int> get stream => _streamController.stream;
+
+  static void sendToDomandNumberNotification(int value) {
+    _streamController.sink.add(value);
+  }
+
+  static void close() {
+    _streamController.close();
+  }
+}
+class SJScratchPushNextNotificationService {
+  static final StreamController<int> _streamController = StreamController<int>.broadcast();
+
+  static Stream<int> get stream => _streamController.stream;
+
+  static void sendToDomandNumberNotification(int value) {
+    _streamController.sink.add(value);
+  }
+
+  static void close() {
+    _streamController.close();
+  }
+}
+
+class SJScratchYunyingNotificationService {
+  static final StreamController<int> _streamController = StreamController<int>.broadcast();
 
   static Stream<int> get stream => _streamController.stream;
 

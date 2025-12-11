@@ -12,7 +12,7 @@ import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_number_helper.dart';
-import 'SJScratchA.dart';
+import 'SJScratchB.dart';
 
 class SJCash extends StatefulWidget {
   const SJCash({super.key});
@@ -25,7 +25,7 @@ class _SJCashState extends State<SJCash> {
 
   final ScrollController _scrollController = ScrollController();
 
-  int seletcd_index = 0;
+  int seletcd_index = SJLocalProvider.instance.sj_tx_ing_account;
 
   List<int> tx_list = [1000, 1500, 3000];
 
@@ -52,7 +52,7 @@ class _SJCashState extends State<SJCash> {
         child: Column(
           children: [
             // 固定头部栏
-            SJDetailsBarWidget(),
+            SJDetailsBarWidget(isCash: true),
             // 滑动内容部分
             Expanded(
               child: SingleChildScrollView(
@@ -86,7 +86,7 @@ class _SJCashState extends State<SJCash> {
                                 ],
                                 borderColor: '#FFFFFF'.color(),
                                 borderWidth: 0.0,
-                                decimalPlaces: 0,
+                                decimalPlaces: 2,
                               );
                             },
                           ),
@@ -143,7 +143,7 @@ class _SJCashState extends State<SJCash> {
                     ),
                     SizedBox(height: 20.h),
                     Visibility(
-                      visible: SJLocalProvider.instance.sj_tx_last_status,
+                      visible: SJLocalProvider.instance.sj_last_tx_end,
                       child: SizedBox(
                         width: 0.width(context),
                         height: 406.h,
@@ -172,7 +172,7 @@ class _SJCashState extends State<SJCash> {
                                                 image: SJDImg('sj_rank_left_bg')
                                               ),
                                               child: Center(
-                                                child: SJText(text: '\$1000', size: 32.sp, color: '#FFFCEB'.color(), weight: FontWeight.w400),
+                                                child: SJText(text: '\$${tx_list[SJLocalProvider.instance.sj_tx_ing_number]}', size: 32.sp, color: '#FFFCEB'.color(), weight: FontWeight.w400),
                                               ),
                                             ),
                                             Spacer(),
@@ -181,23 +181,8 @@ class _SJCashState extends State<SJCash> {
                                                 sj_event_fire('skip_wait_c', {});
                                                 SJAdManager().sj_showAd(false, 'scxji_queue_rv', context, (hasCache){}, (finished){
                                                   var row = sj_generateRandomNumber();
-                                                  setState(() async {
-                                                    if (SJLocalProvider.instance.sj_current_ranking - row <= 1) {
-                                                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_current_rankingName, 1);
-                                                      await SJLocalProvider.instance.updateTXInStatus(2);
-                                                      if (!mounted) return;
-                                                      context.tipShow(SJPopTXSulsDialog());
-                                                    } else {
-                                                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_all_rankingName, SJLocalProvider.instance.sj_all_ranking - sj_generateRandomNumber());
-                                                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_current_rankingName, SJLocalProvider.instance.sj_current_ranking - row);
-                                                      Future.delayed(Duration(milliseconds: 200),(){
-                                                        if (!mounted) return;
-                                                        setState(() {
-                                                          _scrollToIndex(SJLocalProvider.instance.sj_current_ranking);
-                                                          SJDialogTool.toastRanking(context, SJLocalProvider.instance.sj_current_ranking);
-                                                        });
-                                                      });
-                                                    }
+                                                  setState(() {
+                                                    rankupdate(row);
                                                   });
                                                 });
                                               },
@@ -363,6 +348,26 @@ class _SJCashState extends State<SJCash> {
     );
   }
 
+  Future<void> rankupdate(int row) async {
+    if (SJLocalProvider.instance.sj_current_ranking - row <= 1) {
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_current_rankingName, 1);
+    await SJLocalProvider.instance.updateTXInStatus(2);
+    if (!mounted) return;
+    context.tipShow(SJPopTXSulsDialog());
+  } else {
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_all_rankingName, SJLocalProvider.instance.sj_all_ranking - sj_generateRandomNumber());
+    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_current_rankingName, SJLocalProvider.instance.sj_current_ranking - row);
+    Future.delayed(Duration(milliseconds: 200),(){
+      if (!mounted) return;
+      setState(() {
+        _scrollToIndex(SJLocalProvider.instance.sj_current_ranking);
+        SJDialogTool.toastRanking(context, SJLocalProvider.instance.sj_current_ranking);
+      });
+    });
+  }
+
+  }
+
   int sj_generateRandomNumber() {
     return Random().nextInt(6 - 3 + 1) + 3;
   }
@@ -393,6 +398,7 @@ class _SJCashState extends State<SJCash> {
     final double offset = (index - 1) * itemHeight;
 
     // 平滑滚动动画
+    if (_scrollController.positions.isEmpty) return;
     _scrollController.animateTo(
       offset,
       duration: const Duration(milliseconds: 600),
@@ -518,7 +524,7 @@ class _SJCashState extends State<SJCash> {
       context.tipShow(SJPopTXNotDialog());
     } else {
       if (SJLocalProvider.instance.sj_account_id.isEmpty){
-        context.tipShow(SJPopSubmitOneDialog(number_index: index));
+        context.tipShow(SJPopSubmitOneDialog(number_index: index, is_tx: true));
       } else {
         SJDialogTool.toast(context, 'There are currently withdrawal tasks in progress. You can withdraw again after completion.');
       }
@@ -543,8 +549,10 @@ class _SJCashState extends State<SJCash> {
                 } else {
                   if (SJLocalProvider.instance.sj_tx_first_status == false){
                     context.tipShow(SJPopTXTaskDialog());
-                  } else {
+                  } else if (SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_first_status == true){
                     context.tipShow(SJPopTask3Dialog());
+                  } else {
+                    SJDialogTool.toast(context, 'The final step for withdrawal is to become number one on the leaderboard to complete the withdrawal.');
                   }
                 }
               },
@@ -559,7 +567,7 @@ class _SJCashState extends State<SJCash> {
               child: Row(
                 children: [
                   SizedBox(width: 13.w,),
-                  SJText(text: _getTaskTotalString().first, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                  SJText(text: _getTaskTotalString().first, size: 20.spMin, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                   Spacer(),
                   SJImg(name: _getTxTaskTotalStatus().first ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
                   SizedBox(width: 9.w,),
@@ -575,7 +583,7 @@ class _SJCashState extends State<SJCash> {
               child: Row(
                 children: [
                   SizedBox(width: 13.w,),
-                  SJText(text: _getTaskTotalString().last, size: 20.sp, color: '#FFFFFF'.color(), weight: FontWeight.w400),
+                  SJText(text: _getTaskTotalString().last, size: 20.spMin, color: '#FFFFFF'.color(), weight: FontWeight.w400),
                   Spacer(),
                   SJImg(name: _getTxTaskTotalStatus().last ? 'sj_seletecd_s' : 'sj_seletecd_n', width: 29.w, height: 29.w,),
                   SizedBox(width: 9.w,),
@@ -613,9 +621,9 @@ class _SJCashState extends State<SJCash> {
           .taskModel!
           .task.last.first.num} days in a row';
       text2 =
-      'Play ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
           .taskModel!
-          .task.last.last.num} Dice';
+          .task.last.last.num} Probability Cards';
     }
     return [text1, text2];
   }
@@ -669,23 +677,23 @@ class _SJCashState extends State<SJCash> {
   List<String> _getTxTaskString2(){
     String text1 = '';
     String text2 = '';
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
       text2 =
       'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
-          .taskModel!
-          .task.first.last.num} treasure chests';
+          .last_taskModel!
+          .task.first.last.num} Card';
       text1 =
       'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
-          .taskModel!
-          .task.first.first.num} Dice';
-    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+          .last_taskModel!
+          .task.first.first.num} Box';
+    } else {
       text2 =
       'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
-          .taskModel!
+          .last_taskModel!
           .task.last.last.num} probability cards';
       text1 =
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
-          .taskModel!
+          .last_taskModel!
           .task.last.first.num} Dice';
     }
     return [text1, text2];
@@ -694,24 +702,24 @@ class _SJCashState extends State<SJCash> {
   List<bool> _getTxTaskStatus2(){
     bool text1 = false;
     bool text2 = false;
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
-      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.first.first.num) {
+    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num) {
         text1 = false;
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
         text2 = false;
       } else {
         text2 = true;
       }
-    } else if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
-      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.first.num) {
+    } else {
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().last_taskModel!.task.last.first.num) {
         text1 = false;
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;

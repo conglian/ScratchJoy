@@ -43,12 +43,15 @@ class SJNumberAHelper {
     List<int> displayNumbers = List.generate(12, (_) => _rand.nextInt(90) + 10);
 
     // 3️⃣ 每个显示数字对应的中奖值
-    List<int> winMatchNumbers = [];
+    List<double> winMatchNumbers = [];
     if (mode.prize.isNotEmpty) {
       int minPrize = mode.prize.first;
       int maxPrize = mode.prize.last;
-      winMatchNumbers = List.generate(
-          12, (_) => _rand.nextInt(maxPrize - minPrize + 1) + minPrize);
+
+      winMatchNumbers = List.generate(12, (_) {
+        double raw = _rand.nextDouble() * (maxPrize - minPrize) + minPrize;
+        return 0.to2Double(raw);
+      });
     } else {
       winMatchNumbers = List.generate(12, (_) => _rand.nextInt(90) + 10);
     }
@@ -105,14 +108,14 @@ class SJNumberAHelper {
     }
 
     // 3️⃣ 每个显示数字对应的中奖值
-    List<int> winMatchNumbers = [];
+    List<double> winMatchNumbers = [];
     if (mode.prize.isNotEmpty) {
       int minPrize = mode.prize.first;
       int maxPrize = mode.prize.last;
       winMatchNumbers = List.generate(
-          12, (_) => _rand.nextInt(maxPrize - minPrize + 1) + minPrize);
+          12, (_) => 0.to2Double(_rand.nextInt(maxPrize - minPrize + 1) + minPrize));
     } else {
-      winMatchNumbers = List.generate(12, (_) => _rand.nextInt(90) + 10);
+      winMatchNumbers = List.generate(12, (_) => 0.to2Double(_rand.nextInt(90) + 10));
     }
 
     // 4️⃣ 判断是否中奖
@@ -227,9 +230,9 @@ class SJNumberAHelper {
     // 💰 Step 5: 奖励值生成（按 prize 范围）
     int minPrize = mode.prize.first;
     int maxPrize = mode.prize.last;
-    List<int> prizeValues = List.generate(
+    List<double> prizeValues = List.generate(
       9,
-          (_) => _rand.nextInt(maxPrize - minPrize + 1) + minPrize,
+          (_) => _rand.nextDouble() * (maxPrize - minPrize + 1) + minPrize,
     );
 
     // ✅ Step 6: 返回结果
@@ -297,11 +300,11 @@ class SJNumberAHelper {
     }
 
     // Step 4: 奖励值
-    int minPrize = mode.prize.first;
-    int maxPrize = mode.prize.last;
-    List<int> prizeValues = List.generate(
+    double minPrize = mode.prize.first.toDouble();
+    double maxPrize = mode.prize.last.toDouble();
+    List<double> prizeValues = List.generate(
       10,
-          (_) => _rand.nextInt(maxPrize - minPrize + 1) + minPrize,
+          (_) => _rand.nextDouble() * (maxPrize - minPrize + 1) + minPrize,
     );
 
     return SJsuperMultipleResult(
@@ -483,7 +486,7 @@ class SJNumberAHelper {
 class SJPlayJoyResult {
   final List<int> winNumbers; // 中奖数字（4个）
   final List<int> displayNumbers; // 显示的12个数字
-  final List<int> winMatchNumbers; // 每个数字对应的中奖值（12个）
+  final List<double> winMatchNumbers; // 每个数字对应的中奖值（12个）
   final bool isWin; // 是否中奖
   final bool diceHit; // 是否骰子命中
   final int winIndex; // 若中奖，对应在 displayNumbers 中的下标，未中奖则为 -1
@@ -501,7 +504,7 @@ class SJPlayJoyResult {
     return SJPlayJoyResult(
       winNumbers: List<int>.from(json['win_numbers']),
       displayNumbers: List<int>.from(json['display_numbers']),
-      winMatchNumbers: List<int>.from(json['win_match_numbers']),
+      winMatchNumbers: List<double>.from(json['win_match_numbers']),
       isWin: json['isWin'],
       diceHit: json['diceHit'],
       winIndex: json['winIndex'] ?? -1,
@@ -668,7 +671,7 @@ class SJsecret_stashResult {
   final int winIndex;            // 中奖格下标
   final List<int> winIndexes;    // 中奖格下标列表 ✅ 新增
   final bool diceHit;            // 是否包含骰子
-  final List<int> prizeValues;   // 每格奖励值
+  final List<double> prizeValues;   // 每格奖励值
   final int multiplier;          // 倍数（1、2、5 或 0）
 
   SJsecret_stashResult({
@@ -720,7 +723,7 @@ class SJsuperMultipleResult {
   final bool isWin;             // 是否中奖
   final int multiplier;         // 中奖倍数：20/30/50 或 0
   final bool diceHit;           // 骰子是否命中
-  final List<int> prizeValues;  // 每格奖励值
+  final List<double> prizeValues;  // 每格奖励值
   final int winIndex;           // 中奖数字下标 (-1/-2/-3的下标)
 
   SJsuperMultipleResult({

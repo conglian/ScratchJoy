@@ -151,7 +151,7 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
       _repaintFlag++;
       _autoCoinPosition = null;
     });
-    await SJMP3Player().pauseEffect2();
+    await SJMP3Player().pauseEffect11();
     await SJMP3Player().pauseEffect();
     if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
   }
@@ -213,7 +213,7 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
     if (_totalPathPoints <= 0) return;
     final totalMilliseconds = widget.autoScratchDuration.inMilliseconds;
     final interval = totalMilliseconds / _totalPathPoints;
-    _pointInterval = Duration(milliseconds: max(5, interval.round()));
+    _pointInterval = const Duration(milliseconds: 1);  // 自动刮卡速度：越小越快
   }
 
   void _addAutoScratchPoint(Offset point) {
@@ -278,7 +278,7 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
       _autoScratchSubscription?.cancel();
       _autoScratchSubscription = null;
     });
-    await SJMP3Player().pauseEffect2();
+    await SJMP3Player().pauseEffect11();
     await SJMP3Player().pauseEffect();
     if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
   }
@@ -306,9 +306,9 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
         });
         sj_event_fire('scratch_card', {'type' : 'user'});
         await SJMP3Player().pauseBackground();
-        await SJMP3Player().pauseEffect2();
+        await SJMP3Player().pauseEffect11();
         await SJMP3Player().pauseEffect();
-        if (SJLocalProvider.instance.sj_sound_music) await SJMP3Player().playEffect2();
+        if (SJLocalProvider.instance.sj_sound_music) await SJMP3Player().playEffect11();
       },
       onPanUpdate: _isAutoScratching ? null : (details) => _handlePanUpdate(details, Size(widget.contentW, widget.contentH)),
       onPanEnd: _isAutoScratching ? null : (details) => _handlePanEnd(),

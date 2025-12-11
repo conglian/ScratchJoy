@@ -10,6 +10,7 @@ import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_ad_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_init_sdk.dart';
+import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJModel/SJAdModel.dart';
 import 'SJTBAInfoTool.dart';
@@ -51,13 +52,13 @@ class SJAdManager {
   // 请求所有广告id
   sj_load() async {
     // 展示上限
-    // if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
-    //   return;
-    // }
-    // // 风控
-    // if (await SJFKManger().sj_checkAllStatus()){
-    //   return;
-    // }
+    if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show){
+      return;
+    }
+    // 风控
+    if (await SJFKManger().sj_checkAllStatus()){
+      return;
+    }
     // 添加代理流只能加一次
     if (!listenerend){
       listenerend = true;
@@ -155,11 +156,11 @@ class SJAdManager {
       return;
     }
     // 风控
-    // if (await SJFKManger().sj_checkAllStatus()){
-    //   SJDialogTool.toast(context, 'Something went wrong, please try again later.');
-    //   hasCache(false);
-    //   return;
-    // }
+    if (await SJFKManger().sj_checkAllStatus()){
+      SJDialogTool.toast(context, 'Something went wrong, please try again later.');
+      hasCache(false);
+      return;
+    }
     if (isint){
       sj_event_fire(
         "scxji_ad_chance",
@@ -494,6 +495,9 @@ class SJAdManager {
             "maladapt": ad.adFormat,
             "cornet" : ad.revenuePrecision,
           });
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().pauseBackground();
+          }
           "scratchjoy ad int show Success ${ad.adUnitId} revenue=${ad.revenue}".log();
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
         },
@@ -511,6 +515,9 @@ class SJAdManager {
           "scratchjoy ad Int did click ${ad.adUnitId}".log();
         },
         onAdHiddenCallback: (ad) {
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().playBackground();
+          }
           is_ad_play = false;
           sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
@@ -606,6 +613,9 @@ class SJAdManager {
             "maladapt": ad.adFormat,
             "cornet" : ad.revenuePrecision,
           });
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().pauseBackground();
+          }
           "scratchjoy ad reward show Success ${ad.adUnitId} revenue=${ad.revenue}".log();
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_indexName, SJLocalProvider.instance.sj_ad_show_index + 1);
         },
@@ -641,6 +651,9 @@ class SJAdManager {
           // 消失
           rewardSucAds.removeWhere((ads) => ads.hnmkuhdz == ad.adUnitId);
           "scratchjoy ad Reward did hide - ${ad.adUnitId}".log();
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().playBackground();
+          }
           if (this.finishIntAd != null) {
             this.finishIntAd!(true);
           }
@@ -701,6 +714,9 @@ class SJAdManager {
           break;
       //广告开始播放
         case RewardedStatus.rewardedVideoDidStartPlaying:
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().pauseBackground();
+          }
           print("flutter rewardedVideoDidStartPlaying ---- placementID: ${value.placementID} ---- extra:${value.extraMap}");
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_all_numberName, SJLocalProvider.instance.sj_ad_all_number + 1);
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_reawrd_all_numberName, SJLocalProvider.instance.sj_ad_reawrd_all_number + 1);
@@ -787,6 +803,9 @@ class SJAdManager {
           });
           is_ad_play = false;
           "scratchjoy ad Reward did hide - ${value.placementID}".log();
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().playBackground();
+          }
           // 保存上次关闭广告时间仅限激励
           _savedTime = DateTime.now();
           // 判断播发到关闭播放间隔小于20s
@@ -878,6 +897,9 @@ class SJAdManager {
       //广告展示成功
         case InterstitialStatus.interstitialDidShowSucceed:
           print("flutter interstitialDidShowSucceed ---- placementID: ${value.placementID} ---- extra:${value.extraMap}");
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().pauseBackground();
+          }
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_all_numberName, SJLocalProvider.instance.sj_ad_all_number + 1);
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_show_numberName, SJLocalProvider.instance.sj_ad_show_number + 1);
           if (SJLocalProvider.instance.sj_ad_show_number % 5 == 0 && SJLocalProvider.instance.sj_ad_show_number > 0) {
@@ -930,6 +952,9 @@ class SJAdManager {
       //广告被关闭
         case InterstitialStatus.interstitialAdDidClose:
           is_ad_play = false;
+          if (SJLocalProvider.instance.sj_bg_music){
+            SJMP3Player().playBackground();
+          }
           sj_event_fire('scxji_ad_imp_close', {
             "ad_pos_id": placeId ?? "init_Load",
             'ad_format' : 'interstitial',

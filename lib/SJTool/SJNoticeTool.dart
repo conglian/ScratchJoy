@@ -3,8 +3,10 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
+import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 
 import '../SJDilaog/SJDialog.dart';
+import '../SJHome/SJHome.dart';
 import '../main.dart';
 import 'SJAdManager.dart';
 import 'SJTBAInfoTool.dart';
@@ -59,7 +61,7 @@ class SJNoticeHelp {
       sj_event_fire('push_status', {});
     }else{
       "nf no permission".log();
-      navigatorKey.currentContext?.tipShow(SJPopNoticeDialog());
+      homeKey.currentState!.ctx.tipShow(SJPopNoticeDialog());
     }
     "nf has permission".log();
     _initLifecycleListener();
@@ -159,7 +161,7 @@ class SJNoticeHelp {
       ),
       priority: Priority.high,
       importance: Importance.high,
-      icon: 'sj_logo',
+      icon: 'sj_sm_logo',
       //“groupKey”：防止通知被系统折叠
       groupKey: "$id",
     );
@@ -193,7 +195,7 @@ class SJNoticeHelp {
       ),
       priority: Priority.high,
       importance: Importance.high,
-      icon: 'sj_logo',
+      icon: 'sj_sm_logo',
       //“groupKey”：防止通知被系统折叠
       groupKey: "$id",
     );
@@ -227,7 +229,7 @@ class SJNoticeHelp {
       ),
       priority: Priority.high,
       importance: Importance.high,
-      icon: 'sj_logo',
+      icon: 'sj_sm_logo',
       //“groupKey”：防止通知被系统折叠
       groupKey: "$id",
     );
@@ -261,7 +263,7 @@ class SJNoticeHelp {
       ),
       priority: Priority.high,
       importance: Importance.high,
-      icon: 'sj_logo',
+      icon: 'sj_sm_logo',
       //“groupKey”：防止通知被系统折叠
       groupKey: "$id",
     );
@@ -292,6 +294,7 @@ class SJNoticeHelp {
         ),
         priority: Priority.high,
         importance: Importance.high,
+         icon: 'sj_sm_logo',
       ),
     );
   }
@@ -311,6 +314,7 @@ class SJNoticeHelp {
         ),
         priority: Priority.high,
         importance: Importance.high,
+        icon: 'sj_sm_logo',
       ),
     );
   }
@@ -332,7 +336,7 @@ class SJNoticeHelp {
         'Scractchjoys',
         priority: Priority.high,
         importance: Importance.high,
-        icon: 'sj_logo',
+         icon: 'sj_sm_logo',
         styleInformation: BeautyStyleInformation(
           randomMotivation2.title,
           randomMotivation2.body,
@@ -356,18 +360,22 @@ class SJNoticeHelp {
       print('Status background $isBackground');
       if (isBackground == true) {
         print('App进入后台');
+        SJMP3Player().pauseBackground();
         SJFKManger().sj_add_tabsession_custom();
         // 执行后台逻辑
         sj_session_fire();
         sj_event_fire('session_back_get', {'"pak_version' : SJLocalProvider.instance.sj_login_status ? 1 : 0});
       } else {
         print('App进入前台');
+        if (SJLocalProvider.instance.sj_bg_music && !SJAdManager().is_ad_play){
+          SJMP3Player().playBackground();
+        }
         SJFKManger().sj_add_tabsession_custom();
         sj_event_fire('session_front_get', {'"pak_version' : SJLocalProvider.instance.sj_login_status ? 1 : 0});
         // 执行前台逻辑
         sj_session_fire();
         if (!SJAdManager().is_ad_play) {
-          SJAdManager().sj_showAd(true, 'scxji_launch', navigatorKey.currentContext!, (hasCache){
+          SJAdManager().sj_showAd(true, 'scxji_launch', homeKey.currentState!.ctx, (hasCache){
             if (!hasCache) {
 
             }
