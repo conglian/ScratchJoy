@@ -291,6 +291,7 @@ class SJNumberBHelper {
       diceHit: diceHit,
       prizeValues: prizeValues,
       multiplier: multiplier,
+        awards_value: prizeValues[winIndex > 0 ? winIndex : 0]
     );
   }
 
@@ -392,6 +393,7 @@ class SJNumberBHelper {
       diceHit: diceHit,
       prizeValues: prizeValues,
       winIndex: winIndex,
+      award_value: prizeValues[winIndex > 0 ? winIndex : 0]
     );
   }
 

@@ -20,6 +20,7 @@ import '../SJTool/SJNoticeTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_WebKitView.dart';
+import '../SJTool/sj_ad_manger.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_number_helper.dart';
@@ -33,13 +34,13 @@ var history_index = 0;
 
 final GlobalKey<_SJHomeState> homeKey = GlobalKey<_SJHomeState>();
 
-class SJHome extends StatefulWidget {
+class SJHome extends StatefulWidget{
   SJHome({super.key});
   @override
   State<SJHome> createState() => _SJHomeState();
 }
 
-class _SJHomeState extends State<SJHome> {
+class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderStateMixin {
 
   BuildContext get ctx => context;
 
@@ -77,6 +78,14 @@ class _SJHomeState extends State<SJHome> {
 
   Timer? _timer;
 
+  bool is_yunyingshow1 = false;
+
+  bool is_yunyingshow2 = false;
+
+  bool is_yunyingshow3 = false;
+
+  bool is_yunyingshow4 = false;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -89,7 +98,6 @@ class _SJHomeState extends State<SJHome> {
       sj_setStarTime();
       sjsj_startTimer();
       sj_newUserGuide();
-      showOneTxTask();
       if (SJLocalProvider.instance.sj_old_guide == false) {
         context.tipShow(SJBoxOldDiaologWidget());
         SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_old_guideName, true);
@@ -102,6 +110,29 @@ class _SJHomeState extends State<SJHome> {
     });
     // push next
     SJScratchPushNextNotificationService.stream.listen((value) async {
+      sjsj_startTimer();
+      if (value == 0){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 1){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 2){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 3){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 4){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 5){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name,DateTime.now().toIso8601String());
+        setState(() {});
+      } else if (value == 6){
+        await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name,DateTime.now().toIso8601String());
+        setState(() {});
+      }
       await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
       history_index = value;
       if (!mounted)return;
@@ -109,7 +140,7 @@ class _SJHomeState extends State<SJHome> {
         MaterialPageRoute(
           builder: (builder) {
             return SJScratchB(
-                type: value);
+                type: value == 6 ? 0 : value + 1);
           },
         )
       );
@@ -124,42 +155,34 @@ class _SJHomeState extends State<SJHome> {
     sj_event_fire('home_page', {});
   }
 
+  void _refresh() {
+    print('每次进入页面都会走这里');
+    setState(() {});
+  }
+
   // 运营逻辑添加
   Future<void> poptxTaskContent() async {
     await Future.delayed(Duration(milliseconds: 50),(){});
-    if(SJLocalProvider.instance.sj_card_number == 4 && SJLocalProvider.instance.sj_yunying_1 == false){
+    if(SJLocalProvider.instance.sj_card_number == 4 && SJLocalProvider.instance.sj_yunying_1 == false && is_yunyingshow1 == false){
+      is_yunyingshow1 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_1Name, true);
       if (!mounted) return;
       context.tipShow(SJPopSubmitAccountDialog());
-    } else if (SJLocalProvider.instance.sj_card_number == 7 && SJLocalProvider.instance.sj_yunying_3 == false){
+    } else if (SJLocalProvider.instance.sj_card_number == 7 && SJLocalProvider.instance.sj_yunying_3 == false && is_yunyingshow2 == false){
+      is_yunyingshow2 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_3Name, true);
       if (!mounted) return;
       context.tipShow(SJPopSubmitLastDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false && is_yunyingshow3 == false){
+      is_yunyingshow3 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
       if (!mounted) return;
       context.tipShow(SJPopTXDiceDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false && is_yunyingshow4 == false){
+      is_yunyingshow4 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
       if (!mounted) return;
       context.tipShow(SJPopTXWallerDialog());
-    }
-  }
-
-  // 第一段任务提醒
-  Future<void> showOneTxTask() async {// 判断第一段任务是否完成
-    'SJLocalProvider.instance.sj_open_tx=${SJLocalProvider.instance.sj_open_tx}'.log();
-    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_open_tx == true) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
-      if (SJLocalProvider.instance.sj_tx_task2_tips == false && homeKey.currentState!.ctx.mounted) {
-        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
-        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_task2_tipsName, true);
-      }
     }
   }
 
@@ -181,7 +204,17 @@ class _SJHomeState extends State<SJHome> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final route = ModalRoute.of(context);
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
   void dispose() {
+    routeObserver.unsubscribe(this);
     _timer?.cancel();
     super.dispose();
   }
@@ -347,28 +380,28 @@ class _SJHomeState extends State<SJHome> {
                   SJBottomBarWidget(),
                 ],
               ),
-              // Positioned(left: 4.w,bottom: 56.h,child:
-              // Consumer<SJLocalProvider>(
-              //   builder: (context, provider, child) {
-              //     return Visibility(
-              //       visible: provider.sj_show_box_tips,
-              //       child: Container(
-              //         width: 285.w,
-              //         height: 71.h,
-              //         decoration: BoxDecoration(
-              //             image: SJDImg('sj_box_tips')
-              //         ),
-              //         child: Column(
-              //           children: [
-              //             SizedBox(height: 15.h,),
-              //             SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 18, color: '#7B4311'.color(), weight: FontWeight.w400)
-              //           ],
-              //         ),
-              //       ),
-              //     );
-              //   },
-              // ),
-              // ),
+              Positioned(left: 4.w,bottom: 56.h,child:
+              Consumer<SJLocalProvider>(
+                builder: (context, provider, child) {
+                  return Visibility(
+                    visible: provider.sj_show_box_tips,
+                    child: Container(
+                      width: 285.w,
+                      height: 71.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_box_tips')
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 15.h,),
+                          SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 16.spMin, color: '#7B4311'.color(), weight: FontWeight.w400)
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ),
               Positioned(
                 top: 0.h,
                 left: 0.w,
@@ -392,31 +425,31 @@ class _SJHomeState extends State<SJHome> {
                     }
                 ),
               ),
-              // Positioned(
-              //   bottom: 0.h,
-              //   left: 44.w,
-              //   width: 60,
-              //   height: 60,
-              //   child:Consumer<SJLocalProvider>(
-              //       builder: (context, provider, child) {
-              //         return  Visibility(visible: provider.sj_show_box_tips, child: InkWell(
-              //           onTap: () async {
-              //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
-              //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_box_tipsName, true);
-              //             if (!mounted) return;
-              //             context.tipShow(SJBoxOpenDiaologWidget());
-              //           },
-              //           child: Lottie.asset(
-              //             width: 80,
-              //             height: 80,
-              //             fit: BoxFit.fill,
-              //             "sj_shou_anmation.zip".files(),
-              //             repeat: true,
-              //           ),
-              //         ));
-              //       }
-              //   ),
-              // ),
+              Positioned(
+                bottom: 0.h,
+                left: 44.w,
+                width: 60,
+                height: 60,
+                child:Consumer<SJLocalProvider>(
+                    builder: (context, provider, child) {
+                      return  Visibility(visible: provider.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval, child: InkWell(
+                        onTap: () async {
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_box_tipsName, true);
+                          if (!context.mounted) return;
+                          context.tipShow(SJBoxOpenDiaologWidget());
+                        },
+                        child: Lottie.asset(
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.fill,
+                          "sj_shou_anmation.zip".files(),
+                          repeat: true,
+                        ),
+                      ));
+                    }
+                ),
+              ),
               Positioned(
                 bottom: 174.h,
                 left: 16.w,
@@ -448,8 +481,8 @@ class _SJHomeState extends State<SJHome> {
                       Navigator.of(homeKey.currentState!.ctx).push(
                       MaterialPageRoute(builder: (builder) {
                           return SJwebkitview(
-                            url: "https://s.gamifyspace.com/tml?pid=19585&appk=YVdGxboLgXV8ahStCpL9MmBd2uj5PjIt&did=${gaids}",
-                            title: 'okSpin',
+                            url: "https://blog.crystalliax.com/scene?sk=q81aa21d0e9c080ad&lzdid=${gaids}",
+                            title: 'GamePlay',
                           );
                         }),
                       );
@@ -552,35 +585,35 @@ class SJClickableImageList extends StatelessWidget {
                             List<Color> gradientColor = [];
                             Color strokeColors = Colors.transparent;
                             if (index == 0){
-                              num = SJNumberAHelper().numberEntity.extraBonus.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.extraBonus.winupNumber;
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#82180F'.color();
                             } else if (index == 1){
-                              num = SJNumberAHelper().numberEntity.goldRush.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.goldRush.winupNumber;
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#82180F'.color();
                             } else if (index == 2){
-                              num = SJNumberAHelper().numberEntity.luckuMoment.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.luckyMoment.winupNumber;
                               gradientColor = ['#FEFFED'.color(),'#FFD900'.color()];
                               strokeColors = '#714006'.color();
                             } else if (index == 3){
-                              num = SJNumberAHelper().numberEntity.secretStash.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.secretStash.winupNumber;
                               gradientColor = ['#FFEE91'.color(),'#FFEE91'.color()];
                               strokeColors = '#000000'.color();
                             } else if (index == 4){
-                              num = SJNumberAHelper().numberEntity.superMultiple.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.superMultiple.winupNumber;
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#000000'.color();
                             } else if (index == 5){
-                              num = SJNumberAHelper().numberEntity.fortuneRush.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.fortuneRush.winupNumber;
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#02413B'.color();
                             } else if (index == 6){
-                              num = SJNumberAHelper().numberEntity.sweetTime.winupNumber;
+                              num = SJNumberBHelper().numberEntity!.sweetTime.winupNumber;
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#8B0746'.color();
                             }
-                            return SJGradientStrokeText(text: '\$$num', fontSize: 24, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
+                            return SJGradientStrokeText(text: '\$$num', fontSize: 22, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
                           }
                       ),
                     ),
@@ -708,19 +741,19 @@ class SJClickableImageList extends StatelessWidget {
   double numberTopValue(int index){
     double num = 0;
     if (index == 0){
-      num = 112.h;
+      num = 108.h;
     } else if (index == 1){
-      num = 46.h;
+      num = 42.h;
     } else if (index == 2){
-      num = 116.h;
+      num = 113.h;
     } else if (index == 3){
-      num = 116.h;
+      num = 112.h;
     } else if (index == 4){
-      num = 38.h;
+      num = 34.h;
     } else if (index == 5){
-      num = 70.h;
+      num = 68.h;
     } else if (index == 6){
-      num = 114.h;
+      num = 111.h;
     }
     return num;
 
@@ -748,64 +781,72 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
         padding: EdgeInsets.only(top: 34),
         child: Row(
           children: [
-            SizedBox(width: 12,),
+            SizedBox(width: 12.w,),
             SizedBox(
-                width: 155,
+                width: 155.w,
                 height: 49,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Container(
-                          width: 155,
-                          height: 32,
-                          decoration: BoxDecoration(
-                              image: SJDImg('sj_nav_pro_bg')
-                          ),
-                          child: Consumer<SJLocalProvider>(
-                            builder: (context, provider, child) {
-                              return InkWell(
-                                onTap: (){
-                                  Navigator.of(homeKey.currentState!.ctx).push(
-                                    MaterialPageRoute(
-                                      builder: (builder) {
-                                        return SJCash();
-                                      },
-                                    ),
-                                  );
-                                },
-                                child: Padding(
-                                  padding: EdgeInsets.only(top: 2.0, left: 32.12),
-                                  child: Center(
-                                    child: SJGradientNumberRoller(
-                                      value: provider.sj_dolas_number,
-                                      duration: 800,
-                                      fontSize: 20.0,
-                                      gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
-                                      borderColor: '#FFFFFF'.color(),
-                                      borderWidth: 0.0,
-                                      decimalPlaces: 2,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          )
+                child: InkWell(
+                  onTap: (){
+                    Navigator.of(homeKey.currentState!.ctx).push(
+                      MaterialPageRoute(
+                        builder: (builder) {
+                          return SJCash();
+                        },
                       ),
-                    ),
-                    SJImg(name: 'sj_dolas_icon', width: 49, height: 49,)
-                  ],
+                    );
+                  },
+                  child: Stack(
+                    children: [
+                      Center(
+                        child: Container(
+                            width: 155,
+                            height: 32,
+                            decoration: BoxDecoration(
+                                image: SJDImg('sj_nav_pro_bg')
+                            ),
+                            child: Consumer<SJLocalProvider>(
+                              builder: (context, provider, child) {
+                                return Padding(
+                                    padding: EdgeInsets.only(top: 2.0, left: 32.12),
+                                    child: Center(
+                                      child: SJGradientNumberRoller(
+                                        value: provider.sj_dolas_number,
+                                        duration: 800,
+                                        fontSize: 20.0,
+                                        gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
+                                        borderColor: '#FFFFFF'.color(),
+                                        borderWidth: 0.0,
+                                        decimalPlaces: 2,
+                                      ),
+                                    ),
+                                );
+                              },
+                            )
+                        ),
+                      ),
+                      InkWell(onTap: (){
+                        Navigator.of(homeKey.currentState!.ctx).push(
+                          MaterialPageRoute(
+                            builder: (builder) {
+                              return SJCash();
+                            },
+                          ),
+                        );
+                      },child: SJImg(name: 'sj_dolas_icon', width: 49, height: 49,))
+                    ],
+                  ),
                 )
             ),
-            SizedBox(width: 11,),
+            SizedBox(width: 11.w,),
             SizedBox(
-                width: 147,
+                width: 140.w,
                 height: 40,
                 child: Stack(
                   children: [
                     Padding(
                       padding: EdgeInsets.only(top: 4, left: 19),
                       child: Container(
-                        width: 131,
+                        width: 131.w,
                         height: 32,
                         decoration: BoxDecoration(
                             image: SJDImg('sj_nav_pro_bg')
@@ -855,9 +896,9 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 4, left: 19),
+                      padding: EdgeInsets.only(top: 4, left: 19.w),
                       child: SizedBox(
-                        width: 131,
+                        width: 131.w,
                         height: 32,
                         child: Consumer<SJLocalProvider>(
                           builder: (context, provider, child) {
@@ -906,13 +947,13 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             InkWell(
               onTap: (){
                 // test
-                // SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
-                // context.tipShow(SJPopSubmitLastDialog());
+                // SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
+                // context.tipShow(SJPopTXLoadingDialog());
                 context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
             ),
-            SizedBox(width: 21,)
+            SizedBox(width: 12.w,)
           ],
         ),
       ),
@@ -940,9 +981,9 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
       ),
       child: Row(
           children: [
-            SizedBox(width: 16.w),
+            SizedBox(width: 8.w),
             SizedBox(
-              width: 100,
+              width: 89.w,
               height: 89,
               child: InkWell(
                 onTap: () async {
@@ -1004,9 +1045,8 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 ),
               ),
             ),
-            SizedBox(width: 4.w),
             SizedBox(
-             width: 200, height: 75,
+             width: 200.w, height: 75,
               child: Padding(
                 padding: EdgeInsets.only(top: 0),
                 child: InkWell(
@@ -1019,13 +1059,13 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                       ),
                     );
                   },
-                  child: SJImg(name: 'sj_cash_btns', width: 200, height: 75),
+                  child: SJImg(name: 'sj_cash_btns', width: 200.w, height: 75),
                 ),
               ),
             ),
             Spacer(),
             SizedBox(
-              width: 70,
+              width: 70.w,
               height: 73,
               child: Padding(
                 padding: EdgeInsets.only(top: 8, left: 5),
@@ -1065,7 +1105,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 ),
               ),
             ),
-            SizedBox(width: 16.w),
+            SizedBox(width: 8.w),
           ],
         ),
     );
@@ -1088,7 +1128,7 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
 
   double _top = 100;
   double _left = 100;
-  double _dx = 100; // 每秒移动多少 px
+  double _dx = 50; // 每秒移动多少 px
   double _dy = 80;
 
   double _iconSize = 66;
@@ -1187,7 +1227,7 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
                 Spacer(),
                 SJStrokeText(
                   text: '\$${_pptReward.toStringAsFixed(2)}',
-                  size: 12,
+                  size: 19,
                   color: '#FFF3BD'.color(),
                   weight: FontWeight.w400,
                   skWidth: 1,
@@ -1203,9 +1243,9 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
 
   void _openPopPT() {
     sj_event_fire('bubble_c', {});
-    SJAdManager().sj_showAd(false, 'scxji_bubble_rv', context, (hasCache) {
+    SJJoyAds().sj_showAd(context, 'scxji_bubble_rv', onCacheResponse: (onCacheResponse){
       _hidePoPT();
-    }, (finished) {
+    }, adDidClosed: (adDidClosed){
       SJLocalProvider.instance.updatedouble(
         SJLocalProvider.instance.sj_dolas_numberName,
         SJLocalProvider.instance.sj_dolas_number + _pptReward,

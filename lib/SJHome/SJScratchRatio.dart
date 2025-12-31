@@ -12,6 +12,7 @@ import 'package:scratchjoy/SJTool/sj_text.dart';
 
 import '../SJDilaog/SJDialog.dart';
 import '../SJTool/SJAdAHelp.dart';
+import '../SJTool/sj_ad_manger.dart';
 import '../SJTool/sj_number_helper.dart';
 import 'SJHome.dart';
 import 'SJScratchA.dart';
@@ -215,12 +216,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     _targetWinIndex = 0;
     _isShuffling = true;
     _isFlipped = false;
-    if (SJLocalProvider.instance.sj_bg_music){
-      SJMP3Player().pauseBackground();
-    }
-    if (SJLocalProvider.instance.sj_sound_music){
-      SJMP3Player().playEffect9();
-    }
+
+    SJAudioUtils().playchouAudio();
     _moveController.forward(from: 0);
   }
 
@@ -228,12 +225,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     setState(() {
       _isFlipped = true;
     });
-    if (SJLocalProvider.instance.sj_bg_music){
-      SJMP3Player().playBackground();
-    }
-    if (SJLocalProvider.instance.sj_sound_music){
-      SJMP3Player().pauseEffect9();
-    }
+    SJAudioUtils().stopAllTempAudio();
+    SJAudioUtils().playBGM();
 
     await _flipController.forward(from: 0);
     await _scaleController.forward(from: 0);
@@ -248,38 +241,40 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
     }
     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, SJLocalProvider.instance.sj_tx_probability_index + 1);
     setState(() {});
-    await showOneTxTask();
-    await showTwoTxTask();
   }
-
-  Future<void> showOneTxTask() async {
-    if (SJLocalProvider.instance.sj_login_index >= SJNumberHelpers().taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_open_tx == true) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_first_statusName, true);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
-      if (!mounted) return;
-      if (SJLocalProvider.instance.sj_tx_task2_tips == false && homeKey.currentState!.ctx.mounted) {
-        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
-        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+  // 开启第三段和第四段任务
+  Future<void> showThreeTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_box_index >=
+        SJNumberHelpers().taskModel!.task.last.first.num &&
+        SJLocalProvider.instance.sj_tx_probability_index >=
+            SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_task2_tips == true && SJLocalProvider.instance.sj_tx_task3_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateBool(
+          SJLocalProvider.instance.sj_tx_first_statusName, true);
+      if (SJLocalProvider.instance.sj_tx_task3_tips == false) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task3_tipsName, true);
+        if (!mounted) return;
+        context.tipShow(SJPopTask3Dialog());
       }
     }
   }
 
-  Future<void> showTwoTxTask() async {
-    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
-      sj_event_fire('cash_queue', {});
-    }
-    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_last_status == true) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
+  // 第四段任务完成
+  Future<void> showLastTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task4_tips == true) {
+      if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
+        sj_event_fire('cash_queue', {});
+      }
     }
   }
 
@@ -394,7 +389,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     _startShuffle();
                   } else {
                     sj_event_fire('probability_pop_up', {});
-                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished){
+                    SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
+                    }, adDidClosed: (adDidClosed){
                       _startShuffle();
                     });
                   }
@@ -407,6 +403,9 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                   if (_middleCardIndex == 0){
                     sj_event_fire('probability_pop_play_now', {});
                     Navigator.pop(context, 1);
+                    // 抽卡结束 更新提现任务状态
+                    showThreeTxTask();
+                    showLastTxTask();
                     if (!SJLocalProvider.instance.sj_new_guide) {
                       SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_new_guideName, true);
                       history_index = 0;
@@ -421,7 +420,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     }
                   } else {
                     sj_event_fire('probability_pop_continue_up', {});
-                    SJAdManager().sj_showAd(false, 'scxji_olduser_rv', context, (hasCache){}, (finished) async {
+                    SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
+                    }, adDidClosed: (adDidClosed) async {
                       Navigator.pop(context);
                       var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
                       if (code == 1){
@@ -443,9 +443,9 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                       return;
                     }
                     if (SJNumberHelpers().checkProbability()){
-                      SJAdManager().sj_showAd(true, 'scxji_olduser_int', context, (hasCache){
+                      SJJoyAds().sj_showAd(context, 'scxji_olduser_int', onCacheResponse: (onCacheResponse){
                         Navigator.pop(context);
-                      }, (finished){
+                      }, adDidClosed: (adDidClosed) {
                         Navigator.pop(context);
                       });
                     } else {
@@ -464,6 +464,9 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                 child: InkWell(
                   onTap: () {
                     Navigator.pop(context, 0);
+                    // 抽卡结束 更新提现任务状态
+                    showThreeTxTask();
+                    showLastTxTask();
                   },
                   child: Center(
                     child: SJUnderlineTextButton(text: 'Play Now', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], underlineColor: '#C5A213'.color(),fontSize: 20,),

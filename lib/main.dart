@@ -61,6 +61,9 @@ Future<void> main() async {
   );
 }
 
+final RouteObserver<PageRoute> routeObserver =
+RouteObserver<PageRoute>();
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
   State<MyApp> createState() => _MyAppState();
@@ -75,17 +78,15 @@ class _MyAppState extends State<MyApp> {
     SJNumberAHelper().init();
     SJSDKHelpers().initSDK();
     SJNumberBHelper().init();
-    SJAdHelpers().initAd();
     SJNumberHelpers().initNumberModel();
+    SJAudioUtils().initTempQueue();
     // 背景音乐
     if (SJLocalProvider.instance.sj_bg_music) {
-      SJMP3Player().playBackground();
+      SJAudioUtils().playBGM();
     } else {
-      SJMP3Player().pauseBackground();
+      SJAudioUtils().pauseBGM();
     }
-    SJMP3Player().pauseEffect();
-    SJMP3Player().pauseEffect2();
-    SJMP3Player().pauseEffect3();
+    SJAudioUtils().stopAllTempAudio();
   }
 
   @override
@@ -102,6 +103,7 @@ class _MyAppState extends State<MyApp> {
       splitScreenMode: true, // 支持平板分屏
       builder: (context, child) {
         return MaterialApp(
+          navigatorObservers: [routeObserver],
           theme: ThemeData(
           splashColor: Colors.transparent,
           highlightColor: Colors.transparent,

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
+import 'package:anythink_sdk/at_init.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_ad_help.dart';
+import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
@@ -44,8 +46,29 @@ class SJSDKHelpers {
   int sj_remoteConfigTryCount = 0;
 
   Future<void> initSDK() async {
+    _initTopon();
     _initAppMAX();
     _sjinitloadFireBase();
+  }
+
+  Future<void> _initTopon() async {
+    sj_topon_start = DateTime.now();
+    await ATInitManger.initAnyThinkSDK(
+        appidStr: 'h694b94649d3c4',
+        appidkeyStr: 'a582c4a423cc3968df36cdb03b4c53dff').then((value){
+      print('topon init faild Success');
+      sj_event_fire('scxji_ad_initsuc', {
+        'ad_platform' : 'topon',
+        'ad_init_time' : DateTime.now().difference(sj_topon_start).inMilliseconds
+      });
+    }).catchError((error){
+      print('topon init faild error=$error');
+    });
+    // 打开SDK的Debug log，强烈建议在测试阶段打开，方便排查问题。
+    await ATInitManger
+        .setLogEnabled(
+      logEnabled: true,
+    );
   }
 
 
@@ -67,12 +90,13 @@ class SJSDKHelpers {
     // AppLovinMAX.showMediationDebugger();
     //
     if (configuration != null) {
-      SJAdManager().initIntAdDatasource();
+      SJJoyAds().init();
       sj_event_fire('scxji_ad_initsuc', {
         'ad_platform' : 'max',
         'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds
       });
     }
+    return;
   }
 
   initAdjust() async {
@@ -133,8 +157,8 @@ class SJSDKHelpers {
       await remoteConfig.fetchAndActivate();
 
       final scratchjoy_fb130 =
-      remoteConfig.getValue("130scratchjoy_fb").asString();
-      'scratchjoy_fb130=$scratchjoy_fb130'.log();
+      remoteConfig.getValue("c130scratchjoy_fb").asString();
+      'c130scratchjoy_fb=$scratchjoy_fb130'.log();
       // facebook_init
       if (scratchjoy_fb130 != ''){
         Map<String, dynamic> jsonMap = json.decode(scratchjoy_fb130);
@@ -220,9 +244,10 @@ class SJSDKHelpers {
         try {
           Map<String, dynamic> jsonMap = json.decode(scxji_ad_config);
           var fkEntity = SJAdModel.fromJson(jsonMap);
-          SJAdHelpers().ad_Entity = fkEntity;
+          SJJoyAds().init(inputAd: fkEntity);
           "app firebase remoteconfig scxji_ad_config data $jsonMap".log();
         } catch (error) {
+          SJJoyAds().init();
           print("app firebase remoteconfig risk_control error ${error}");
         }
       }
@@ -234,6 +259,8 @@ class SJSDKHelpers {
         Future.delayed(Duration(seconds: 1), () {
           _sjinitloadFireBase();
         });
+      } else {
+        SJJoyAds().init();
       }
     }
   }
@@ -274,7 +301,7 @@ class SJSDKHelpers {
 
 class SJFacebookAnalytics {
 
-  static final _channel = MethodChannel("com.example.scratchjoy/facebook");
+  static final channel = MethodChannel("com.example.scratchjoy/facebook");
 
   /// 初始化 Facebook SDK（动态传入 appId、clientToken、appName）
   static Future<void> init({
@@ -282,7 +309,7 @@ class SJFacebookAnalytics {
     required String clientToken,
     required String appName,
   }) async {
-    await _channel.invokeMethod("initFacebook", {
+    await channel.invokeMethod("initFacebook", {
       "app_id": appId,
       "client_token": clientToken,
       "app_name": appName,
@@ -291,7 +318,7 @@ class SJFacebookAnalytics {
 
   /// 购买打点（无参数）
   static Future<void> logPurchase(double amount, String currency) async {
-    await _channel.invokeMethod("logPurchase", {
+    await channel.invokeMethod("logPurchase", {
       "amount": amount,
       "currency": currency,
     });

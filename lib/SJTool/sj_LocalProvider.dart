@@ -73,6 +73,8 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_tx_task2_tips = false;
   bool sj_last_tx_end = false;
   bool sj_show_box = false;
+  bool sj_tx_task3_tips = false;
+  bool sj_tx_task4_tips = false;
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
   int sj_scrach_unlock_index_1 = 0; // 存储的本地值
@@ -113,7 +115,7 @@ class SJLocalProvider extends ChangeNotifier {
   int sj_domand_number = 0;
   int sj_tx_card_first = 0;
   int sj_tx_dice_index = 0;
-  int sj_login_index = 0;
+  // int sj_login_index = 0;
   int sj_tx_probability_index = 0;
   int sj_scratch_not_award_number = 0;
 
@@ -170,7 +172,7 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_tx_card_firstName => 'sj_tx_card_first';
   String get sj_account_idName => 'sj_account_id';
   String get sj_tx_dice_indexName => 'sj_tx_dice_index';
-  String get sj_login_indexName => 'sj_login_index';
+  // String get sj_login_indexName => 'sj_login_index';
   String get sj_tx_probability_indexName => 'sj_tx_probability_index';
   String get sj_tx_first_statusName => 'sj_tx_first_status';
   String get sj_tx_last_statusName => 'sj_tx_last_status';
@@ -190,6 +192,8 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_yunying_1Name => 'sj_yunying_1';
   String get sj_yunying_3Name => 'sj_yunying_3';
   String get sj_show_boxName => 'sj_show_box';
+  String get sj_tx_task3_tipsName => 'sj_tx_task3_tips';
+  String get sj_tx_task4_tipsName => 'sj_tx_task4_tips';
 
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
@@ -197,7 +201,7 @@ class SJLocalProvider extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     // 从本地读取值（key自定义，需与存储时一致）
     sj_tx_probability_index = prefs.getInt('sj_tx_probability_index') ?? 0;
-    sj_login_index = prefs.getInt('sj_login_index') ?? 0;
+    // sj_login_index = prefs.getInt('sj_login_index') ?? 0;
     sj_tx_dice_index = prefs.getInt('sj_tx_dice_index') ?? 0;
     sj_tx_card_first = prefs.getInt('sj_tx_card_first') ?? 0;
     sj_domand_number = prefs.getInt('sj_domand_number') ?? 0;
@@ -225,6 +229,8 @@ class SJLocalProvider extends ChangeNotifier {
     sj_key_number = prefs.getInt('sj_key_number') ?? 0;
     sj_bg_music = prefs.getBool('sj_bg_music') ?? true;
     sj_sound_music = prefs.getBool('sj_sound_music') ?? true;
+    sj_tx_task3_tips = prefs.getBool('sj_tx_task3_tips') ?? false;
+    sj_tx_task4_tips = prefs.getBool('sj_tx_task4_tips') ?? false;
     sj_txing_status = prefs.getBool('sj_txing_status') ?? false;
     sj_login_status = prefs.getBool('sj_login_status') ?? false;
     sj_open_tx = prefs.getBool('sj_open_tx') ?? false;

@@ -80,9 +80,7 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
       } else if (value == 1) {
         if (widget.autoScratch && mounted && !_isAutoScratching) {
           _startAutoScratch();
-          if (SJLocalProvider.instance.sj_bg_music) SJMP3Player().pauseBackground();
-          SJMP3Player().pauseEffect();
-          if (SJLocalProvider.instance.sj_sound_music) SJMP3Player().playEffect();
+          if (SJLocalProvider.instance.sj_sound_music) SJAudioUtils().playGuakaAudio();
         }
       }
     });
@@ -151,9 +149,8 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
       _repaintFlag++;
       _autoCoinPosition = null;
     });
-    await SJMP3Player().pauseEffect11();
-    await SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
+    await SJAudioUtils().stopAllTempAudio();
+    if (SJLocalProvider.instance.sj_bg_music) await SJAudioUtils().playBGM();
   }
 
   void _resetScratchCard() {
@@ -278,9 +275,8 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
       _autoScratchSubscription?.cancel();
       _autoScratchSubscription = null;
     });
-    await SJMP3Player().pauseEffect11();
-    await SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music) await SJMP3Player().playBackground();
+    await SJAudioUtils().stopAllTempAudio();
+    if (SJLocalProvider.instance.sj_bg_music) await SJAudioUtils().playBGM();
   }
 
   @override
@@ -305,10 +301,10 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
           _autoCoinPosition = null;
         });
         sj_event_fire('scratch_card', {'type' : 'user'});
-        await SJMP3Player().pauseBackground();
-        await SJMP3Player().pauseEffect11();
-        await SJMP3Player().pauseEffect();
-        if (SJLocalProvider.instance.sj_sound_music) await SJMP3Player().playEffect11();
+
+        if (SJLocalProvider.instance.sj_sound_music) {
+           await SJAudioUtils().playGuakaAudio();
+        }
       },
       onPanUpdate: _isAutoScratching ? null : (details) => _handlePanUpdate(details, Size(widget.contentW, widget.contentH)),
       onPanEnd: _isAutoScratching ? null : (details) => _handlePanEnd(),

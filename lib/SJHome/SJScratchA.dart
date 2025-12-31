@@ -59,12 +59,8 @@ class _SJScratchAState extends State<SJScratchA> {
   @override
   void dispose() {
     // TODO: implement dispose
-     SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music){
-      SJMP3Player().playBackground();
-    } else {
-      SJMP3Player().pauseBackground();
-    }
+    SJAudioUtils().stopAllTempAudio();
+    SJAudioUtils().playBGM();
     super.dispose();
   }
 

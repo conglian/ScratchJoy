@@ -110,8 +110,8 @@ class SJRequestHelpers {
       // "upload event [${eventName}] success ${response.body}".log();
       return _handleResponse(response);
     } catch (e) {
-      "upload event [${eventName}] faild".log();
-      throw Exception('Failed to perform POST request: $e');
+      "upload event [${eventName}] faild error $e".log();
+      // throw Exception('Failed to perform POST request: $e');
     }
   }
 

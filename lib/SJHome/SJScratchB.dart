@@ -14,6 +14,7 @@ import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:scratchjoy/SJTool/sj_stroke_text.dart';
 import 'package:scratchjoy/main.dart';
 import 'package:spine_flutter/spine_widget.dart';
+import 'package:spine_flutter/spine_widget.dart' as spine;
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_img.dart';
@@ -26,7 +27,6 @@ import 'SJHome.dart';
 import 'SJScratchA.dart';
 import 'SJScratchB.dart';
 import 'SJScratchRatio.dart';
-
 
 
 class SJScratchB extends StatefulWidget {
@@ -47,6 +47,8 @@ class _SJScratchBState extends State<SJScratchB> {
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作
+      showOneTxTask();
+      showFourTxTask();
     });
 
     _controller0 = SpineWidgetController(onInitialized: (controller) {
@@ -56,15 +58,53 @@ class _SJScratchBState extends State<SJScratchB> {
     });
   }
 
+  // 第一段任务提醒
+  Future<void> showOneTxTask() async {
+    // 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_tx_card_index >=
+        SJNumberHelpers().taskModel!.task.first.first.num &&
+        SJLocalProvider.instance.sj_tx_dice_index >=
+            SJNumberHelpers().taskModel!.task.first.last.num &&
+        SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      if (SJLocalProvider.instance.sj_tx_task2_tips == false &&
+          homeKey.currentState!.ctx.mounted) {
+        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+      }
+    }
+  }
+  // 开启第三段和第四段任务
+  Future<void> showFourTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_box_index >=
+        SJNumberHelpers().last_taskModel!.task.first.first.num &&
+        SJLocalProvider.instance.sj_tx_card_index >=
+            SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateBool(
+          SJLocalProvider.instance.sj_tx_first_statusName, true);
+      if (SJLocalProvider.instance.sj_tx_task4_tips == false) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task4_tipsName, true);
+        if (homeKey.currentState!.ctx.mounted) {
+          homeKey.currentState!.ctx.tipShow(SJPopTask3Dialog());
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     // TODO: implement dispose
-    SJMP3Player().pauseEffect();
-    if (SJLocalProvider.instance.sj_bg_music){
-      SJMP3Player().playBackground();
-    } else {
-      SJMP3Player().pauseBackground();
-    }
+    SJAudioUtils().stopAllTempAudio();
+    SJAudioUtils().playBGM();
     super.dispose();
   }
 
@@ -75,110 +115,81 @@ class _SJScratchBState extends State<SJScratchB> {
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       body: Container(
-        width: 0.width(context),
-        height: 0.height(context),
-        decoration: BoxDecoration(
-            image: SJDImg('sj_home_bg')
-        ),
-        child: Stack(
-          children: [
-            Positioned(top: 118 - 12,child:
-            SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 60, child: SJScratchContentBWidget(type: widget.type),),
-            ),
-            Column(
-              children: [
-                SJDetailsBarWidget(isCash: false),
-                Spacer(),
-                SJBottomDetailsBarWidget(),
-              ],
-            ),
-            Positioned(
-              top: 0.h,
-              left: 0.w,
-              child: Consumer<SJLocalProvider>(
-                  builder: (context, provider, child) {
-                    return Visibility(visible: provider.sj_show_dolas_ani, child: Padding(
-                      padding: EdgeInsets.only(top: 8.h),
-                      child: Lottie.asset(
-                          width: 0.width(context),
-                          height: 720.h,
-                          fit: BoxFit.fill,
-                          "sj_dolas_aniamtion.zip".files(),
-                          repeat: false,
-                          onLoaded: (composition) async {
-                            Future.delayed(Duration(milliseconds: 1800), (){
-                              SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
-                            });
-                          }
-                      ),
-                    ));
-                  }
+          width: 0.width(context),
+          height: 0.height(context),
+          decoration: BoxDecoration(
+              image: SJDImg('sj_home_bg')
+          ),
+          child: Stack(
+            children: [
+              Positioned(top: 118 - 12,child:
+              SizedBox(width: 0.width(context), height: 0.height(context) - 118 - 60, child: SJScratchContentBWidget(type: widget.type),),
               ),
-            ),
-            // Positioned(left: 4.w,bottom: 56.h,child:
-            // Consumer<SJLocalProvider>(
-            //   builder: (context, provider, child) {
-            //     return Visibility(
-            //       visible: provider.sj_show_box_tips,
-            //       child: Container(
-            //         width: 285.w,
-            //         height: 71.h,
-            //         decoration: BoxDecoration(
-            //             image: SJDImg('sj_box_tips')
-            //         ),
-            //         child: Column(
-            //           children: [
-            //             SizedBox(height: 15.h,),
-            //             SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 18, color: '#7B4311'.color(), weight: FontWeight.w400)
-            //           ],
-            //         ),
-            //       ),
-            //     );
-            //   },
-            // ),
-            // ),
-            // Positioned(
-            //   bottom: 0.h,
-            //   left: 44.w,
-            //   width: 60,
-            //   height: 60,
-            //   child:Consumer<SJLocalProvider>(
-            //       builder: (context, provider, child) {
-            //         return  Visibility(visible: provider.sj_show_box_tips, child: InkWell(
-            //           onTap: () async {
-            //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
-            //             await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_box_tipsName, true);
-            //             if (!mounted) return;
-            //             context.tipShow(SJBoxOpenDiaologWidget());
-            //           },
-            //           child: Lottie.asset(
-            //             width: 80,
-            //             height: 80,
-            //             fit: BoxFit.fill,
-            //             "sj_shou_anmation.zip".files(),
-            //             repeat: true,
-            //           ),
-            //         ));
-            //       }
-            //   ),
-            // ),
-            Positioned(child: SJBubbleButton()),
-            Positioned(
-                top: 75,
-                left: 88,
+              Column(
+                children: [
+                  SJDetailsBarWidget(isCash: false),
+                  Spacer(),
+                  SJBottomDetailsBarWidget(),
+                ],
+              ),
+              Positioned(
+                top: 0.h,
+                left: 0.w,
+                child: Consumer<SJLocalProvider>(
+                    builder: (context, provider, child) {
+                      return Visibility(visible: provider.sj_show_dolas_ani, child: Padding(
+                        padding: EdgeInsets.only(top: 8.h),
+                        child: Lottie.asset(
+                            width: 0.width(context),
+                            height: 720.h,
+                            fit: BoxFit.fill,
+                            "sj_dolas_aniamtion.zip".files(),
+                            repeat: false,
+                            onLoaded: (composition) async {
+                              Future.delayed(Duration(milliseconds: 1800), (){
+                                SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_dolas_aniName, false);
+                              });
+                            }
+                        ),
+                      ));
+                    }
+                ),
+              ),
+              Positioned(left: 4.w,bottom: 56.h,child:
+              Consumer<SJLocalProvider>(
+                builder: (context, provider, child) {
+                  return Visibility(
+                    visible: provider.sj_show_box_tips,
+                    child: Container(
+                      width: 285.w,
+                      height: 71.h,
+                      decoration: BoxDecoration(
+                          image: SJDImg('sj_box_tips')
+                      ),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 15.h,),
+                          SJText(text: 'Open A Gift Chest Every 3 Scratches', size: 16.spMin, color: '#7B4311'.color(), weight: FontWeight.w400)
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ),
+              Positioned(
+                bottom: 0.h,
+                left: 44.w,
+                width: 60,
+                height: 60,
                 child:Consumer<SJLocalProvider>(
                     builder: (context, provider, child) {
-                      return  Visibility(visible: provider.sj_first_show_cash, child: InkWell(
+                      return  Visibility(visible: provider.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval, child: InkWell(
                         onTap: () async {
-                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_show_cashName, false);
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_box_tipsName, true);
                           if (!context.mounted) return;
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (builder) {
-                                return SJCash();
-                              },
-                            ),
-                          );
+                          context.tipShow(SJBoxOpenDiaologWidget());
                         },
                         child: Lottie.asset(
                           width: 80,
@@ -190,27 +201,56 @@ class _SJScratchBState extends State<SJScratchB> {
                       ));
                     }
                 ),
-            ),
-            Positioned(
-              top: 338.h,
-              left: 30.w,
-              child: Visibility(visible: SJLocalProvider.instance.sj_scratch_guide, child: Lottie.asset(
-                  width: 320.w,
-                  height: 260.h,
-                  fit: BoxFit.fill,
-                  "sj_scratch_guide.zip".files(),
-                  repeat: false,
-                  onLoaded: (composition) async {
-                    Future.delayed(Duration(milliseconds: 1200), () async {
-                      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_scratch_guideName, false);
-                      setState(() {});
-                    });
-                  }
-              )),
-            ),
-          ],
+              ),
+              Positioned(child: SJBubbleButton()),
+              Positioned(
+                  top: 75,
+                  left: 88,
+                  child:Consumer<SJLocalProvider>(
+                      builder: (context, provider, child) {
+                        return  Visibility(visible: provider.sj_first_show_cash, child: InkWell(
+                          onTap: () async {
+                            await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_first_show_cashName, false);
+                            if (!context.mounted) return;
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (builder) {
+                                  return SJCash();
+                                },
+                              ),
+                            );
+                          },
+                          child: Lottie.asset(
+                            width: 80,
+                            height: 80,
+                            fit: BoxFit.fill,
+                            "sj_shou_anmation.zip".files(),
+                            repeat: true,
+                          ),
+                        ));
+                      }
+                  ),
+              ),
+              Positioned(
+                top: 338.h,
+                left: 30.w,
+                child: Visibility(visible: SJLocalProvider.instance.sj_scratch_guide, child: Lottie.asset(
+                    width: 320.w,
+                    height: 260.h,
+                    fit: BoxFit.fill,
+                    "sj_scratch_guide.zip".files(),
+                    repeat: false,
+                    onLoaded: (composition) async {
+                      Future.delayed(Duration(milliseconds: 1200), () async {
+                        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_scratch_guideName, false);
+                        setState(() {});
+                      });
+                    }
+                )),
+              ),
+            ],
+          ),
         ),
-      ),
     );
   }
 }
@@ -225,7 +265,7 @@ class SJScratchContentBWidget extends StatefulWidget {
 class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
 
   late double scratch_h = 0.height(context) - 118 - 60;
-
+  // late double scratch_h = 626.h;
   bool shai_anim = false;
 
   bool star_awarad = false;
@@ -233,6 +273,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
   bool is_100ratio = false;
 
   bool is_end_Scratch = false;
+
+  bool is_yunyingshow1 = false;
+
+  bool is_yunyingshow2 = false;
+
+  bool is_yunyingshow3 = false;
+
+  bool is_yunyingshow4 = false;
 
   SJPlayJoyResult extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers(forceWin: !SJLocalProvider.instance.sj_new_guide);
 
@@ -319,10 +367,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 0.width(context), height: scratch_h,
-      child: _setContentsWidget(),
-    );
+    return _setContentsWidget();
   }
 
   Widget _setContentsWidget(){
@@ -570,13 +615,19 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         ],
       );
     } else if (widget.type == 4) {
+      double safeTop = MediaQuery.of(context).padding.top;
+      if (safeTop < 46){
+        safeTop = 46 - safeTop + 0;
+      } else {
+        safeTop = 0;
+      }
       return Stack(
         children: [
           CardSwapAnimator(
             key: swapKey4,
             child: buildScratchCard4(),   // 封装你的刮卡UI
           ),
-          Positioned(right: (0.width(context) - 112) * 0.25, top: 180.h,child: SizedBox(
+          Positioned(right: (0.width(context) - 112) * 0.25, top: 118.h + 60.h - safeTop,child: SizedBox(
               width: 112,
               height: 50,
               child: Stack(
@@ -754,7 +805,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, SJLocalProvider.instance.sj_scrach_end_number_0 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -768,10 +819,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -790,7 +837,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         if (extra_bonusResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
           showAwardWidget(SJNumberHelpers().bonusConfigModel!.extraBonus.pop!, extra_bonusResult.winMatchNumbers[extra_bonusResult
-              .winIndex], 'extra_bonus');
+              .winIndex], 'extra_bonus', 0, 0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -828,17 +875,17 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         ),
         child: Column(
           children: [
-            SizedBox(height: 228.h,),
+            Spacer(),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                SJText(text: '${extra_bonusResult.winNumbers.first}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-                SJText(text: '${extra_bonusResult.winNumbers[1]}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-                SJText(text: '${extra_bonusResult.winNumbers[2]}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-                SJText(text: '${extra_bonusResult.winNumbers.last}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${extra_bonusResult.winNumbers.first}', size: 40.sp, color: (star_awarad == true && extra_bonusResult.displayNumbers.contains(extra_bonusResult.winNumbers.first)) ? '#FFF600'.color() : '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${extra_bonusResult.winNumbers[1]}', size: 40.sp, color: (star_awarad == true && extra_bonusResult.displayNumbers.contains(extra_bonusResult.winNumbers[1])) ? '#FFF600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${extra_bonusResult.winNumbers[2]}', size: 40.sp, color: (star_awarad == true && extra_bonusResult.displayNumbers.contains(extra_bonusResult.winNumbers[2])) ? '#FFF600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${extra_bonusResult.winNumbers.last}', size: 40.sp, color: (star_awarad == true && extra_bonusResult.displayNumbers.contains(extra_bonusResult.winNumbers.last)) ? '#FFF600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
               ],
             ),
-            SizedBox(height: 40.h,),
+            SizedBox(height: 33.h,),
             GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -853,7 +900,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               itemBuilder: (context, index) {
                 return SizedBox(
                     width: 70,
-                    height: 56,
+                    height: 56.h,
                     child: Stack(
                         children: [
                           if(extra_bonusResult.displayNumbers[index] == -2)
@@ -866,7 +913,8 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     )
                 );
               },
-            )
+            ),
+            SizedBox(height: 124.h,)
           ],
         ),
       ),
@@ -881,7 +929,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           star_awarad = true;
         });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, SJLocalProvider.instance.sj_scrach_end_number_1 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -895,10 +943,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -916,7 +960,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (goldRushResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize, 'gold_rush');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize, 'gold_rush', 0, 0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -954,16 +998,16 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       ),
       child: Column(
         children: [
-          SizedBox(height: 216.h,),
+          Spacer(),
           Row(
             children: [
-              SizedBox(width: 108.w,),
-              SJText(text: 'Prize', size: 40, color: '#3A0153'.color(), weight: FontWeight.w900),
+              SizedBox(width: 80.w,),
+              SJText(text: 'Prize', size: 40.sp, color: '#3A0153'.color(), weight: FontWeight.w900),
               SizedBox(width: 23.w,),
-              SJText(text: '\$${goldRushResult.prize.toStringAsFixed(2)}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
+              SJText(text: '\$${goldRushResult.prize.toStringAsFixed(2)}', size: 40.sp, color: '#25211D'.color(), weight: FontWeight.w900),
             ],
           ),
-          SizedBox(height: 38.h,),
+          SizedBox(height: 30.h,),
           SizedBox(
             width: 323.w,
             child: GridView.builder(
@@ -979,26 +1023,33 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               padding: EdgeInsets.only(top: 12.h, left: 42.w, right: 32.w), // 移除默认的padding// 最多显示10个
               itemBuilder: (context, index) {
                 return SizedBox(
-                    width: 60,
-                    height: 60,
+                    width: 60.w,
+                    height: 60.w,
                     child: Stack(
                         children: [
                           if(goldRushResult.numbers[index] == -2)
-                            SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 56, hs: 56, targetKey: targetimageKey),
+                            SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 56.w, hs: 56.w, targetKey: targetimageKey),
                           if(goldRushResult.numbers[index] != -2)
-                            Positioned(width: 56,child: SJBouncyImage(imagePath: 'sj_scratch_icon_1_${goldRushResult.numbers[index]}'.image(), width: 74, height: 65, enableAnimation: (star_awarad == true && goldRushResult.winIndexes!.contains(index)))),
+                            Positioned(width: 56,child: SJBouncyImage(imagePath: (star_awarad == true && !goldRushResult.winIndexes.contains(index)) ? 'sj_scratch_icon_1_${goldRushResult.numbers[index]}_n'.image() : 'sj_scratch_icon_1_${goldRushResult.numbers[index]}'.image(), width: 70.w, height: 60.h, enableAnimation: (star_awarad == true && goldRushResult.winIndexes.contains(index)))),
                         ]
                     )
                 );
               },
             ),
-          )
+          ),
+          SizedBox(height: 136.h,)
         ],
       ),
     ));
   }
   // 刮卡2
   Widget buildScratchCard2() {
+    double safeTop = MediaQuery.of(context).padding.top;
+    if (safeTop < 46){
+      safeTop = 46 - safeTop + 0;
+    } else {
+      safeTop = 0;
+    }
     return SJLocalImageScratchCard(autoStartY: 230.h,coverImagePath: 'sj_scratch_content_2'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: () async {
       if (!mounted)return;
       setState(() {
@@ -1006,7 +1057,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, SJLocalProvider.instance.sj_scrach_end_number_2 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -1020,10 +1071,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -1041,7 +1088,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (lucku_momentResultb.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckyMoment.pop!, lucku_momentResultb.winMatchNumbers.first, 'lucky_moment');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckyMoment.pop!, lucku_momentResultb.winMatchNumbers.first, 'lucky_moment', 0, 0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1077,66 +1124,72 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       decoration: BoxDecoration(
           image: SJDImg('sj_scratch_bg_2')
       ),
-      child: Column(
+      child: Stack(
         children: [
-          SizedBox(height: 217.h,),
-          Row(
-            children: [
-              SizedBox(width: 32.w,),
-              SizedBox(
-                width: 100,
-                height: 30,
-                child: Stack(
-                  children: [
-                    if(lucku_momentResultb.winIndex == 0)
-                      SizedBox(width: 100, height: 30,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
-                    if(lucku_momentResultb.winIndex != 0)
-                      Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,)),
-                  ],
+          Positioned(top: 216.h - safeTop,child: SizedBox(
+            width: 0.width(context),
+            height: 30.h,
+            child: Row(
+              children: [
+                SizedBox(width: 24.w,),
+                SizedBox(
+                  width: 100.w,
+                  height: 30.h,
+                  child: Stack(
+                    children: [
+                      if(lucku_momentResultb.winIndex == 0)
+                        SizedBox(width: 100.w, height: 30.h,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24.sp, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      if(lucku_momentResultb.winIndex != 0)
+                        Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50.w, height: 30.h,)),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: 28.w,),
-              SizedBox(
-                width: 100,
-                height: 30,
-                child: Stack(
-                  children: [
-                    if(lucku_momentResultb.winIndex == 1)
-                      SizedBox(width: 100, height: 30,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
-                    if(lucku_momentResultb.winIndex != 1)
-                      Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,)),
-                  ],
+                SizedBox(width: 12.w,),
+                SizedBox(
+                  width: 100.w,
+                  height: 30.h,
+                  child: Stack(
+                    children: [
+                      if(lucku_momentResultb.winIndex == 1)
+                        SizedBox(width: 100.w, height: 30.h,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24.sp, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      if(lucku_momentResultb.winIndex != 1)
+                        Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50.w, height: 30.h,)),
+                    ],
+                  ),
                 ),
-              ),
-              Spacer(),
-              SizedBox(
-                width: 100,
-                height: 30,
-                child: Stack(
-                  children: [
-                    if(lucku_momentResultb.winIndex == 2)
-                      SizedBox(width: 100, height: 30,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
-                    if(lucku_momentResultb.winIndex != 2)
-                      Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,)),
-                  ],
+                Spacer(),
+                SizedBox(
+                  width: 100.w,
+                  height: 30.h,
+                  child: Stack(
+                    children: [
+                      if(lucku_momentResultb.winIndex == 2)
+                        SizedBox(width: 100.w, height: 30.h,child: SJStrokeText(text: '\$${lucku_momentResultb.winMatchNumbers.first.toStringAsFixed(2)}', size: 24.sp, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      if(lucku_momentResultb.winIndex != 2)
+                        Center(child: SJImg(name: 'sj_scratch_icon_2_0', width: 50.w, height: 30.h,)),
+                    ],
+                  ),
                 ),
-              ),
-              SizedBox(width: 32.w,),
-            ],
-          ),
-          SizedBox(height: 45.h,),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              SJText(text: '${lucku_momentResultb.winNumbers.first}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-              SJText(text: '${lucku_momentResultb.winNumbers[1]}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-              SJText(text: '${lucku_momentResultb.winNumbers[2]}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-              SJText(text: '${lucku_momentResultb.winNumbers.last}', size: 40, color: '#25211D'.color(), weight: FontWeight.w900),
-            ],
-          ),
-          SizedBox(height: 30.h,),
-          SizedBox(
+                SizedBox(width: 24.w,),
+              ],
+            ),
+          )),
+          Positioned(top: 286.h - safeTop,child: SizedBox(
+            width: 0.width(context),
+            height: 40.h,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                SJText(text: '${lucku_momentResultb.winNumbers.first}', size: 40.sp, color:lucku_momentResultb.displayNumbers.contains(lucku_momentResultb.winNumbers.first) ? '#FBE600'.color() : '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${lucku_momentResultb.winNumbers[1]}', size: 40.sp, color:lucku_momentResultb.displayNumbers.contains(lucku_momentResultb.winNumbers[1]) ? '#FBE600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${lucku_momentResultb.winNumbers[2]}', size: 40.sp, color:lucku_momentResultb.displayNumbers.contains(lucku_momentResultb.winNumbers[2]) ? '#FBE600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
+                SJText(text: '${lucku_momentResultb.winNumbers.last}', size: 40.sp, color:lucku_momentResultb.displayNumbers.contains(lucku_momentResultb.winNumbers.last) ? '#FBE600'.color() :  '#25211D'.color(), weight: FontWeight.w900),
+              ],
+            ),
+          )),
+          Positioned(top: 354.h - safeTop,child: SizedBox(
             width: 350.w,
+            height: 190.h,
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
@@ -1157,15 +1210,15 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                           if(lucku_momentResultb.displayNumbers[index] == -2)
                             SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 50, hs: 50, targetKey: targetimageKey),
                           if(lucku_momentResultb.displayNumbers[index] != -2)
-                            Positioned(width: 56,child: SJBouncyText(text: '${lucku_momentResultb.displayNumbers[index]}', fontSize: 32, color: lucku_momentResultb.winNumbers.contains(lucku_momentResultb.displayNumbers[index]) && star_awarad == true ? '#FBE600'.color() : '#23362B'.color(), enableAnimation: (lucku_momentResultb.winNumbers.contains(lucku_momentResultb.displayNumbers[index]) && star_awarad == true))),
+                            Positioned(width: 56,child: SJBouncyText(text: '${lucku_momentResultb.displayNumbers[index]}', fontSize: 32.sp, color: lucku_momentResultb.winNumbers.contains(lucku_momentResultb.displayNumbers[index]) && star_awarad == true ? '#FBE600'.color() : '#23362B'.color(), enableAnimation: (lucku_momentResultb.winNumbers.contains(lucku_momentResultb.displayNumbers[index]) && star_awarad == true))),
                         ]
                     )
                 );
               },
             ),
-          )
+          ))
         ],
-      ),
+      )
     ));
   }
   // 刮卡3
@@ -1178,7 +1231,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, SJLocalProvider.instance.sj_scrach_end_number_3 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -1192,10 +1245,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -1213,7 +1262,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (secret_stashResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, 0.to2Double(secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier), 'secret_stash');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, 0.to2Double(secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier), 'secret_stash',secret_stashResult.multiplier, secret_stashResult.awards_value);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1251,7 +1300,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       ),
       child: Column(
         children: [
-          SizedBox(height: 208.h,),
+          Spacer(),
           Row(
             children: [
               SizedBox(width: 38.w,),
@@ -1278,11 +1327,26 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                   itemCount: 9,
                   padding: EdgeInsets.only(top: 18.h, left: 28.w, right: 0), // 移除默认的padding// 最多显示10个
                   itemBuilder: (context, index) {
+                    late spine.SpineWidgetController _controller0;
+                    _controller0 = spine.SpineWidgetController(onInitialized: (controller) {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        controller.animationState.setAnimationByName(0, "animation", true);
+                      });
+                    });
+
                     return SizedBox(
                         width: 53,
                         height: 73,
                         child: Stack(
                             children: [
+                              Visibility(
+                                visible: (secret_stashResult.numbers[index] != -2) && (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true),
+                                child: Positioned(
+                                  width: 65.w,
+                                  height: 65.h,
+                                  child: spine.SpineWidget.fromAsset('assets/spine/l.atlas', 'assets/spine/l.json', _controller0),
+                                ),
+                              ),
                               if(secret_stashResult.numbers[index] == -2)
                                 SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 53, hs: 53, targetKey: targetimageKey),
                               if(secret_stashResult.numbers[index] != -2)
@@ -1296,7 +1360,8 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 ),
               )
             ],
-          )
+          ),
+          SizedBox(height: 168.h,)
         ],
       ),
     ));
@@ -1310,7 +1375,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, SJLocalProvider.instance.sj_scrach_end_number_4 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -1320,10 +1385,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_box_indexName,
           SJLocalProvider.instance.sj_box_index + 1,
@@ -1345,7 +1406,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (superMultipleResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, 0.to2Double(superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier), 'super_multiple');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, 0.to2Double(superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier), 'super_multiple', superMultipleResult.multiplier, superMultipleResult.award_value);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1383,8 +1444,8 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       ),
       child: Column(
         children: [
-          SizedBox(height: 268.h,),
-          SJImg(name: 'sj_scratch_icon_4_0', width: 102, height: 102,),
+          Spacer(),
+          SJImg(name: 'sj_scratch_icon_4_0', width: 102.w, height: 102.w,),
           SizedBox(height: 10.h,),
           SizedBox(
             width: 350.w,
@@ -1402,7 +1463,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
               itemBuilder: (context, index) {
                 return SizedBox(
                     width: 53,
-                    height: 73,
+                    height: 73.h,
                     child: Stack(
                         children: [
                           if(superMultipleResult.numbers[index] == -5)
@@ -1410,19 +1471,26 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                           if(superMultipleResult.numbers[index] != -5)
                             Positioned(width: 53,child: SJBouncyImage(imagePath: 'sj_scratch_icon_4_${superMultipleResult.numbers[index]}'.image(), width: 50, height: 50, enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                           if(superMultipleResult.numbers[index] != -5)
-                            Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '\$${superMultipleResult.prizeValues[index].toStringAsFixed(2)}', fontSize: 16, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
+                            Positioned(width: 53,top: 44.h,child: SJBouncyText(text: '\$${superMultipleResult.prizeValues[index].toStringAsFixed(2)}', fontSize: 16.sp, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                         ]
                     )
                 );
               },
             ),
-          )
+          ),
+          SizedBox(height: 138.h,)
         ],
       ),
     ));
   }
   // 刮卡5
   Widget buildScratchCard5() {
+    double safeTop = MediaQuery.of(context).padding.top;
+    if (safeTop >= 46){
+      safeTop = 18.h;
+    } else {
+      safeTop = 0;
+    }
     return SJLocalImageScratchCard(autoStartY: 220.h,coverImagePath: 'sj_scratch_content_5'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: () async {
       if (!mounted)return;
       setState(() {
@@ -1430,7 +1498,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, SJLocalProvider.instance.sj_scrach_end_number_5 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -1444,10 +1512,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -1465,7 +1529,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (fortuneRushResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, 0.to2Double(fortuneRushResult.prizeValues[fortuneRushResult.winRow]), 'fortune_rush');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, 0.to2Double(fortuneRushResult.prizeValues[fortuneRushResult.winRow]), 'fortune_rush',0,0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1505,7 +1569,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         children: [
           Column(
             children: [
-              SizedBox(height: 230.h,),
+              Spacer(),
               Row(
                 children: [
                   SizedBox(
@@ -1523,14 +1587,14 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                       padding: EdgeInsets.only(top: 10.h, left: 32.w), // 移除默认的padding// 最多显示10个
                       itemBuilder: (context, index) {
                         return SizedBox(
-                            width: 60.w,
+                            width: 50.w,
                             height: 40,
                             child: Stack(
                                 children: [
                                   if(fortuneRushResult.numbers[index] == -1)
-                                    Positioned(left: 10.w,child: SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: star_awarad, ws: 40, hs: 40, targetKey: targetimageKey)),
+                                    Positioned(left: 10.w,child: SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: star_awarad, ws: 40.w, hs: 40.w, targetKey: targetimageKey)),
                                   if(fortuneRushResult.numbers[index] != -1 && index >= 2)
-                                    Positioned(width: 60.w,child: SJBouncyText(text: '${fortuneRushResult.numbers[index]}', fontSize: 32, color:fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true ? '#FFDF23'.color() : '#2C302F'.color(), enableAnimation: (fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true))),
+                                    Positioned(width: 50.w,child: SJBouncyText(text: '${fortuneRushResult.numbers[index]}', fontSize: 32.sp, color:fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true ? '#FFDF23'.color() : '#2C302F'.color(), enableAnimation: (fortuneRushResult.numbers[index] == fortuneRushResult.winNumber && star_awarad == true))),
                                 ]
                             )
                         );
@@ -1543,24 +1607,25 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                     height: 300.h,
                     child: Column(
                       children: [
-                        SizedBox(height: 28.h,),
-                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues.first.toStringAsFixed(2)}', size: 20.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                         SizedBox(height: 34.h,),
-                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[1].toStringAsFixed(2)}', size: 20.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues.first.toStringAsFixed(2)}', size: 18.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                         SizedBox(height: 34.h,),
-                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[2].toStringAsFixed(2)}', size: 20.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[1].toStringAsFixed(2)}', size: 18.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                         SizedBox(height: 34.h,),
-                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[3].toStringAsFixed(2)}', size: 20.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[2].toStringAsFixed(2)}', size: 18.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                         SizedBox(height: 34.h,),
-                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues.last.toStringAsFixed(2)}', size: 20.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues[3].toStringAsFixed(2)}', size: 18.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
+                        SizedBox(height: 34.h,),
+                        SJStrokeText(text: '\$${fortuneRushResult.prizeValues.last.toStringAsFixed(2)}', size: 18.spMin, color: '#FFDF23'.color(), weight: FontWeight.w400, skWidth: 2, skColor: '#00332E'.color()),
                       ],
                     ),
                   )
                 ],
-              )
+              ),
+              SizedBox(height: 128.h,)
             ],
           ),
-          Positioned(left: 43.w, top: 218.h, child: SizedBox(width: 81, height:81, child: Center(child: SJText(text: '${fortuneRushResult.winNumber}', size: 64, color:fortuneRushResult.isWin == true ? 'FFDF23'.color() : '#191A1A'.color(), weight: FontWeight.w400, align: TextAlign.center,))))
+          Positioned(left: 40.w, bottom: 345.h + safeTop, child: SizedBox(width: 81.w, height:81.w, child: Center(child: SJText(text: '${fortuneRushResult.winNumber}', size: 64.sp, color:fortuneRushResult.isWin == true ? 'FFDF23'.color() : '#191A1A'.color(), weight: FontWeight.w400, align: TextAlign.center,))))
         ],
       ),
     ));
@@ -1574,7 +1639,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         star_awarad = true;
       });
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, SJLocalProvider.instance.sj_scrach_end_number_6 + 1);
-      Future.delayed(Duration(seconds: 2), () async {
+      Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
         await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_card_numberName,
@@ -1588,10 +1653,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           SJLocalProvider.instance.sj_tx_card_indexName,
           SJLocalProvider.instance.sj_tx_card_index + 1,
         );
-        if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().last_taskModel!.task.first.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_first_status == true) {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-        }
         if (!SJLocalProvider.instance.sj_first_box_tips && SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
           await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_first_box_tipsName,
@@ -1609,7 +1670,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         }
         if (sweetTimeResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, 0.to2Double(sweetTimeResult.prizeValues[sweetTimeResult.winningRow]), 'sweet_time');
+          showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, 0.to2Double(sweetTimeResult.prizeValues[sweetTimeResult.winningRow]), 'sweet_time',0 ,0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1647,7 +1708,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       ),
       child: Column(
         children: [
-          SizedBox(height: 267.h,),
+          Spacer(),
           Row(
             children: [
               SizedBox(width: 12.w,),
@@ -1655,12 +1716,12 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 width: 120.w,
                 child: Column(
                   children: [
-                    SizedBox(height: 12.h,),
-                    SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues.first.toStringAsFixed(2)}', size: 32, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
-                    SizedBox(height: 38.h,),
-                    SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues[1].toStringAsFixed(2)}', size: 32, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
+                    SizedBox(height: 28.h,),
+                    SizedBox(width: 120.w, height: 53, child: SJStrokeText(text: '\$${sweetTimeResult.prizeValues.first.toStringAsFixed(2)}', size: 28.sp, color:(sweetTimeResult.winningRowIndexes.contains(2) && star_awarad == true) ? '#FFF600'.color() : '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center, skWidth: 1, skColor: '#000000'.color())),
                     SizedBox(height: 32.h,),
-                    SizedBox(width: 120.w, height: 53, child: SJText(text: '\$${sweetTimeResult.prizeValues.last.toStringAsFixed(2)}', size: 32, color: '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center,)),
+                    SizedBox(width: 120.w, height: 53, child: SJStrokeText(text: '\$${sweetTimeResult.prizeValues[1].toStringAsFixed(2)}', size: 28.sp, color:(sweetTimeResult.winningRowIndexes.contains(5) && star_awarad == true) ? '#FFF600'.color() :  '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center, skWidth: 1, skColor: '#000000'.color())),
+                    SizedBox(height: 20.h,),
+                    SizedBox(width: 120.w, height: 53, child: SJStrokeText(text: '\$${sweetTimeResult.prizeValues.last.toStringAsFixed(2)}', size: 28.sp, color:(sweetTimeResult.winningRowIndexes.contains(8) && star_awarad == true) ? '#FFF600'.color() : '#7C183C'.color(), weight: FontWeight.w500, align: TextAlign.center, skWidth: 1, skColor: '#000000'.color())),
                   ],
                 ),
               ),
@@ -1684,9 +1745,9 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                         child: Stack(
                             children: [
                               if(sweetTimeResult.numbers[index] == -1)
-                                SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 64, hs: 64, targetKey: targetimageKey),
+                                SJAnimatedImageMove(imageUrl: 'sj_shaizi_icon', isAnimationEnabled: shai_anim, ws: 64.w, hs: 64.w, targetKey: targetimageKey),
                               if(sweetTimeResult.numbers[index] != -1)
-                                SJBouncyImage(imagePath: 'sj_scratch_icon_6_${sweetTimeResult.numbers[index]}'.image(), width: 64, height: 64, enableAnimation: (sweetTimeResult.winningRowIndexes.contains(index) && star_awarad == true),)
+                                SJBouncyImage(imagePath: 'sj_scratch_icon_6_${sweetTimeResult.numbers[index]}'.image(), width: 64.w, height: 64.w, enableAnimation: (sweetTimeResult.winningRowIndexes.contains(index) && star_awarad == true),)
                             ]
                         )
                     );
@@ -1694,7 +1755,8 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
                 ),
               ),
             ],
-          )
+          ),
+          SizedBox(height: 115.h,)
         ],
       ),
     ));
@@ -1711,7 +1773,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
     // context.tipShow(SJPopLevelADialog());
   }
   // 展示奖励弹框
-  Future<void> showAwardWidget(List<int> pops, double award, String types) async {
+  Future<void> showAwardWidget(List<int> pops, double award, String types, int beishus, double dolas2) async {
     sj_event_fire('scratch_card_suc', {});
     bool isShow = false;
     bool isShowThree = false;
@@ -1734,51 +1796,53 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         is_show: isShow,
         is_showThree: isShowThree,
         type: types,
+        beishu: beishus,
+        dolas: dolas2,
       ),
     ));
   }
   // 进入下一个主题
   Future<void> popToNextScratch() async {
-    await Future.delayed(Duration(milliseconds: 50),(){});
-    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
+    Future.delayed(Duration(milliseconds: 50),(){
+      nextScratchTask();
+    });
+  }
+
+  Future<void> nextScratchTask() async {
+    SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
     if (SJLocalProvider.instance.sj_Scratch_timeKey_0.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_0 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_1.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_1 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_2.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_2 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_3.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_3 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_4.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_4 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_5.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_5 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
-      SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name,DateTime.now().toIso8601String());
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_6.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_6 >= 10){
-      if (!mounted)return;
-      Navigator.of(context).pop();
+      Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
-      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name,DateTime.now().toIso8601String());
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_1.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_1 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_2.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_2 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_3.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_3 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_4.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_4 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_5.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_5 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
+      return;
+    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_6.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_6 >= 10){
+      Navigator.pop(context);
+      SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
+      return;
     } else {
       if (!mounted) return;
       poptxTaskContent();
+      showOneTxTask();
+      showFourTxTask();
       // 下一张内容刷新
       if (widget.type == 0) {
         setState(() {
@@ -1833,24 +1897,75 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         swapKey6.currentState?.runSwap(buildScratchCard6());
       }
     }
+
+  }
+
+  // 第一段任务提醒
+  Future<void> showOneTxTask() async {
+    // 判断第一段任务是否完成
+    if (SJLocalProvider.instance.sj_tx_card_index >=
+        SJNumberHelpers().taskModel!.task.first.first.num &&
+        SJLocalProvider.instance.sj_tx_dice_index >=
+            SJNumberHelpers().taskModel!.task.first.last.num &&
+        SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      if (SJLocalProvider.instance.sj_tx_task2_tips == false &&
+          homeKey.currentState!.ctx.mounted) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
+      }
+    }
+  }
+  // 第三段任务提醒
+  Future<void> showFourTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_box_index >=
+        SJNumberHelpers().last_taskModel!.task.first.first.num &&
+        SJLocalProvider.instance.sj_tx_card_index >=
+            SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateBool(
+          SJLocalProvider.instance.sj_tx_first_statusName, true);
+      if (SJLocalProvider.instance.sj_tx_task4_tips == false) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task4_tipsName, true);
+        if (homeKey.currentState!.ctx.mounted) {
+          homeKey.currentState!.ctx.tipShow(SJPopTask3Dialog());
+        }
+      }
+    }
   }
 
   // 运营逻辑添加
   Future<void> poptxTaskContent() async {
     await Future.delayed(Duration(milliseconds: 50),(){});
-    if(SJLocalProvider.instance.sj_card_number == 4 && SJLocalProvider.instance.sj_yunying_1 == false){
+    if(SJLocalProvider.instance.sj_card_number == 4 && SJLocalProvider.instance.sj_yunying_1 == false && is_yunyingshow1 == false){
+      is_yunyingshow1 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_1Name, true);
       if (!mounted) return;
       context.tipShow(SJPopSubmitAccountDialog());
-    } else if (SJLocalProvider.instance.sj_card_number == 7 && SJLocalProvider.instance.sj_yunying_3 == false){
+    } else if (SJLocalProvider.instance.sj_card_number == 7 && SJLocalProvider.instance.sj_yunying_3 == false && is_yunyingshow2 == false){
+      is_yunyingshow2 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_yunying_3Name, true);
       if (!mounted) return;
       context.tipShow(SJPopSubmitLastDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false){
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 800 && SJLocalProvider.instance.sj_dolas_800 == false && is_yunyingshow3 == false){
+      is_yunyingshow3 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_800Name, true);
       if (!mounted) return;
       context.tipShow(SJPopTXDiceDialog());
-    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false){
+    } else if (SJLocalProvider.instance.sj_dolas_number >= 1000 && SJLocalProvider.instance.sj_dolas_1000 == false && is_yunyingshow4 == false){
+      is_yunyingshow4 = true;
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_dolas_1000Name, true);
       if (!mounted) return;
       context.tipShow(SJPopTXWallerDialog());
@@ -1969,16 +2084,16 @@ class _CardSwapAnimatorState extends State<CardSwapAnimator>
 
     _controller.reset();
     // 切完卡 显示宝箱
-    if (SJLocalProvider.instance.sj_box_index >=
-        SJNumberBHelper().numberEntity!.boxInterval &&
-        SJLocalProvider.instance.sj_show_box == false) {
-      await SJLocalProvider.instance.updateBool(
-          SJLocalProvider.instance.sj_show_boxName, false);
-      await SJLocalProvider.instance.updateBool(
-          SJLocalProvider.instance.sj_show_boxName, true);
-      if (!mounted) return;
-      context.tipShow(SJBoxOpenDiaologWidget());
-    }
+    // if (SJLocalProvider.instance.sj_box_index >=
+    //     SJNumberBHelper().numberEntity!.boxInterval &&
+    //     SJLocalProvider.instance.sj_show_box == false) {
+    //   await SJLocalProvider.instance.updateBool(
+    //       SJLocalProvider.instance.sj_show_boxName, false);
+    //   await SJLocalProvider.instance.updateBool(
+    //       SJLocalProvider.instance.sj_show_boxName, true);
+    //   if (!mounted) return;
+    //   context.tipShow(SJBoxOpenDiaologWidget());
+    // }
   }
 
   @override
@@ -2053,9 +2168,9 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
       ),
       child: Row(
         children: [
-          SizedBox(width: 16.w),
+          SizedBox(width: 8.w),
           SizedBox(
-            width: 100,
+            width: 89.w,
             height: 89,
             child: InkWell(
               onTap: () async {
@@ -2064,7 +2179,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                   if (!context.mounted) return;
                   context.tipShow(SJBoxOpenDiaologWidget());
                 } else {
-                  SJDialogTool.toast(homeKey.currentState!.ctx, 'open a gift chest every 3 scratches');
+                  SJDialogTool.toast(homeKey.currentState!.ctx, 'open A gift chest every 3 scratches');
                 }
               },
               child: Stack(
@@ -2118,9 +2233,8 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
               ),
             ),
           ),
-          SizedBox(width: 4.w),
           SizedBox(
-            width: 200, height: 80,
+            width: 200.w, height: 80,
             child: Consumer<SJLocalProvider>(
               builder: (context, provider, child) {
                 return InkWell(
@@ -2132,14 +2246,14 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                       SJScratchUpdateNotificationService.sendToDomandNumberNotification(1);
                     }
                   },
-                  child: SJImg(name: 'sj_revall_btn', width: 200, height: 80),
+                  child: SJImg(name: 'sj_revall_btn', width: 200.w, height: 80),
                 );
               },
             ),
           ),
           Spacer(),
         SizedBox(
-          width: 70,
+          width: 70.w,
           height: 73,
           child: Padding(
             padding: EdgeInsets.only(top: 8, left: 5),
@@ -2180,7 +2294,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
             ),
           ),
         ),
-          SizedBox(width: 16.w),
+          SizedBox(width: 8.w),
         ],
       ),
     );
@@ -2210,7 +2324,7 @@ class _BouncySJImgState extends State<BouncySJImg>
     );
 
     // 调整幅度和曲线，使弹性更Q更自然
-    _scaleAnim = Tween(begin: 0.98, end: 1.07)
+    _scaleAnim = Tween(begin: 1.0, end: 1.02)
         .chain(CurveTween(curve: Curves.easeInOut))
         .animate(_controller);
 
@@ -2280,9 +2394,9 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
         padding: EdgeInsets.only(top: 34),
         child: Row(
           children: [
-            SizedBox(width: 12,),
+            SizedBox(width: 8.w,),
             SizedBox(
-                width: 155,
+                width: 155.w,
                 height: 49,
                 child: Stack(
                   children: [
@@ -2325,13 +2439,22 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                           )
                       ),
                     ),
-                    SJImg(name: 'sj_dolas_icon', width: 49, height: 49,)
+                    InkWell(onTap: (){
+                      if (widget.isCash) return;
+                      Navigator.of(homeKey.currentState!.ctx).push(
+                        MaterialPageRoute(
+                          builder: (builder) {
+                            return SJCash();
+                          },
+                        ),
+                      );
+                    },child: SJImg(name: 'sj_dolas_icon', width: 49, height: 49,))
                   ],
                 )
             ),
-            SizedBox(width: 11.0),
+            SizedBox(width: 8.w),
             SizedBox(
-                width: 147,
+                width: 140.w,
                 height: 40,
                 child: Stack(
                   children: [
@@ -2388,9 +2511,9 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.only(top: 4, left: 19),
+                      padding: EdgeInsets.only(top: 4, left: 19.w),
                       child: SizedBox(
-                        width: 131,
+                        width: 131.w,
                         height: 32,
                         child: Consumer<SJLocalProvider>(
                           builder: (context, provider, child) {
@@ -2428,7 +2551,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
               },
               child: SJImg(name: 'sj_home_btn', width: 34, height: 34,),
             ),
-            SizedBox(width: 21,)
+            SizedBox(width: 12.w,)
           ],
         ),
       ),

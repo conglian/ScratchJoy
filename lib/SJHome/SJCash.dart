@@ -10,6 +10,7 @@ import 'package:scratchjoy/SJTool/sj_text.dart';
 import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
+import '../SJTool/sj_ad_manger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_number_helper.dart';
 import 'SJScratchB.dart';
@@ -142,189 +143,195 @@ class _SJCashState extends State<SJCash> {
                       ],
                     ),
                     SizedBox(height: 20.h),
-                    Visibility(
-                      visible: SJLocalProvider.instance.sj_last_tx_end,
-                      child: SizedBox(
-                        width: 0.width(context),
-                        height: 406.h,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              left: (0.width(context) - 343.w) * 0.5,
-                              child: Column(
+                    Consumer<SJLocalProvider>(
+                      builder: (context, provider, child) {
+                        return Visibility(
+                          visible: provider.sj_last_tx_end,
+                          child: SizedBox(
+                              width: 0.width(context),
+                              height: 406.h,
+                              child: Stack(
                                 children: [
-                                  Container(
-                                    width: 343.w,
-                                    height: 127.h,
-                                    decoration: BoxDecoration(
-                                      image: SJDImg('sj_rank_bgs')
-                                    ),
+                                  Positioned(
+                                    left: (0.width(context) - 343.w) * 0.5,
                                     child: Column(
                                       children: [
-                                        SizedBox(height: 9.h,),
-                                        Row(
-                                          children: [
-                                            SizedBox(width: 3.w,),
-                                            Container(
-                                              width: 128.w,
-                                              height: 46.h,
-                                              decoration: BoxDecoration(
-                                                image: SJDImg('sj_rank_left_bg')
+                                        Container(
+                                          width: 343.w,
+                                          height: 127.h,
+                                          decoration: BoxDecoration(
+                                              image: SJDImg('sj_rank_bgs')
+                                          ),
+                                          child: Column(
+                                            children: [
+                                              SizedBox(height: 9.h,),
+                                              Row(
+                                                children: [
+                                                  SizedBox(width: 3.w,),
+                                                  Container(
+                                                    width: 128.w,
+                                                    height: 46.h,
+                                                    decoration: BoxDecoration(
+                                                        image: SJDImg('sj_rank_left_bg')
+                                                    ),
+                                                    child: Center(
+                                                      child: SJText(text: '\$${tx_list[provider.sj_tx_ing_number]}', size: 32.sp, color: '#FFFCEB'.color(), weight: FontWeight.w400),
+                                                    ),
+                                                  ),
+                                                  Spacer(),
+                                                  InkWell(
+                                                    onTap: (){
+                                                      sj_event_fire('skip_wait_c', {});
+                                                      SJJoyAds().sj_showAd(context, 'scxji_queue_rv', onCacheResponse: (onCacheResponse){
+                                                      }, adDidClosed: (adDidClosed){
+                                                        var row = sj_generateRandomNumber();
+                                                        setState(() {
+                                                          rankupdate(row);
+                                                        });
+                                                      });
+                                                    },
+                                                    child: SJImg(name: 'sj_skip_btn',width: 156.w, height: 42.h,),
+                                                  ),
+                                                  SizedBox(width: 8.w,)
+                                                ],
                                               ),
-                                              child: Center(
-                                                child: SJText(text: '\$${tx_list[SJLocalProvider.instance.sj_tx_ing_number]}', size: 32.sp, color: '#FFFCEB'.color(), weight: FontWeight.w400),
-                                              ),
-                                            ),
-                                            Spacer(),
-                                            InkWell(
-                                              onTap: (){
-                                                sj_event_fire('skip_wait_c', {});
-                                                SJAdManager().sj_showAd(false, 'scxji_queue_rv', context, (hasCache){}, (finished){
-                                                  var row = sj_generateRandomNumber();
-                                                  setState(() {
-                                                    rankupdate(row);
-                                                  });
-                                                });
-                                              },
-                                              child: SJImg(name: 'sj_skip_btn',width: 156.w, height: 42.h,),
-                                            ),
-                                            SizedBox(width: 8.w,)
-                                          ],
-                                        ),
-                                        SizedBox(height: 4.h,),
-                                        SizedBox(
-                                          width: 295.w,
-                                          height: 54.h,
-                                          child:RichText(
-                                            textAlign: TextAlign.left,
-                                            text: TextSpan(
-                                              style: TextStyle(
-                                                  fontSize: 14.0.sp,
-                                                  fontWeight: FontWeight.w700,
-                                                  color: '#4C3117'.color(),
-                                                  fontFamily: 'Barlow_Black'
-                                              ),
-                                              children: <TextSpan>[
-                                                TextSpan(
-                                                  text: 'Congratulations! You’ve entered the withdrawal review queue. You can tap',
+                                              SizedBox(height: 4.h,),
+                                              SizedBox(
+                                                width: 295.w,
+                                                height: 54.h,
+                                                child:RichText(
+                                                  textAlign: TextAlign.left,
+                                                  text: TextSpan(
+                                                    style: TextStyle(
+                                                        fontSize: 14.0.sp,
+                                                        fontWeight: FontWeight.w700,
+                                                        color: '#4C3117'.color(),
+                                                        fontFamily: 'Barlow_Black'
+                                                    ),
+                                                    children: <TextSpan>[
+                                                      TextSpan(
+                                                        text: 'Congratulations! You’ve entered the withdrawal review queue. You can tap',
+                                                      ),
+                                                      TextSpan(
+                                                        text: '“Skip Wait”',
+                                                        style: TextStyle(color: '#127E1B'.color()),
+                                                      ),
+                                                      TextSpan(
+                                                        text: 'to speed up the review process.',
+                                                      ),
+                                                    ],
+                                                  ),
                                                 ),
-                                                TextSpan(
-                                                  text: '“Skip Wait”',
-                                                  style: TextStyle(color: '#127E1B'.color()),
-                                                ),
-                                                TextSpan(
-                                                  text: 'to speed up the review process.',
-                                                ),
-                                              ],
-                                            ),
+                                              )
+                                            ],
                                           ),
                                         )
                                       ],
                                     ),
-                                  )
-                                ],
-                              ),
-                            ),
-                            Positioned(right: 2,child: SJImg(name: 'sj_rv_icon', width: 55, height: 55,)),
-                            Positioned(left: 38.w,top: 126.h,child: RichText(
-                              textAlign: TextAlign.left,
-                              text: TextSpan(
-                                style: TextStyle(
-                                    fontSize: 16.0.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: '#FDEC9A'.color(),
-                                    fontFamily: 'Barlow_Black'
-                                ),
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: '${SJLocalProvider.instance.sj_all_ranking} ',
-                                    style: TextStyle(color: '#E37037'.color(), fontSize: 20.sp),
                                   ),
-                                  TextSpan(
-                                    text: 'In Queue',
-                                  ),
-                                ],
-                              ),
-                            ),),
-                            Positioned(right: 38.w,top: 126.h,child: RichText(
-                              textAlign: TextAlign.left,
-                              text: TextSpan(
-                                style: TextStyle(
-                                    fontSize: 16.0.sp,
-                                    fontWeight: FontWeight.w700,
-                                    color: '#FDEC9A'.color(),
-                                    fontFamily: 'Barlow_Black'
-                                ),
-                                children: <TextSpan>[
-                                  TextSpan(
-                                    text: 'Your Current Rank: ',
-                                  ),
-                                  TextSpan(
-                                    text: '${SJLocalProvider.instance.sj_current_ranking}',
-                                    style: TextStyle(color: '#62C42E'.color(), fontSize: 20.sp),
-                                  ),
-                                ],
-                              ),
-                            ),),
-                            Positioned(
-                                left: (0.width(context) - 343.w) * 0.5,
-                                top: 160.h,
-                                child: Container(
-                              width: 343.w,
-                              height: 250.h,
-                              decoration: BoxDecoration(
-                                color: '#341917'.color(),
-                                borderRadius: BorderRadius.all(Radius.circular(10))
-                              ),
-                              child: Column(
-                                children: [
-                                  Container(
-                                    width: 343.w,
-                                    height: 44.h,
-                                    decoration: BoxDecoration(
-                                      image: SJDImg('sj_rank_top_bg')
-                                    ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                      children: [
-                                        SJText(text: 'Queue', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
-                                        SJText(text: 'Account', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
-                                        SJText(text: 'Amount', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
+                                  Positioned(right: 2,child: SJImg(name: 'sj_rv_icon', width: 55, height: 55,)),
+                                  Positioned(left: 38.w,top: 126.h,child: RichText(
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                          fontSize: 16.0.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: '#FDEC9A'.color(),
+                                          fontFamily: 'Barlow_Black'
+                                      ),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: '${provider.sj_all_ranking} ',
+                                          style: TextStyle(color: '#E37037'.color(), fontSize: 20.sp),
+                                        ),
+                                        TextSpan(
+                                          text: 'In Queue',
+                                        ),
                                       ],
                                     ),
-                                  ),
-                                  SizedBox(
-                                    width: 343.w,
-                                    height: (250 - 44).h,
-                                    child:  ListView.separated(
-                                      controller: _scrollController,
-                                      scrollDirection: Axis.vertical,
-                                      padding: const EdgeInsets.symmetric(vertical: 0),
-                                      itemCount: SJLocalProvider.instance.sj_all_ranking,
-                                      separatorBuilder: (context, index) => const SizedBox(width: 0),
-                                      itemBuilder: (context, index) {
-                                        return SizedBox(
-                                          width: 243.w,
-                                          height: 41.h,
-                                          child: Row(
-                                            mainAxisAlignment: MainAxisAlignment.spaceAround,
-                                            children: [
-                                              Center(child: SJText(text: '${index + 1}', size: 18.spMax, color: SJLocalProvider.instance.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
-                                              Center(child: SJText(text: '${_sj_generateToList()[index]}', size: 18.spMax, color: SJLocalProvider.instance.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
-                                              Center(child: SJText(text: '${_generateToDolasList()[index]}', size: 18.spMax, color: SJLocalProvider.instance.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
-                                            ],
-                                          ),
-                                        );
-                                      },
+                                  ),),
+                                  Positioned(right: 38.w,top: 126.h,child: RichText(
+                                    textAlign: TextAlign.left,
+                                    text: TextSpan(
+                                      style: TextStyle(
+                                          fontSize: 16.0.sp,
+                                          fontWeight: FontWeight.w700,
+                                          color: '#FDEC9A'.color(),
+                                          fontFamily: 'Barlow_Black'
+                                      ),
+                                      children: <TextSpan>[
+                                        TextSpan(
+                                          text: 'Your Current Rank: ',
+                                        ),
+                                        TextSpan(
+                                          text: '${provider.sj_current_ranking}',
+                                          style: TextStyle(color: '#62C42E'.color(), fontSize: 20.sp),
+                                        ),
+                                      ],
                                     ),
-                                  )
+                                  ),),
+                                  Positioned(
+                                      left: (0.width(context) - 343.w) * 0.5,
+                                      top: 160.h,
+                                      child: Container(
+                                        width: 343.w,
+                                        height: 250.h,
+                                        decoration: BoxDecoration(
+                                            color: '#341917'.color(),
+                                            borderRadius: BorderRadius.all(Radius.circular(10))
+                                        ),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                              width: 343.w,
+                                              height: 44.h,
+                                              decoration: BoxDecoration(
+                                                  image: SJDImg('sj_rank_top_bg')
+                                              ),
+                                              child: Row(
+                                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                children: [
+                                                  SJText(text: 'Queue', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
+                                                  SJText(text: 'Account', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
+                                                  SJText(text: 'Amount', size: 18.sp, color: '#B2885C'.color(), weight: FontWeight.w400),
+                                                ],
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 343.w,
+                                              height: (250 - 44).h,
+                                              child:  ListView.separated(
+                                                controller: _scrollController,
+                                                scrollDirection: Axis.vertical,
+                                                padding: const EdgeInsets.symmetric(vertical: 0),
+                                                itemCount: provider.sj_all_ranking,
+                                                separatorBuilder: (context, index) => const SizedBox(width: 0),
+                                                itemBuilder: (context, index) {
+                                                  return SizedBox(
+                                                    width: 243.w,
+                                                    height: 41.h,
+                                                    child: Row(
+                                                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                                      children: [
+                                                        Center(child: SJText(text: '${index + 1}', size: 18.spMax, color: provider.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
+                                                        Center(child: SJText(text: '${_sj_generateToList()[index]}', size: 18.spMax, color: provider.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
+                                                        Center(child: SJText(text: '${_generateToDolasList()[index]}', size: 18.spMax, color: provider.sj_current_ranking == index+1 ? '#71FF2F'.color() : '#FFF1E1'.color(), weight: FontWeight.w400),),
+                                                      ],
+                                                    ),
+                                                  );
+                                                },
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                      ))
                                 ],
-                              ),
-                            ))
-                          ],
-                        )
-                      ),
+                              )
+                          ),
+                        );
+                      },
                     ),
+
                     // 106, 164
                     Consumer<SJLocalProvider>(
                       builder: (context, provider, child) {
@@ -547,9 +554,13 @@ class _SJCashState extends State<SJCash> {
                 if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_tx_last_status == true) {
                   SJDialogTool.toast(context, 'The withdrawal task has been completed. Once you complete the leaderboard task, you can successfully withdraw your earnings.');
                 } else {
-                  if (SJLocalProvider.instance.sj_tx_first_status == false){
-                    context.tipShow(SJPopTXTaskDialog());
-                  } else if (SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_first_status == true){
+                  if (SJLocalProvider.instance.sj_tx_task2_tips == false || SJLocalProvider.instance.sj_tx_task3_tips == false){
+                    if (SJLocalProvider.instance.sj_tx_task2_tips == false) {
+                      context.tipShow(SJPopTXTaskDialog());
+                    } else {
+                      context.tipShow(SJPopTXLastDialog());
+                    }
+                  } else if (SJLocalProvider.instance.sj_tx_task3_tips == true){
                     context.tipShow(SJPopTask3Dialog());
                   } else {
                     SJDialogTool.toast(context, 'The final step for withdrawal is to become number one on the leaderboard to complete the withdrawal.');
@@ -597,7 +608,7 @@ class _SJCashState extends State<SJCash> {
   }
 
   List<String> _getTaskTotalString(){
-    if (SJLocalProvider.instance.sj_tx_first_status == false){
+    if (SJLocalProvider.instance.sj_tx_task2_tips == false || SJLocalProvider.instance.sj_tx_task3_tips == false){
       return _getTxTaskString();
     }
     return _getTxTaskString2();
@@ -606,7 +617,7 @@ class _SJCashState extends State<SJCash> {
   List<String> _getTxTaskString(){
     String text1 = '';
     String text2 = '';
-    if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_task2_tips == false) {
       text1 =
       'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
           .taskModel!
@@ -615,11 +626,11 @@ class _SJCashState extends State<SJCash> {
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .taskModel!
           .task.first.last.num} Dice';
-    } else if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+    } else {
       text1 =
-      'Log in ${SJLocalProvider.instance.sj_login_index}/${SJNumberHelpers()
+      'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
           .taskModel!
-          .task.last.first.num} days in a row';
+          .task.last.first.num} Box';
       text2 =
       'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
           .taskModel!
@@ -629,7 +640,7 @@ class _SJCashState extends State<SJCash> {
   }
 
   List<bool> _getTxTaskTotalStatus(){
-    if (SJLocalProvider.instance.sj_tx_first_status == false){
+    if (SJLocalProvider.instance.sj_tx_task2_tips == false || SJLocalProvider.instance.sj_tx_task3_tips == false){
       return _getTxTaskStatus();
     }
     return _getTxTaskStatus2();
@@ -638,17 +649,7 @@ class _SJCashState extends State<SJCash> {
   List<bool> _getTxTaskStatus(){
     bool text1 = false;
     bool text2 = false;
-    if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num) {
-      text1 = false;
-    } else {
-      text1 = true;
-    }
-    if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
-      text2 = false;
-    } else {
-      text2 = true;
-    }
-    if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_task2_tips == false) {
       if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().taskModel!.task.first.first.num) {
         text1 = false;
       } else {
@@ -659,8 +660,8 @@ class _SJCashState extends State<SJCash> {
       } else {
         text2 = true;
       }
-    } else if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
-      if (SJLocalProvider.instance.sj_login_index < SJNumberHelpers().taskModel!.task.last.first.num) {
+    } else {
+      if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num) {
         text1 = false;
       } else {
         text1 = true;

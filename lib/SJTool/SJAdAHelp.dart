@@ -43,7 +43,7 @@ class SJAdAHelper {
         },
         onAdDisplayedCallback: (ad) async {
           if (SJLocalProvider.instance.sj_bg_music) {
-            SJMP3Player().pauseBackground();
+            SJAudioUtils().pauseBGM();
           }
           "scratchJoyad Reward did display ${ad.adUnitId}".log();
         },
@@ -58,7 +58,7 @@ class SJAdAHelper {
         },
         onAdHiddenCallback: (ad) {
           if (SJLocalProvider.instance.sj_bg_music) {
-            SJMP3Player().playBackground();
+            SJAudioUtils().pauseBGM();
           }
           "scratchJoyad Reward did hide - ${ad.adUnitId}".log();
           if (this.finishIntAd != null) {

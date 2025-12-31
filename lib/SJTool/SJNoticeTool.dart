@@ -1,6 +1,7 @@
 import 'package:flutter_lifecycle_detector/flutter_lifecycle_detector.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
+import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
@@ -360,29 +361,23 @@ class SJNoticeHelp {
       print('Status background $isBackground');
       if (isBackground == true) {
         print('App进入后台');
-        SJMP3Player().pauseBackground();
+        SJAudioUtils().pauseBGM();
         SJFKManger().sj_add_tabsession_custom();
         // 执行后台逻辑
         sj_session_fire();
         sj_event_fire('session_back_get', {'"pak_version' : SJLocalProvider.instance.sj_login_status ? 1 : 0});
       } else {
         print('App进入前台');
-        if (SJLocalProvider.instance.sj_bg_music && !SJAdManager().is_ad_play){
-          SJMP3Player().playBackground();
+        if (SJLocalProvider.instance.sj_bg_music && !SJJoyAds().someAdIsShowing()){
+          SJAudioUtils().playBGM();
         }
         SJFKManger().sj_add_tabsession_custom();
         sj_event_fire('session_front_get', {'"pak_version' : SJLocalProvider.instance.sj_login_status ? 1 : 0});
         // 执行前台逻辑
         sj_session_fire();
-        if (!SJAdManager().is_ad_play) {
-          SJAdManager().sj_showAd(true, 'scxji_launch', homeKey.currentState!.ctx, (hasCache){
-            if (!hasCache) {
-
-            }
-          }, (finished){
-
-          });
-        }
+        SJJoyAds().sj_showAd(homeKey.currentState!.ctx, 'scxji_launch', onCacheResponse: (onCacheResponse){
+          }, adDidClosed: (adDidClosed){
+        });
       }
     });
   }

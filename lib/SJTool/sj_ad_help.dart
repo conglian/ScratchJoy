@@ -21,10 +21,10 @@ class SJAdHelpers {
   }
 
   Future<void> _sjloadAdDataFromLocate() async {
-      String jsonString = await rootBundle.loadString("scxji_ad_config".jsons());
-      Map<String, dynamic> jsonMap = json.decode(jsonString);
-      ad_Entity = SJAdModel.fromJson(jsonMap);
-    "ScratchJoy ad json = ${ad_Entity}".log();
+    //   String jsonString = await rootBundle.loadString("scxji_ad_config".jsons());
+    //   Map<String, dynamic> jsonMap = json.decode(jsonString);
+    //   ad_Entity = SJAdModel.fromJson(jsonMap);
+    // "ScratchJoy ad json = ${ad_Entity}".log();
   }
 
 }

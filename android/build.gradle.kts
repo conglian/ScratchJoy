@@ -5,45 +5,42 @@ allprojects {
         flatDir {
             dirs("libs") // 指定libs目录
         }
-        maven { url  = uri("https://artifactory.bidmachine.io/bidmachine") }
-        maven { url  = uri("https://cboost.jfrog.io/artifactory/chartboost-ads/") }
         maven { url  = uri("https://android-sdk.is.com") }
-        maven { url  = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea") }
-        maven { url  = uri("https://artifact.bytedance.com/repository/pangle") }
         maven {
             url  = uri("https://jfrog.anythinktech.com/artifactory/debugger")
         }
-        //TU(Core)
+
+        // TU (Core)
         maven {
-            url  = uri("https://jfrog.anythinktech.com/artifactory/overseas_sdk")
+            url = uri("https://jfrog.anythinktech.com/artifactory/overseas_sdk")
         }
 
-        //Ironsource
+        // IronSource
         maven {
-            url  = uri("https://android-sdk.is.com/")
+            url = uri("https://android-sdk.is.com/")
         }
 
-        //Pangle
+        // Pangle
         maven {
-            url  = uri("https://artifact.bytedance.com/repository/pangle")
+            url = uri("https://artifact.bytedance.com/repository/pangle")
         }
 
-        //Mintegral
+        // Mintegral
         maven {
-            url  = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea")
+            url = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea")
         }
 
-        //Bidmachine
+        // Bidmachine
         maven {
-            url  = uri("https://artifactory.bidmachine.io/bidmachine")
+            url = uri("https://artifactory.bidmachine.io/bidmachine")
         }
 
-        //Chartboost
+        // Chartboost
         maven {
-            url  = uri("https://cboost.jfrog.io/artifactory/chartboost-ads")
+            url = uri("https://cboost.jfrog.io/artifactory/chartboost-ads")
         }
         maven {
-            url  = uri("https://cboost.jfrog.io/artifactory/chartboost-mediation")
+            url = uri("https://cboost.jfrog.io/artifactory/chartboost-mediation")
         }
     }
 }

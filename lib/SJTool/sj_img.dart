@@ -179,7 +179,7 @@ class _SJAnimatedImageMoveState extends State<SJAnimatedImageMove>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 2),
+      duration: const Duration(seconds: 1),
     );
 
     // 缩放动画

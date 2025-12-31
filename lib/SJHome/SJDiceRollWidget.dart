@@ -15,6 +15,7 @@ import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_mp3_player.dart';
 import '../SJTool/sj_number_helper.dart';
+import 'SJHome.dart';
 import 'SJScratchB.dart';
 
 class SJDiceRollWidget extends StatefulWidget {
@@ -92,16 +93,11 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
     }
     if (_isRolling) return;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (SJLocalProvider.instance.sj_sound_music){
-        await SJMP3Player().pauseBackground();
-        await SJMP3Player().playEffect5();
-      }
-      Future.delayed(Duration(milliseconds: 1700), () async {
-        await SJMP3Player().pauseEffect5();
-        if (SJLocalProvider.instance.sj_bg_music){
-          await SJMP3Player().playBackground();
-        }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      SJAudioUtils().playShaiziAudio();
+      Future.delayed(Duration(milliseconds: 1700), () {
+        SJAudioUtils().stopAllTempAudio();
+        SJAudioUtils().playBGM();
       });
     });
     if (SJLocalProvider.instance.sj_100_timer_star == false) {
@@ -187,10 +183,11 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         _isRolling = false;
         if (diceNumbers[_currentNumberIndex] > 0) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
-          await showTwoTxTask();
+          await showLastTxTask();
+          await showOneTxTask();
           if (!mounted) return;
           int code = await context.tipShow(SJPopEpicWinBDialog(
-              award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice'));
+              award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice', beishu: 0, dolas: 0));
           if (code >= 0){
             setState(() {
               diceNumbers = SJNumberHelpers().getDiceValueByBalance();
@@ -222,10 +219,11 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       _isRolling = false;
       if (diceNumbers[_currentNumberIndex] > 0) {
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
-        await showTwoTxTask();
+        await showLastTxTask();
+        await showOneTxTask();
         if (!mounted) return;
         int code = await context.tipShow(SJPopEpicWinBDialog(
-            award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice'));
+            award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice', beishu: 0, dolas: 0));
         if (code >= 0){
           setState(() {
             diceNumbers = SJNumberHelpers().getDiceValueByBalance();
@@ -235,20 +233,38 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
     }
   }
 
-  // 第二段任务完成
-  Future<void> showTwoTxTask() async {
+  Future<void> showOneTxTask() async {
     // 判断第一段任务是否完成
-    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 0);
-      sj_event_fire('cash_queue', {});
+    if (SJLocalProvider.instance.sj_tx_card_index >=
+        SJNumberHelpers().taskModel!.task.first.first.num &&
+        SJLocalProvider.instance.sj_tx_dice_index >=
+            SJNumberHelpers().taskModel!.task.first.last.num &&
+        SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      if (SJLocalProvider.instance.sj_tx_task2_tips == false &&
+          homeKey.currentState!.ctx.mounted) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task2_tipsName, true);
+        homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
+      }
     }
-    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_last_status == true) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
+  }
+
+  // 第四段任务完成
+  Future<void> showLastTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task4_tips == true) {
+      if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
+        sj_event_fire('cash_queue', {});
+      }
     }
   }
 

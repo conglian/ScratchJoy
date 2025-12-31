@@ -245,6 +245,7 @@ class SJNumberAHelper {
       diceHit: diceHit,
       prizeValues: prizeValues,
       multiplier: multiplier,
+      awards_value: prizeValues[winIndex],
     );
   }
   // SuperMultiple
@@ -314,6 +315,7 @@ class SJNumberAHelper {
       diceHit: diceHit,
       prizeValues: prizeValues,
       winIndex: winIndex,
+      award_value: prizeValues[winIndex],
     );
   }
   // FortuneRush
@@ -673,6 +675,7 @@ class SJsecret_stashResult {
   final bool diceHit;            // 是否包含骰子
   final List<double> prizeValues;   // 每格奖励值
   final int multiplier;          // 倍数（1、2、5 或 0）
+  final double awards_value;
 
   SJsecret_stashResult({
     required this.numbers,
@@ -683,6 +686,7 @@ class SJsecret_stashResult {
     required this.diceHit,
     required this.prizeValues,
     required this.multiplier,
+    required this.awards_value,
   });
 
   Map<String, dynamic> toJson() => {
@@ -694,6 +698,7 @@ class SJsecret_stashResult {
     "diceHit": diceHit,
     "prizeValues": prizeValues,
     "multiplier": multiplier,
+    "awards_value": awards_value,
   };
 
   @override
@@ -725,6 +730,7 @@ class SJsuperMultipleResult {
   final bool diceHit;           // 骰子是否命中
   final List<double> prizeValues;  // 每格奖励值
   final int winIndex;           // 中奖数字下标 (-1/-2/-3的下标)
+  final double award_value;
 
   SJsuperMultipleResult({
     required this.numbers,
@@ -733,6 +739,7 @@ class SJsuperMultipleResult {
     required this.diceHit,
     required this.prizeValues,
     required this.winIndex,
+    required this.award_value,
   });
 
   Map<String, dynamic> toJson() => {
@@ -742,6 +749,7 @@ class SJsuperMultipleResult {
     "diceHit": diceHit,
     "prizeValues": prizeValues,
     "winIndex": winIndex,
+    "award_value": award_value,
   };
 
   @override

@@ -50,13 +50,11 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
       prefs.setString('sj_day_date', formattedDate);
       // 首次
       prefs.setBool('sj_first_instll', true);
-      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, 1);
     } else {
       if (_daydateString != formattedDate) {
         // 隔天
         prefs.setString('sj_day_date', formattedDate);
         prefs.setBool('sj_old_guide', false);
-        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_login_indexName, SJLocalProvider.instance.sj_login_index + 1);
       }
     }
 

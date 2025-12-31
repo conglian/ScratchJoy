@@ -46,6 +46,13 @@
             android:name="com.google.android.gms.ads.AD_MANAGER_APP"
             android:value="true" />
 
+        <!-- source file: nonchina_jcenter/network_sdk/inmobi/10.8.7/AndroidManifest.xml -->
+        <!--android:networkSecurityConfig="@xml/network_security_config"-->
+
+        <!-- source file: nonchina_jcenter/network_sdk/bidmachine/3.3.0/AndroidManifest.xml -->
+
+        <!-- source file: nonchina_jcenter/network_sdk/fyber/8.3.7/AndroidManifest.xml -->
+
         <!-- Facebook SDK 配置 -->
         <meta-data
             android:name="com.facebook.sdk.ApplicationId"
@@ -54,7 +61,7 @@
         <meta-data
             android:name="com.facebook.sdk.ClientToken"
             android:value="@string/facebook_client_token" />
-
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and
