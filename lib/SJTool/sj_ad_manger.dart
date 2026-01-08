@@ -487,6 +487,14 @@ extension AdServiceExtension on SJJoyAds {
         "$runtimeType ad requesting [requested] status = $status, type is $type, source is $source, id is $adID"
             .log();
       }
+      sj_event_fire(
+        "scxji_ad_request",
+        {
+          "placementID": adID,
+          "type": type,
+          "source": source,
+        },
+      );
     }
   }
 

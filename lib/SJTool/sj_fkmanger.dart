@@ -47,16 +47,32 @@ class SJFKManger {
   // 是否需要打开风控
   Future<bool> sj_checkAllStatus() async {
     final prefs = await SharedPreferences.getInstance();
+    String types = 'number';
     // behavior
     bool behavior = await sj_checkUser();
     'behavior=$behavior'.log();
+    if (behavior){
+      types = 'behavior';
+    }
     // number
     bool number = prefs.getBool('sj_fk_number_status') ?? false;
     'number=$number'.log();
+    if (number){
+      types = 'number';
+    }
     // device
     bool device = prefs.getBool('sj_fk_decvice_status') ?? false;
     'device=$device'.log();
+    if (device){
+      types = 'device';
+    }
     if (behavior || number || device){
+      sj_event_fire(
+        "scxji_fk_head_off",
+        {
+          "type": types,
+        },
+      );
       return true;
     }
     return false;

@@ -1131,7 +1131,7 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
   double _dx = 50; // 每秒移动多少 px
   double _dy = 80;
 
-  double _iconSize = 66;
+  double _iconSize = 75;
 
   bool _showPop = true;
   double _pptReward = SJNumberHelpers().getPrizeWithBoxorBubble();
