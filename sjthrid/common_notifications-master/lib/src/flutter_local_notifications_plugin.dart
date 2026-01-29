@@ -408,7 +408,6 @@ class FlutterLocalNotificationsPlugin {
     String? body,
     RepeatInterval repeatInterval,
     NotificationDetails notificationDetails, {
-    required AndroidScheduleMode androidScheduleMode,
     String? payload,
   }) async {
     if (kIsWeb) {
@@ -420,7 +419,7 @@ class FlutterLocalNotificationsPlugin {
           ?.periodicallyShow(id, title, body, repeatInterval,
               notificationDetails: notificationDetails.android,
               payload: payload,
-              scheduleMode: androidScheduleMode);
+              scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()
@@ -455,7 +454,6 @@ class FlutterLocalNotificationsPlugin {
     String? body,
     Duration repeatDurationInterval,
     NotificationDetails notificationDetails, {
-    AndroidScheduleMode androidScheduleMode = AndroidScheduleMode.exact,
     String? payload,
   }) async {
     if (kIsWeb) {
@@ -468,7 +466,7 @@ class FlutterLocalNotificationsPlugin {
               id, title, body, repeatDurationInterval,
               notificationDetails: notificationDetails.android,
               payload: payload,
-              scheduleMode: androidScheduleMode);
+              scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle);
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       await resolvePlatformSpecificImplementation<
               IOSFlutterLocalNotificationsPlugin>()

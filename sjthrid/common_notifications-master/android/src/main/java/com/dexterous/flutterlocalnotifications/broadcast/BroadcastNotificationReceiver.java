@@ -9,7 +9,6 @@ import android.content.IntentFilter;
 import androidx.core.app.NotificationManagerCompat;
 
 import com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin;
-import com.dexterous.flutterlocalnotifications.fcm.FlutterFCMPlugin;
 import com.dexterous.flutterlocalnotifications.models.NotificationDetails;
 import com.dexterous.flutterlocalnotifications.utils.StringUtils;
 
@@ -50,7 +49,5 @@ public class BroadcastNotificationReceiver extends BroadcastReceiver {
         if (when >= 0 && (System.currentTimeMillis() - when) <= interval * 1000L) return;
         FlutterBroadcastNotificationPlugin.saveWhen(context, System.currentTimeMillis(), broadcast);
         FlutterLocalNotificationsPlugin.showNotification(context, notificationDetails);
-        FlutterFCMPlugin.setMessageReceivedNum(context, notificationDetails.payload,
-                FlutterFCMPlugin.getMessageReceivedNum(context, notificationDetails.payload) + 1);
     }
 }

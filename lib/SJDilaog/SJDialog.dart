@@ -32,13 +32,11 @@ import 'package:app_settings/app_settings.dart';
 
 // 骰子🎲奖励
 class SJPopYouWinBDialog extends StatefulWidget {
-  final bool is_show;
-  final bool is_showThree;
   final String type;
   final double award;
   final double dolas;
   final int beishu;
-  SJPopYouWinBDialog({super.key, required this.award, required this.is_show, required this.is_showThree, required this.type, required this.dolas, required this.beishu});
+  SJPopYouWinBDialog({super.key, required this.award, required this.type, required this.dolas, required this.beishu});
   @override
   State<SJPopYouWinBDialog> createState() => SJPopdiceBwardDialogState();
 }
@@ -85,47 +83,15 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
     _scaleAnimation2 = Tween(begin: 1.0, end: 1.2)
         .animate(CurvedAnimation(parent: _scaleController, curve: Curves.easeInOut));
 
-    if (widget.is_show) {
-      Future.delayed(const Duration(milliseconds: 1450), () {
-        if (!mounted) return;
-
-        // 先关闭当前弹窗
-        Navigator.of(context).pop(0);
-
-        // 等待 pop 完成
-        Future.delayed(const Duration(milliseconds: 16)); // 一帧即可
-
-        // homeKey 可能为 null，要先判断
-        final homeState = homeKey.currentState;
-        if (homeState == null) return;
-
-        final homeCtx = homeState.ctx;
-        if (!homeCtx.mounted) return;
-
-        // 在下一帧调用 tipShow2（最安全）
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!homeCtx.mounted) return;
-
-          homeCtx.tipShow2(
-            SJPopSuperWinBDialog(
-              award: widget.award,
-              is_show: widget.is_showThree,
-              type: widget.type,
-              beishu: widget.beishu,
-              dolas: widget.dolas,
-            ),
-          );
-        });
-      });
-    }
-
   }
 
   Future<void> playbgmusic() async {
     SJAudioUtils().playAward1Audio();
     Future.delayed(Duration(milliseconds: 1500), () async {
       await SJAudioUtils().stopAllTempAudio();
-      await SJAudioUtils().playBGM();
+      if (SJLocalProvider.instance.sj_bg_music){
+        await SJAudioUtils().playBGM();
+      }
     });
   }
 
@@ -134,7 +100,9 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
       await SJAudioUtils().playDolasAudio();
       Future.delayed(Duration(milliseconds: 1300), () async {
         await SJAudioUtils().stopAllTempAudio();
-        await SJAudioUtils().playBGM();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJAudioUtils().playBGM();
+        }
       });
     });
   }
@@ -174,9 +142,9 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
           ),
           Positioned(top: 320.h, left: (0.width(context) - 165) * 0.5, child: SJImg(name: 'sj_dolas_big_1', width: 165, height: 165)),
           Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 475.h, width: 0.width(context), height:30,child: Visibility(visible: (!widget.is_show && widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
+          Positioned(top: 475.h, width: 0.width(context), height:30,child: Visibility(visible: (widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
           Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
-            visible: !widget.is_show,
+            visible: true,
             child: InkWell(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
@@ -184,19 +152,19 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                 focusColor: Colors.transparent,
                 onTap: () async {
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
-                  if (SJLocalProvider.instance.sj_card_number >= 3){
+                  if (SJLocalProvider.instance.sj_card_number >= 4){
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                      Navigator.of(context).pop(0);
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     }, adDidClosed: (adDidClosed) async {
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
-                      Navigator.of(context).pop(0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
                     });
                   } else {
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 1));
-                    Navigator.of(context).pop(0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
                   }
@@ -206,7 +174,7 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                   decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                   child: Stack(
                     children: [
-                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 3 ? 2 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 4 ? 1 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                     ],
                   ),
                 )
@@ -216,32 +184,51 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             top: 535.h,
             right: 40.w,
             child: Visibility(
-              visible: !widget.is_show && SJLocalProvider.instance.sj_card_number >= 3,
+              visible: SJLocalProvider.instance.sj_card_number >= 4,
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                   hoverColor: Colors.transparent,
                   focusColor: Colors.transparent,
-                  onTap: (){
+                  onTap: () async {
                     sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-重新刷新
-                    SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                      if (!mounted)return;
-                      Navigator.of(context).pop(0);
-                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
-                    }, adDidClosed: (adDidClosed) async {
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    // SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
+                    //   if (!mounted)return;
+                    //   Navigator.pop(context, 0);
+                    //   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    // }, adDidClosed: (adDidClosed) async {
+                    //   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                    //   if (!context.mounted) return;
+                    //   Navigator.pop(context, 0);
+                    //   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    //   playAwardmp3();
+                    // });
+                    if (SJNumberHelpers().checkProbability()) {
+                      SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
+                        if (!mounted)return;
+                        Navigator.pop(context, 0);
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }, adDidClosed: (adDidClosed) async {
+                        await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                        if (!context.mounted) return;
+                        Navigator.pop(context, 0);
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                        playAwardmp3();
+                      });
+                    } else {
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       if (!context.mounted) return;
-                      Navigator.of(context).pop(0);
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
-                    });
+                    }
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
             ),
           ),
           Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
-            visible: !widget.is_show && SJLocalProvider.instance.sj_card_number >= 3,
+            visible: false,
             child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
@@ -249,20 +236,39 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
               focusColor: Colors.transparent,
               onTap: () async {
                 sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
+                // if (SJNumberHelpers().checkProbability()) {
+                //   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
+                //     Navigator.pop(context, 0);
+                //     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                //   }, adDidClosed: (adDidClosed) async {
+                //     Navigator.pop(context, 0);
+                //     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
+                //     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                //     playAwardmp3();
+                //   });
+                // } else {
+                //   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
+                //   Navigator.pop(context, 0);
+                //   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                // }
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.of(context).pop(0);
+                    if (!mounted)return;
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) async {
-                    Navigator.of(context).pop(0);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                    if (!context.mounted) return;
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
                   });
                 } else {
-                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
-                  Navigator.of(context).pop(0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                  if (!context.mounted) return;
+                  Navigator.pop(context, 0);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  playAwardmp3();
                 }
               },
               child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -274,7 +280,7 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             width: 45,
             height: 48,
             child: Visibility(
-              visible: !widget.is_show,
+              visible: true,
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
@@ -283,14 +289,14 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                 sj_event_fire('coin_pop_close', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) {
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   });
                 } else {
-                  Navigator.pop(context);
+                  Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               }, child: SJImg(name: 'sj_close_btn')),
@@ -304,12 +310,11 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
 }
 
 class SJPopSuperWinBDialog extends StatefulWidget {
-  final bool is_show;
   final double award;
   final String type;
   final double dolas;
   final int beishu;
-  SJPopSuperWinBDialog({super.key, required this.award, required this.is_show, required this.type, required this.dolas, required this.beishu});
+  SJPopSuperWinBDialog({super.key, required this.award, required this.type, required this.dolas, required this.beishu});
   @override
   State<SJPopSuperWinBDialog> createState() => SJPopSuperWinBDialogState();
 }
@@ -353,31 +358,6 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
       vsync: this,
       duration: const Duration(milliseconds: 600),
     )..repeat(reverse: true);
-    if (widget.is_show) {
-      Future.delayed(const Duration(milliseconds: 1450), () {
-        if (!mounted) return;
-        // 关闭当前弹窗
-        Navigator.of(context).pop(0);
-        // 等待 pop 完成（用下一帧最安全）
-        Future.delayed(const Duration(milliseconds: 16));
-        final homeState = homeKey.currentState;
-        if (homeState == null) return;
-        final homeCtx = homeState.ctx;
-        if (!homeCtx.mounted) return;
-        // 下一帧执行，避免 overlay 冲突
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (!homeCtx.mounted) return;
-          homeCtx.tipShow2(
-            SJPopEpicWinBDialog(
-              award: widget.award,
-              type: widget.type,
-              beishu: widget.beishu,
-              dolas: widget.dolas,
-            ),
-          );
-        });
-      });
-    }
 
   }
 
@@ -385,7 +365,9 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
     SJAudioUtils().playAward2Audio();
     Future.delayed(Duration(milliseconds: 1500), () async {
       await SJAudioUtils().stopAllTempAudio();
-      await SJAudioUtils().playBGM();
+      if (SJLocalProvider.instance.sj_bg_music){
+        await SJAudioUtils().playBGM();
+      }
     });
   }
 
@@ -394,7 +376,9 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
       await SJAudioUtils().playDolasAudio();
       Future.delayed(Duration(milliseconds: 1300), () async {
         await SJAudioUtils().stopAllTempAudio();
-        await SJAudioUtils().playBGM();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJAudioUtils().playBGM();
+        }
       });
     });
   }
@@ -417,14 +401,14 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
           // 其余完全不变 ↓
           Positioned(top: 147.h, child: SJImg(name: 'sj_superwin_1', width: 0.width(context), height: 441.h)),
           Positioned(
-            top: 210.h,
-            left: (0.width(context) - 362) * 0.5,
-            width: 362,
-            height: 149,
+            top: 170.h,
+            left: (0.width(context) - 362.w) * 0.5,
+            width: 362.w,
+            height: 149.h,
             child: spine.SpineWidget.fromAsset('assets/spine/superwin.atlas', 'assets/spine/superwin.json', _controller0),
           ),
           Positioned(
-            top: 310.h,
+            top: 300.h,
             left: (MediaQuery.of(context).size.width - 222) * 0.5,
             width: 222, height: 222,
             child: RotationTransition(
@@ -432,11 +416,11 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
               child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
             ),
           ),
-          Positioned(top: 320.h, left: (0.width(context) - 190) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190))),
-          Positioned(top: 465.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 500.h, width: 0.width(context), height:30,child: Visibility(visible: (!widget.is_show && widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
-          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
-            visible: !widget.is_show,
+          Positioned(top: 310.h, left: (0.width(context) - 190) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_2', width: 190, height: 190))),
+          Positioned(top: 455.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 492.h, width: 0.width(context), height:30,child: Visibility(visible: (widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
+          Positioned(top: 580.h,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: true,
             child: InkWell(
                 splashColor: Colors.transparent,
                 highlightColor: Colors.transparent,
@@ -444,19 +428,19 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                 focusColor: Colors.transparent,
                 onTap: () async {
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
-                  if (SJLocalProvider.instance.sj_card_number >= 3) {
+                  if (SJLocalProvider.instance.sj_card_number >= 4) {
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                      Navigator.of(context).pop(0);
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     }, adDidClosed: (adDidClosed) async {
-                      Navigator.of(context).pop(0);
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
                     });
                   } else {
-                    Navigator.of(context).pop(0);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 1));
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
 
@@ -467,17 +451,37 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                   decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                   child: Stack(
                     children: [
-                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 3 ? 2 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 4 ? 2 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                     ],
                   ),
                 )
             ),
           )),
+          Positioned(top: 518.h, child: SizedBox(
+            width: 0.width(context),
+            height: 57,
+            child: Stack(
+              children: [
+                Positioned(left: 28.w,child: SJText(text: 'Withdrawal progress', size: 14, color: '#FFFFFF'.color(), weight: FontWeight.w900)),
+                Positioned(right: 80.w,child: SJText(text: '${SJLocalProvider.instance.sj_dolas_number.toStringAsFixed(2)}/\$1000', size: 14, color: '#FFEC1A'.color(), weight: FontWeight.w900)),
+                Positioned(top: 28,left: 28.w,child: Container(
+                  width: 0.width(context) - 24.w - 38.w,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_award_pro_bg'),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: VerticalGradientProgress(progress: SJLocalProvider.instance.sj_dolas_number / 1000, width: 0.width(context) - 24.w - 38.w, height: 14),
+                ),),
+                Positioned(right: 20.w,top: 4,child: SJImg(name: 'ms_wallter_icon', width: 57, height: 57,))
+              ],
+            ),
+          )),
           Positioned(
-            top: 535.h,
+            top: 560.h,
             right: 40.w,
             child: Visibility(
-              visible: !widget.is_show && SJLocalProvider.instance.sj_card_number >= 3,
+              visible: SJLocalProvider.instance.sj_card_number >= 4,
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
@@ -487,11 +491,11 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                     sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                      Navigator.of(context).pop(0);
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     }, adDidClosed: (adDidClosed) async {
-                      Navigator.of(context).pop(0);
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
                     });
@@ -499,8 +503,8 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
             ),
           ),
-          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
-            visible: !widget.is_show && SJLocalProvider.instance.sj_card_number >= 3,
+          Positioned(top: 578.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: SJLocalProvider.instance.sj_card_number >= 4,
             child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
@@ -510,17 +514,17 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                 sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.of(context).pop(0);
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) async {
-                    Navigator.of(context).pop(0);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
                   });
                 } else {
-                  Navigator.of(context).pop(0);
-                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               },
@@ -529,11 +533,11 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
           )),
           Positioned(
             right: 48.w,
-            top: (0.height(context) - 370.h) * 0.32,
+            top: (0.height(context) - 370.h) * 0.25,
             width: 45,
             height: 48,
             child: Visibility(
-              visible: !widget.is_show,
+              visible: true,
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
@@ -542,14 +546,14 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                 sj_event_fire('coin_pop_close', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) {
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   });
                 } else {
-                  Navigator.pop(context);
+                  Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               }, child: SJImg(name: 'sj_close_btn')),
@@ -625,7 +629,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
     SJAudioUtils().playAward3Audio();
     Future.delayed(Duration(milliseconds: 1500), () async {
       await SJAudioUtils().stopAllTempAudio();
-      await SJAudioUtils().playBGM();
+      if (SJLocalProvider.instance.sj_bg_music){
+        await SJAudioUtils().playBGM();
+      }
     });
   }
 
@@ -634,7 +640,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
       await SJAudioUtils().playDolasAudio();
       Future.delayed(Duration(milliseconds: 1300), () async {
         await SJAudioUtils().stopAllTempAudio();
-        await SJAudioUtils().playBGM();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJAudioUtils().playBGM();
+        }
       });
     });
   }
@@ -655,43 +663,63 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
       child: Stack(
         children: [
           // 其余完全不变 ↓
-          Positioned(top: 147.h, child: SJImg(name: 'sj_epic_bg', width: 0.width(context), height: 441.h)),
+          Positioned(top: 127.h, child: SJImg(name: 'sj_epic_bg', width: 0.width(context), height: 441.h)),
           Positioned(
-            top: 170.h,
+            top: 150.h,
             left: (0.width(context) - 365) * 0.5,
             width: 365,
             height: 174,
             child: spine.SpineWidget.fromAsset('assets/spine/epicwin.atlas', 'assets/spine/epicwin.json', _controller0),
           ),
           Positioned(
-            top: 278.h,
+            top: 258.h,
             left: (MediaQuery.of(context).size.width - 300) * 0.5,
             width: 300, height: 300,
             child: spine.SpineWidget.fromAsset('assets/spine/epiclight.atlas', 'assets/spine/epiclight.json', _controller1),
           ),
-          Positioned(top: 320.h, left: (0.width(context) - 259) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192))),
-          Positioned(top: 485.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 520.h, width: 0.width(context), height:30,child: Visibility(visible: (widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
-          Positioned(top: 572.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+          Positioned(top: 300.h, left: (0.width(context) - 259) * 0.5, child: ScaleTransition(scale: _scaleAnimation,child: SJImg(name: 'sj_dolas_big_3', width: 259, height: 192))),
+          Positioned(top: 465.h, width: 0.width(context), height: 30, child: SJGradientStrokeText(text: '\$${widget.award.toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
+          Positioned(top: 492.h, width: 0.width(context), height:30,child: Visibility(visible: (widget.dolas != 0) ,child: SJGradientStrokeText(text: '\$${widget.dolas.toStringAsFixed(2)}*${widget.beishu}x=\$${(widget.dolas * widget.beishu).toStringAsFixed(2)}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 18, strokeWidth: 1, strokeColor: '#3F1D05'.color(), width: 0.width(context), height: 22,))),
+          Positioned(top: 528.h, child: SizedBox(
+            width: 0.width(context),
+            height: 57,
+            child: Stack(
+              children: [
+                Positioned(left: 28.w,child: SJText(text: 'Withdrawal progress', size: 14, color: '#FFFFFF'.color(), weight: FontWeight.w900)),
+                Positioned(right: 80.w,child: SJText(text: '${SJLocalProvider.instance.sj_dolas_number.toStringAsFixed(2)}/\$1000', size: 14, color: '#FFEC1A'.color(), weight: FontWeight.w900)),
+                Positioned(top: 28,left: 28.w,child: Container(
+                  width: 0.width(context) - 24.w - 38.w,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_award_pro_bg'),
+                    borderRadius: BorderRadius.circular(9),
+                  ),
+                  child: VerticalGradientProgress(progress: SJLocalProvider.instance.sj_dolas_number / 1000, width: 0.width(context) - 24.w - 38.w, height: 14),
+                ),),
+                Positioned(right: 20.w,top: 4,child: SJImg(name: 'ms_wallter_icon', width: 57, height: 57,))
+              ],
+            ),
+          )),
+          Positioned(top: 592.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               hoverColor: Colors.transparent,
               focusColor: Colors.transparent,
               onTap: () async {
                 sj_event_fire('coin_pop_c', {'source_from' : widget.type});
-                if (SJLocalProvider.instance.sj_card_number >= 3) {
+                if (SJLocalProvider.instance.sj_card_number >= 4) {
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                    Navigator.of(context).pop(0);
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) async {
-                    Navigator.of(context).pop(0);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
                   });
                 } else {
-                  Navigator.of(context).pop(0);
-                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 1));
+                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
                 }
@@ -701,16 +729,16 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                 child: Stack(
                   children: [
-                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 3 ? 2 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim \$${(widget.award * (SJLocalProvider.instance.sj_card_number >= 4 ? 2 : 1)).toStringAsFixed(2)}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                   ],
                 ),
               )
           )),
           Positioned(
-            top: 535.h,
+            top: 575.h,
             right: 40.w,
             child: Visibility(
-              visible: SJLocalProvider.instance.sj_card_number >= 3 || widget.type == 'dice',
+              visible: SJLocalProvider.instance.sj_card_number >= 4 || widget.type == 'dice',
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
@@ -720,11 +748,11 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                     sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                     // 看ad-重新刷新
                     SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
-                      Navigator.of(context).pop(0);
+                      Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     }, adDidClosed: (adDidClosed) async {
-                      Navigator.of(context).pop(0);
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award * 2));
+                      Navigator.pop(context, 0);
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
                     });
@@ -732,8 +760,8 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
             ),
           ),
-          Positioned(top: 572.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
-            visible: SJLocalProvider.instance.sj_card_number >= 3,
+          Positioned(top: 592.h + 74,left: (0.width(context) - 260) * 0.5, child: Visibility(
+            visible: SJLocalProvider.instance.sj_card_number >= 4,
             child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
@@ -743,17 +771,17 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 sj_event_fire('coin_pop_cint', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_int' : 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.of(context).pop(0);
+                    Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) async {
-                    Navigator.of(context).pop(0);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                    Navigator.pop(context, 0);
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
                   });
                 } else {
-                  Navigator.of(context).pop(0);
-                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + (widget.award));
+                  Navigator.pop(context, 0);
+                  await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               },
@@ -775,14 +803,14 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 sj_event_fire('coin_pop_close', {'source_from' : widget.type});
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   }, adDidClosed: (adDidClosed) {
-                    Navigator.pop(context);
+                    Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   });
                 } else {
-                  Navigator.pop(context);
+                  Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                 }
               }, child: SJImg(name: 'sj_close_btn')),
@@ -793,6 +821,54 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
     );
   }
 }
+
+class VerticalGradientProgress extends StatelessWidget {
+  final double progress; // 0.0 ~ 1.0
+  final double width;
+  final double height;
+
+  const VerticalGradientProgress({
+    super.key,
+    required this.progress,
+    this.width = 16,
+    this.height = 200,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final clamped = progress.clamp(0.0, 1.0);
+
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: Colors.grey.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(width / 2),
+      ),
+      child: Align(
+        alignment: Alignment.topLeft,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          width: width * clamped,
+          height: height,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(width / 2),
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                '#E8C70C'.color(),
+                '#FFE659'.color(),
+                '#B47405'.color(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // 广告上线
 class SJPopAdLimitDialog extends StatefulWidget {
   SJPopAdLimitDialog({super.key});
@@ -1130,7 +1206,7 @@ class SJPopNoticeDialogState extends State<SJPopNoticeDialog> {
                         type: AppSettingsType.notification,
                       );
                       sj_event_fire('noti_confirm_pop_suc', {});
-                      SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 10);
+                      SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, 10);
                     },
                   ),
                 ),
@@ -1358,9 +1434,9 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
           .task.first.first.num} Box';
     } else {
       text2 =
-      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+      'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
           .last_taskModel!
-          .task.last.last.num} probability cards';
+          .task.last.last.num} Card';
       text1 =
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .last_taskModel!
@@ -1389,7 +1465,7 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;
@@ -1582,7 +1658,7 @@ class SJPopAccountConfinDialogState extends State<SJPopAccountConfinDialog> {
                         SizedBox(width: 22.w,),
                         SJText(text: 'Payout Platform', size: 16.spMax, color: '#4D3C3C'.color(), weight: FontWeight.w400),
                         Spacer(),
-                        SJText(text: 'App', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
+                        SJText(text: 'ScratchJoy', size: 16.spMax, color: '#C06913'.color(), weight: FontWeight.w400),
                         SizedBox(width: 22.w,),
                       ],
                     ),
@@ -1709,6 +1785,14 @@ class SJPopTXLoadingDialogState extends State<SJPopTXLoadingDialog> with TickerP
   }
 
   @override
+  void dispose() {
+    // TODO: implement dispose
+    _controller.stop();
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: 0.width(context),
@@ -1815,7 +1899,7 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                       height: 12.h,
                       child: LinearProgressIndicator(
                         borderRadius: BorderRadius.all(Radius.circular(12.h)),
-                        value: _gettaskProgress() / 4.0,
+                        value: 0.4,
                         minHeight: 12.h,
                         backgroundColor: Colors.transparent,
                         valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
@@ -1825,7 +1909,7 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                 )
               ),
               SizedBox(height: 6.h,),
-              SJText(text: '(estimated 3–5 business days)', size: 14, color: '#AFA289'.color(), weight: FontWeight.w400),
+              SJText(text: '(estimated 1–2 business days)', size: 14, color: '#AFA289'.color(), weight: FontWeight.w400),
               SizedBox(height: 20.h,),
               Container(
                 width: 343.w,
@@ -1874,8 +1958,46 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
                           SizedBox(width: 9.w,),
                         ],
                       ),
-                    )
+                    ),
                   ],
+                ),
+              ),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (SJLocalProvider.instance.sj_scrach_end_number_0 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_1 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_2 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_3 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_4 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_5 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_6 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
+                  }
+                },
+                child: Container(
+                  width: 260, height: 74,
+                  decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                  child: Stack(
+                    children: [
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Go', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    ],
+                  ),
                 ),
               )
             ],
@@ -1896,7 +2018,7 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
     if (SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers().taskModel!.task.last.first.num) {
       row += 1;
     }
-    if (SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
+    if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().taskModel!.task.last.last.num) {
       row += 1;
     }
     return row;
@@ -1914,13 +2036,13 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .taskModel!
           .task.first.last.num} Dice';
-    } else if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+    } else if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.last.num) {
       text1 =
       'Open ${SJLocalProvider.instance.sj_tx_box_index}/${SJNumberHelpers()
           .taskModel!
           .task.last.first.num} Box';
       text2 =
-      'Play ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+      'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .taskModel!
           .task.last.last.num} Dice';
     }
@@ -1941,13 +2063,13 @@ class SJPopTXTaskDialogState extends State<SJPopTXTaskDialog> {
       } else {
         text2 = true;
       }
-    } else if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+    } else if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num || SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.last.num) {
       if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().taskModel!.task.last.first.num) {
         text1 = false;
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;
@@ -2114,7 +2236,7 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
                     hoverColor: Colors.transparent,
                     focusColor: Colors.transparent,
                     onTap: (){
-                      Navigator.pop(context);
+                      Navigator.pop(context, 0);
                     },
                     child: SJImg(name: 'sj_close_btn', width: 48, height: 49,),
                   ),
@@ -2187,9 +2309,9 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
           .taskModel!
           .task.last.first.num} Box';
     text2 =
-      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
-          .taskModel!
-          .task.last.last.num} Probability Cards';
+    'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
+        .taskModel!
+        .task.last.last.num} Dice';
     return [text1, text2];
   }
   List<bool> _getTxTaskStatus(){
@@ -2198,7 +2320,7 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
     text1 = SJLocalProvider.instance.sj_tx_box_index >= SJNumberHelpers()
         .taskModel!
         .task.last.first.num;
-    text2 = SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers()
+    text2 = SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers()
         .taskModel!
         .task.last.last.num;
     return [text1, text2];
@@ -2311,13 +2433,15 @@ class SJPopSubmitOneDialog extends StatefulWidget {
 
 class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
   
-  int seletecd_index = 0;
+  int seletecd_index = SJLocalProvider.instance.sj_tx_ing_account;
 
   final TextEditingController _controller = TextEditingController(text: SJLocalProvider.instance.sj_account_id.length > 0 ? SJLocalProvider.instance.sj_account_id : '');
 
   FocusNode _focusNode = FocusNode();
 
   List<int> tx_list = [1000, 1500, 3000];
+
+  List<int> tx_list2 = [-1000, -1500, -3000];
 
   @override
   void initState() {
@@ -2426,14 +2550,17 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                     Row(
                       children: [
                         SizedBox(width: 22.w,),
-                        SJText(text: 'Direct to Your paypal  Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                        if (seletecd_index == 0)
+                          SJText(text: 'Direct To Your Paypal  Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                        if (seletecd_index == 1)
+                          SJText(text: 'Direct To Your Cash App Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
                       ],
                     ),
                     SizedBox(height: 7.h,),
                     Row(
                       children: [
                         SizedBox(width: 22.w,),
-                        SJText(text: 'Direct to Your cash app Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                        SizedBox(width: 15,),
                       ],
                     ),
                     SizedBox(height: 30.h,),
@@ -2453,13 +2580,13 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_account_seled_indexName, seletecd_index);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_accountName, seletecd_index);
                           if(!widget.is_tx) return;
+                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_end_statusName, false);
                           await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
-                          await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number - tx_list[widget.number_index]);
+                          await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (tx_list2[widget.number_index]).toDouble());
                           await SJLocalProvider.instance.updateTXInStatus(1);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
                           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_probability_indexName, 0);
                           if(homeKey.currentState!.ctx.mounted){
                             homeKey.currentState!.ctx.tipShow(SJPopAccountConfinDialog());
                           }
@@ -2771,7 +2898,7 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
                     focusColor: Colors.transparent,
                     onTap: (){
                       sj_event_fire('cash_not_pop_c', {});
-                      Navigator.pop(context);
+                      Navigator.pop(context, 1);
                     },
                   ),
                 ),
@@ -2790,7 +2917,7 @@ class SJPopTXNotDialogState extends State<SJPopTXNotDialog> {
                 focusColor: Colors.transparent,
                 onTap: (){
               sj_event_fire('cash_not_pop_c', {});
-              Navigator.pop(context);
+              Navigator.pop(context, 1);
             }, child: SJImg(name: 'sj_close_btn')),
           ),
         ],
@@ -3778,8 +3905,9 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                          Navigator.pop(context, 0);
                         var value = doals_one + doals_two + doals_three;
                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                        await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
-                        showThreeTxTask();
+                        await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (value));
+                         playAwardmp3();
+                         showThreeTxTask();
                          showFourTxTask();
                        });
                     },
@@ -3821,7 +3949,8 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                       }
                       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
+                      await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (value));
+                      playAwardmp3();
                       showThreeTxTask();
                       showFourTxTask();
                     });
@@ -3839,7 +3968,8 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
                     }
                     await  SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
+                    await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (value));
+                    playAwardmp3();
                     showThreeTxTask();
                     showFourTxTask();
                   }
@@ -3863,10 +3993,8 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
   Future<void> showThreeTxTask() async {
     if (SJLocalProvider.instance.sj_tx_box_index >=
         SJNumberHelpers().taskModel!.task.last.first.num &&
-        SJLocalProvider.instance.sj_tx_probability_index >=
+        SJLocalProvider.instance.sj_tx_dice_index >=
             SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_task2_tips == true && SJLocalProvider.instance.sj_tx_task3_tips == false) {
-      await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
       await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(
@@ -3891,9 +4019,11 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
         SJLocalProvider.instance.sj_tx_card_index >=
             SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
       if (SJLocalProvider.instance.sj_tx_task4_tips == false) {
         await SJLocalProvider.instance.updateBool(
             SJLocalProvider.instance.sj_tx_task4_tipsName, true);
@@ -3902,6 +4032,18 @@ class SJBoxOpenDiaologWidgetState extends State<SJBoxOpenDiaologWidget> with Sin
         }
       }
     }
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await SJAudioUtils().playDolasAudio();
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJAudioUtils().stopAllTempAudio();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJAudioUtils().playBGM();
+        }
+      });
+    });
   }
 
 }
@@ -4108,7 +4250,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                           }
                           SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
                           SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, SJLocalProvider.instance.sj_tx_box_index + 1);
-                          SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
+                          SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (value));
                         });
                       } else {
 
@@ -4117,7 +4259,7 @@ class SJBoxOldDiaologWidgetState extends State<SJBoxOldDiaologWidget> with Singl
                           value = doals_one;
                         }
                         SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_box_indexName, 0);
-                        SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (SJLocalProvider.instance.sj_dolas_number + value));
+                        SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (value));
                       }
                       Navigator.pop(context, 0);
 
@@ -4275,16 +4417,30 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
               sj_event_fire('dice_page_not_find', {});
               // 返回根目录进度最近进入的页面
               Navigator.pop(context);
-              // 根目录
-              Navigator.of(context).popUntil((route) => route.isFirst);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (builder) {
-                    return SJScratchB(
-                        type: history_index);
-                  },
-                ),
-              );
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (SJLocalProvider.instance.sj_scrach_end_number_0 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_1 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_2 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_3 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_4 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_5 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_6 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
+              }
             },
             child: SJImg(name: 'sj_find_btn', width: 260, height: 74,),
           )

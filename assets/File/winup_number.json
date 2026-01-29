@@ -1,17 +1,47 @@
 {
+  "win_pop": [
+    {
+      "first_number": 0,
+      "super_win": [
+        38,
+        42
+      ],
+      "end_number": 300
+    },
+    {
+      "first_number": 300,
+      "super_win": [
+        27,
+        31
+      ],
+      "end_number": 600
+    },
+    {
+      "first_number": 600,
+      "super_win": [
+        17,
+        21
+      ],
+      "end_number": 800
+    },
+    {
+      "first_number": 800,
+      "super_win": [
+        13,
+        17
+      ],
+      "end_number": 1000
+    }
+  ],
   "extra_bonus": {
     "winup_number": 80,
-    "pop": [
-      39,
-      43
-    ],
     "point": 0.8,
     "dice_probability": 0.5,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          40,
+          35,
           45
         ],
         "end_number": 300
@@ -19,24 +49,24 @@
       {
         "first_number": 300,
         "prize": [
-          35,
-          40
+          25,
+          35
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          30,
-          35
+          15,
+          25
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          25,
-          30
+          10,
+          20
         ],
         "end_number": 1000
       }
@@ -44,18 +74,13 @@
   },
   "gold_rush": {
     "winup_number": 90,
-    "pop": [
-      39,
-      43
-    ],
-    "point": 0.7,
-    "gold_mine": 0.1,
+    "point": 0.8,
     "dice_probability": 0.5,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          40,
+          35,
           45
         ],
         "end_number": 300
@@ -63,24 +88,24 @@
       {
         "first_number": 300,
         "prize": [
-          35,
-          40
+          25,
+          35
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          30,
-          35
+          15,
+          25
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          25,
-          35
+          10,
+          20
         ],
         "end_number": 1000
       }
@@ -88,45 +113,41 @@
   },
   "secret_stash": {
     "winup_number": 90,
-    "pop": [
-      39,
-      43
-    ],
-    "point_1x": 0.1,
+    "point_1x": 0.2,
     "point_2x": 0.3,
     "point_5x": 0.3,
-    "null": 0.3,
+    "null": 0.2,
     "dice_probability": 0.5,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          22,
-          25
+          10,
+          20
         ],
         "end_number": 300
       },
       {
         "first_number": 300,
         "prize": [
-          18,
-          22
+          10,
+          15
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          18,
-          22
+          5,
+          10
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          15,
-          20
+          5,
+          8
         ],
         "end_number": 1000
       }
@@ -134,64 +155,56 @@
   },
   "super_multiple": {
     "winup_number": 100,
-    "pop": [
-      39,
-      43
-    ],
-    "point_20x": 0.4,
-    "point_30x": 0.2,
-    "point_50x": 0.2,
+    "point_20x": 0.2,
+    "point_30x": 0.3,
+    "point_50x": 0.3,
     "null": 0.2,
     "point_grand": 0,
-    "dice_probability": 0.5,
+    "dice_probability": 0.4,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          2,
-          2.5
+          1,
+          2
         ],
         "end_number": 300
       },
       {
         "first_number": 300,
         "prize": [
-          1.8,
-          2
+          1,
+          1.5
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          1.8,
-          2
+          0.8,
+          1
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          1.5,
-          2
+          0.5,
+          0.8
         ],
         "end_number": 1000
       }
     ]
   },
   "fortune_rush": {
-    "winup_number": 90,
-    "pop": [
-      39,
-      43
-    ],
-    "point": 0.7,
-    "dice_probability": 0.4,
+    "winup_number": 100,
+    "point": 0.8,
+    "dice_probability": 0.5,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          40,
+          35,
           45
         ],
         "end_number": 300
@@ -199,24 +212,24 @@
       {
         "first_number": 300,
         "prize": [
-          35,
-          40
+          25,
+          35
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          30,
-          35
+          15,
+          25
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          25,
-          35
+          10,
+          20
         ],
         "end_number": 1000
       }
@@ -224,17 +237,13 @@
   },
   "sweet_time": {
     "winup_number": 100,
-    "pop": [
-      39,
-      43
-    ],
     "point": 0.7,
     "dice_probability": 0.4,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          40,
+          35,
           45
         ],
         "end_number": 300
@@ -242,24 +251,24 @@
       {
         "first_number": 300,
         "prize": [
-          35,
-          40
+          25,
+          35
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          30,
-          35
+          15,
+          25
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          25,
-          35
+          10,
+          20
         ],
         "end_number": 1000
       }
@@ -267,18 +276,14 @@
   },
   "lucky_moment": {
     "winup_number": 120,
-    "pop": [
-      39,
-      43
-    ],
     "point": 0.7,
     "dice_probability": 0.4,
     "prize": [
       {
         "first_number": 0,
         "prize": [
-          30,
-          35
+          35,
+          45
         ],
         "end_number": 300
       },
@@ -286,23 +291,23 @@
         "first_number": 300,
         "prize": [
           25,
-          30
+          35
         ],
         "end_number": 600
       },
       {
         "first_number": 600,
         "prize": [
-          25,
-          30
+          15,
+          25
         ],
         "end_number": 800
       },
       {
         "first_number": 800,
         "prize": [
-          20,
-          25
+          10,
+          20
         ],
         "end_number": 1000
       }
@@ -314,15 +319,15 @@
       "values": [
         40,
         20,
-        55,
-        35,
+        28,
+        42,
         10,
         33,
         30,
-        40,
-        15,
+        20,
+        39,
         35,
-        45,
+        32,
         27
       ],
       "end_number": 300
@@ -331,14 +336,14 @@
       "first_number": 300,
       "values": [
         30,
-        22,
         15,
+        20,
         35,
-        5,
+        10,
         25,
-        10,
+        26,
         30,
-        10,
+        23,
         29,
         34,
         10
@@ -348,17 +353,17 @@
     {
       "first_number": 600,
       "values": [
-        10,
-        12,
-        20,
-        30,
-        5,
-        15,
         28,
         10,
-        0,
+        20,
+        22,
+        19,
+        28,
+        29,
+        30,
+        35,
         18,
-        40,
+        34,
         25
       ],
       "end_number": 800
@@ -366,16 +371,16 @@
     {
       "first_number": 800,
       "values": [
-        0,
         10,
-        18,
+        21,
+        13,
         20,
-        15,
+        8,
         30,
-        10,
+        29,
         7,
-        10,
-        15,
+        0,
+        29,
         33,
         25
       ],

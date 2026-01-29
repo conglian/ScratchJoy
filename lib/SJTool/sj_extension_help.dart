@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:math';
+import 'dart:ui';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -233,47 +234,71 @@ extension IterableExtension<E> on Iterable<E> {
 }
 
 extension TipShow on BuildContext {
-  Future tipShow(Widget v, {Color? bc}) {
+  Future tipShow(
+      Widget v, {
+        Color? bc,
+        double blurSigma = 8, // 👈 模糊强度，可调
+      }) {
     return showGeneralDialog(
-        context: this,
-        barrierDismissible: false,
-        barrierColor: bc ?? Colors.black.withOpacity(0.7),
-        transitionDuration: const Duration(milliseconds: 150),
-        transitionBuilder: (ctx, animation, sAnimation, child) {
-          final curvedAnimation = CurvedAnimation(
-            parent: animation,
-            curve: Curves.easeOut,
-          );
-          final reverseCurvedAnimation = CurvedAnimation(
-            parent: sAnimation,
-            curve: Curves.easeIn,
-          );
+      context: this,
+      barrierDismissible: false,
+      barrierColor: bc ?? Colors.black.withOpacity(0.7), // 透明度不变
+      transitionDuration: const Duration(milliseconds: 150),
+      transitionBuilder: (ctx, animation, sAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOut,
+        );
+        final reverseCurvedAnimation = CurvedAnimation(
+          parent: sAnimation,
+          curve: Curves.easeIn,
+        );
 
-          return ScaleTransition(
-            scale: Tween<double>(begin: 0.4, end: 1).animate(curvedAnimation),
-            child: FadeTransition(
-              opacity: Tween<double>(begin: 0.3, end: 1).animate(curvedAnimation),
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 1, end: 0.3).animate(reverseCurvedAnimation),
-                child: FadeTransition(
-                  opacity: Tween<double>(begin: 1, end: 0.2).animate(reverseCurvedAnimation),
-                  child: child,
+        return Stack(
+          children: [
+            /// ✅ 背景模糊层（不影响 barrierColor）
+            BackdropFilter(
+              filter: ImageFilter.blur(
+                sigmaX: blurSigma,
+                sigmaY: blurSigma,
+              ),
+              child: Container(
+                color: Colors.transparent, // 必须是透明
+              ),
+            ),
+
+            /// 原来的弹窗动画
+            ScaleTransition(
+              scale: Tween<double>(begin: 0.4, end: 1).animate(curvedAnimation),
+              child: FadeTransition(
+                opacity:
+                Tween<double>(begin: 0.3, end: 1).animate(curvedAnimation),
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 1, end: 0.3)
+                      .animate(reverseCurvedAnimation),
+                  child: FadeTransition(
+                    opacity: Tween<double>(begin: 1, end: 0.2)
+                        .animate(reverseCurvedAnimation),
+                    child: child,
+                  ),
                 ),
               ),
             ),
-          );
-        },
-        pageBuilder: (context, animation, sAnimation) {
-          return PopScope(
-              canPop: false,
-              child: Dialog(
-                insetPadding: EdgeInsets.zero,
-                backgroundColor: Colors.transparent,
-                child: v,
-              ));
-        });
+          ],
+        );
+      },
+      pageBuilder: (context, animation, sAnimation) {
+        return PopScope(
+          canPop: false,
+          child: Dialog(
+            insetPadding: EdgeInsets.zero,
+            backgroundColor: Colors.transparent,
+            child: v,
+          ),
+        );
+      },
+    );
   }
-
 }
 extension TipShow2 on BuildContext {
   Future tipShow2(Widget child, {Color? bc}) {

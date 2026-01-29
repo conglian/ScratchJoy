@@ -187,7 +187,7 @@ class SJSDKHelpers {
           SJNumberHelpers().intModel = fkEntity;
           "app firebase remoteconfig c130_ad_int data $jsonMap".log();
         } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig c130_ad_int error ${error}");
         }
       }
 
@@ -199,7 +199,7 @@ class SJSDKHelpers {
           SJNumberHelpers().probabilityConfigModel = fkEntity;
           "app firebase remoteconfig probability_reset data $jsonMap".log();
         } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig probability_reset error ${error}");
         }
       }
 
@@ -211,7 +211,7 @@ class SJSDKHelpers {
           SJNumberHelpers().bonusConfigModel = fkEntity;
           "app firebase remoteconfig winup_number data $jsonMap".log();
         } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig winup_number error ${error}");
         }
       }
 
@@ -223,7 +223,7 @@ class SJSDKHelpers {
           SJNumberHelpers().taskModel = fkEntity;
           "app firebase remoteconfig c130_withdraw_task data $jsonMap".log();
         } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig c130_withdraw_task error ${error}");
         }
       }
 
@@ -235,7 +235,7 @@ class SJSDKHelpers {
           SJNumberHelpers().last_taskModel = fkEntity;
           "app firebase remoteconfig c130_withdraw_last_task data $jsonMap".log();
         } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig c130_withdraw_last_task error ${error}");
         }
       }
 
@@ -248,7 +248,7 @@ class SJSDKHelpers {
           "app firebase remoteconfig scxji_ad_config data $jsonMap".log();
         } catch (error) {
           SJJoyAds().init();
-          print("app firebase remoteconfig risk_control error ${error}");
+          print("app firebase remoteconfig scxji_ad_config error ${error}");
         }
       }
 

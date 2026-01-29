@@ -171,6 +171,7 @@ class SJJoyAds {
     if (await SJFKManger().sj_checkAllStatus()){
       '风控不发起广告显示'.log();
       SJDialogTool.toast(context, 'Something went wrong, please try again later.');
+      sj_event_fire('sj_fk_un', {});
       onCacheResponse.call(false);
       resetHandler();
       return;

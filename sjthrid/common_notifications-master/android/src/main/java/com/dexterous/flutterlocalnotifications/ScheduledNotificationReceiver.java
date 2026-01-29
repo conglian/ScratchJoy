@@ -9,7 +9,6 @@ import android.util.Log;
 import androidx.annotation.Keep;
 import androidx.core.app.NotificationManagerCompat;
 
-import com.dexterous.flutterlocalnotifications.fcm.FlutterFCMPlugin;
 import com.dexterous.flutterlocalnotifications.models.NotificationDetails;
 import com.dexterous.flutterlocalnotifications.utils.StringUtils;
 import com.google.gson.Gson;
@@ -60,12 +59,6 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver {
       Type type = new TypeToken<NotificationDetails>() {}.getType();
       NotificationDetails notificationDetails = gson.fromJson(notificationDetailsJson, type);
       if (notificationDetails == null) return;
-      String payload = "local";
-      if (!StringUtils.isNullOrEmpty(notificationDetails.payload)) {
-        payload = notificationDetails.payload;
-      }
-      FlutterFCMPlugin.setMessageReceivedNum(context, payload,
-              FlutterFCMPlugin.getMessageReceivedNum(context, payload) + 1);
       FlutterLocalNotificationsPlugin.showNotification(context, notificationDetails);
       FlutterLocalNotificationsPlugin.scheduleNextNotification(context, notificationDetails);
     }

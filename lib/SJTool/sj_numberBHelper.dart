@@ -29,6 +29,29 @@ class SJNumberBHelper {
     'numberEntity.boxReward=${numberEntity!.diceNumeric}'.log();
   }
 
+  // 获取奖励了弹框类型
+  int getAwardType(double award) {
+    // 找到 value 所在的区间
+    List<int> ranges = [];
+    for (var item in numberEntity!.winpop) {
+      if (SJLocalProvider.instance.sj_dolas_old_number >= item.firstnumber && SJLocalProvider.instance.sj_dolas_old_number <= item.endnumber) {
+        ranges = item.superwin;
+        break;
+      }
+    }
+    if (SJLocalProvider.instance.sj_dolas_old_number >= 1000){
+      ranges = numberEntity!.winpop.last.superwin;
+    }
+    'ranges=$ranges'.log();
+    if (ranges.first > award){
+      return 0;
+    } else if (ranges.first <= award && ranges.last >= award){
+      return 1;
+    } else {
+      return 2;
+    }
+  }
+
   /// 🎲 生成 extra_bonus 模式结果
   SJPlayJoyResult generateextra_bonusNumbers({
     bool forceWin = false,

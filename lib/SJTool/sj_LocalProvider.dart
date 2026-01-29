@@ -8,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../SJModel/SJTXModel.dart';
 import '../main.dart';
+import 'SJNoticeTool.dart';
 
 class SJLocalProvider extends ChangeNotifier {
   // 1. 私有构造函数（禁止外部直接创建实例）
@@ -75,12 +76,13 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_show_box = false;
   bool sj_tx_task3_tips = false;
   bool sj_tx_task4_tips = false;
+  bool sj_tx_end_status = false;
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
   int sj_scrach_unlock_index_1 = 0; // 存储的本地值
   int sj_ad_all_number = 0;
   double sj_dolas_number = 0.0;
-  int sj_dolas_old_number = 0;
+  double sj_dolas_old_number = 0.0;
   int sj_ad_reawrd_all_number = 0;
   int sj_ad_short_show_number = 0;
   int sj_ad_short_close_number = 0;
@@ -116,7 +118,7 @@ class SJLocalProvider extends ChangeNotifier {
   int sj_tx_card_first = 0;
   int sj_tx_dice_index = 0;
   // int sj_login_index = 0;
-  int sj_tx_probability_index = 0;
+  // int sj_tx_probability_index = 0;
   int sj_scratch_not_award_number = 0;
 
   String get sj_currentNumberIndexName => 'sj_currentNumberIndex';
@@ -173,7 +175,7 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_account_idName => 'sj_account_id';
   String get sj_tx_dice_indexName => 'sj_tx_dice_index';
   // String get sj_login_indexName => 'sj_login_index';
-  String get sj_tx_probability_indexName => 'sj_tx_probability_index';
+  // String get sj_tx_probability_indexName => 'sj_tx_probability_index';
   String get sj_tx_first_statusName => 'sj_tx_first_status';
   String get sj_tx_last_statusName => 'sj_tx_last_status';
   String get sj_current_rankingName => 'sj_current_ranking';
@@ -194,13 +196,15 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_show_boxName => 'sj_show_box';
   String get sj_tx_task3_tipsName => 'sj_tx_task3_tips';
   String get sj_tx_task4_tipsName => 'sj_tx_task4_tips';
+  String get sj_tx_end_statusName => 'sj_tx_end_status';
+  String get sj_dolas_old_numberName => 'sj_dolas_old_number';
 
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
   Future<void> init() async {
     final prefs = await SharedPreferences.getInstance();
     // 从本地读取值（key自定义，需与存储时一致）
-    sj_tx_probability_index = prefs.getInt('sj_tx_probability_index') ?? 0;
+    // sj_tx_probability_index = prefs.getInt('sj_tx_probability_index') ?? 0;
     // sj_login_index = prefs.getInt('sj_login_index') ?? 0;
     sj_tx_dice_index = prefs.getInt('sj_tx_dice_index') ?? 0;
     sj_tx_card_first = prefs.getInt('sj_tx_card_first') ?? 0;
@@ -260,10 +264,11 @@ class SJLocalProvider extends ChangeNotifier {
     sj_last_tx_end = prefs.getBool('sj_last_tx_end') ?? false;
     sj_yunying_3 = prefs.getBool('sj_yunying_3') ?? false;
     sj_yunying_1 = prefs.getBool('sj_yunying_1') ?? false;
+    sj_tx_end_status = prefs.getBool('sj_tx_end_status') ?? false;
     sj_ad_reawrd_all_number = prefs.getInt('sj_ad_reawrd_all_number') ?? 0;
     sj_ad_all_number = prefs.getInt('sj_ad_all_number') ?? 0;
     sj_dolas_number = prefs.getDouble('sj_dolas_number') ?? 0.0;
-    sj_dolas_old_number = prefs.getInt('sj_dolas_old_number') ?? 0;
+    sj_dolas_old_number = prefs.getDouble('sj_dolas_old_number') ?? 0.0;
     sj_ad_show_index = prefs.getInt('sj_ad_show_index') ?? 0;
     sj_Level_number = prefs.getInt('sj_Level_number') ?? 1;
     sj_Level_inedx = prefs.getInt('sj_Level_inedx') ?? 1;
@@ -330,6 +335,12 @@ class SJLocalProvider extends ChangeNotifier {
     if (key == SJLocalProvider.instance.sj_dolas_numberName && sj_dolas_number <= 0){
       await updateBool(sj_first_show_cashName, true);
     }
+    if (key == SJLocalProvider.instance.sj_dolas_numberName && value > 0){
+      await updatedouble(sj_dolas_old_numberName, sj_dolas_old_number + value);
+    }
+    if (key == SJLocalProvider.instance.sj_dolas_numberName){
+       value += sj_dolas_number;
+    }
     await prefs.setDouble(key, value);
     if (key == SJLocalProvider.instance.sj_dolas_numberName && value > 0){
       trigger.check(SJLocalProvider.instance.sj_dolas_number.toInt(), onTrigger: (level) {
@@ -337,6 +348,9 @@ class SJLocalProvider extends ChangeNotifier {
         sj_event_fire('cash_dall', {'money' : level});
       });
       await updateBool(sj_show_dolas_aniName, true);
+    }
+    if (key == SJLocalProvider.instance.sj_dolas_numberName){
+      SJNoticeHelp().startSJForegroundService();
     }
     init();
     notifyListeners();

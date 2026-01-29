@@ -21,10 +21,12 @@ class SJNoticeHelp {
     return _instance;
   }
 
+  FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
   SJNoticeHelp._internal();
 
   Future<void> initNotice() async {
-    FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('sj_logo'); // 不加 .png
 
@@ -41,6 +43,7 @@ class SJNoticeHelp {
         if(payload == null)return;
       },
     );
+
 
     NotificationAppLaunchDetails? notificationAppLaunchDetails =
     await AndroidFlutterLocalNotificationsPlugin()
@@ -73,10 +76,11 @@ class SJNoticeHelp {
     _subscribeFcmTopic();
     _subscribeFcmTopic2();
     _showUnlockNotification();
-    _spinitNotificationCount();
+    _showScreenOnNotification();
+    _spinitNotificationCount(flutterLocalNotificationsPlugin);
   }
 
-  _spinitNotificationCount() async {
+  _spinitNotificationCount(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
     try {
       int locals = await AndroidFlutterLocalNotificationsPlugin()
           .extractMessageReceivedNum("noti1");
@@ -127,6 +131,36 @@ class SJNoticeHelp {
           sj_event_fire('all_noti_t', {'type' : "unlock"});
         }
       }
+
+      int screenon = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("screenon");
+      "==initNotificationCount==localcount:$screenon==".log();
+      if (screenon > 0) {
+        for (int i = 0; i < screenon; i++) {
+          sj_event_fire('all_noti_t', {'type' : "screenon"});
+        }
+      }
+
+      int foreground = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("foreground");
+      "==initNotificationCount==localcount:$foreground==".log();
+      if (foreground > 0) {
+        for (int i = 0; i < foreground; i++) {
+          sj_event_fire('all_noti_t', {'type' : "foreground"});
+        }
+      }
+
+      int media = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("media");
+      "==initNotificationCount==localcount:$media==".log();
+      if (media > 0) {
+        for (int i = 0; i < media; i++) {
+          sj_event_fire('all_noti_t', {'type' : "media"});
+          //  取消
+          _tapMediasNotice(flutterLocalNotificationsPlugin);
+        }
+      }
+
     } catch (e) {
       "===initNotificationCount==error:$e=".log();
     }
@@ -144,6 +178,76 @@ class SJNoticeHelp {
 
   }
 
+  // 前台服务
+  Future<void> startSJForegroundService() async {
+    //自定义通知ID
+    final int id = 1200;
+    AndroidNotificationDetails androidNotificationDetails = AndroidNotificationDetails(
+        'scrachjoyForeground',
+        'ScrachjoyForeground',
+        ongoing: true,
+        importance: Importance.min,
+        priority: Priority.min,
+        styleInformation: ForegroundStyleInformation(value: '\$${SJLocalProvider.instance.sj_dolas_number.toStringAsFixed(2)}', image:'sj_freground')
+    );
+    await AndroidFlutterLocalNotificationsPlugin().startForegroundService(id, '', '',
+        notificationDetails: androidNotificationDetails, payload: 'foreground');
+  }
+
+  // 媒体通知
+  Future<void> showSJNotificationMediaStyle() async {
+    final NotificationDetails notificationDetails = NotificationDetails(
+        android: AndroidNotificationDetails(
+          'scratchjoy Media',
+          'scratchjoy',
+          styleInformation: MediaStyleInformation(
+            //支持网络图片链接
+             image:'sj_sm_logo',
+          ),
+        ));
+    //自定义通知ID
+    final int id = 3744;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    await flutterLocalNotificationsPlugin.show(
+      id,
+      title,
+      body,
+      notificationDetails,
+      payload: 'media',
+    );
+  }
+
+  Future<void> _tapMediasNotice(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+
+    await flutterLocalNotificationsPlugin.cancel(3744);
+
+    final NotificationDetails media = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'scratchjoy Media',
+        'scratchjoy',
+        styleInformation: MediaStyleInformation(image: 'sj_sm_logo'),
+      ),
+    );
+
+    final int id = 3744;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        Duration(minutes: 30),
+        notificationDetails: media.android,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "media"
+    );
+
+  }
+
   Future<void> _repeatNotification1() async {
     //自定义通知ID
     final int id = 5220;
@@ -154,11 +258,11 @@ class SJNoticeHelp {
       '130notice1',
       'Scractchjoy1',
       styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
+        title: title,
+        body: body,
+        image:'sj_notice_big',
+        button:'Claim',
+        appIcon:'sj_logo',
       ),
       priority: Priority.high,
       importance: Importance.high,
@@ -188,11 +292,11 @@ class SJNoticeHelp {
       '130notice2',
       'Scractchjoy2',
       styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
+        title: title,
+        body: body,
+        image:'sj_notice_big',
+        button:'Claim',
+        appIcon:'sj_logo',
       ),
       priority: Priority.high,
       importance: Importance.high,
@@ -222,11 +326,11 @@ class SJNoticeHelp {
       '130notice3',
       'Scractchjoy3',
       styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
+        title: title,
+        body: body,
+        image:'sj_notice_big',
+        button:'Claim',
+        appIcon:'sj_logo',
       ),
       priority: Priority.high,
       importance: Importance.high,
@@ -256,11 +360,11 @@ class SJNoticeHelp {
       '130notice4',
       'Scractchjoy4',
       styleInformation: BeautyStyleInformation(
-        title,
-        body,
-        'sj_notice_big',
-        'Claim',
-        'sj_logo',
+        title: title,
+        body: body,
+        image:'sj_notice_big',
+        button:'Claim',
+        appIcon:'sj_logo',
       ),
       priority: Priority.high,
       importance: Importance.high,
@@ -287,11 +391,11 @@ class SJNoticeHelp {
         '130_us_data_fcm',
         'ScractchJoy',
         styleInformation: BeautyStyleInformation(
-          '',
-          '',
-          '',
-          'Claim',
-          'sj_logo',
+          title: '',
+          body: '',
+          image:'',
+          button:'Claim',
+          appIcon:'sj_logo',
         ),
         priority: Priority.high,
         importance: Importance.high,
@@ -307,11 +411,11 @@ class SJNoticeHelp {
         '130_us_normal_fcm',
         'ScractchJoy2',
         styleInformation: BeautyStyleInformation(
-          '',
-          '',
-          '',
-          'Claim',
-          'sj_logo',
+          title: '',
+          body: '',
+          image:'',
+          button:'Claim',
+          appIcon:'sj_logo',
         ),
         priority: Priority.high,
         importance: Importance.high,
@@ -339,16 +443,48 @@ class SJNoticeHelp {
         importance: Importance.high,
          icon: 'sj_sm_logo',
         styleInformation: BeautyStyleInformation(
-          randomMotivation2.title,
-          randomMotivation2.body,
-          'sj_notice_big',
-          'Claim',
-          'sj_logo',
+          title: randomMotivation2.title,
+          body: randomMotivation2.body,
+          image:'sj_notice_big',
+          button:'Claim',
+          appIcon:'sj_logo',
         ),
         //“groupKey”：防止通知被系统折叠
         groupKey: "$ids",
       ),
       'unlock',
+    );
+  }
+
+  Future<void> _showScreenOnNotification() async {
+    //自定义通知ID
+    final int ids = 6029;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    StepMotivation randomMotivation2 = StepMotivationManager.getRandomMotivation();;
+    await AndroidFlutterLocalNotificationsPlugin().showBroadcastNotification(
+      ids,
+      randomMotivation.title,
+      randomMotivation.body,
+      //两次发送解锁通知的间隔，根据需求设置
+      const Duration(seconds: 30),
+      'android.intent.action.SCREEN_ON',
+      AndroidNotificationDetails(
+        '130Scractchjoyscreen',
+        'ScractchjoyScreen',
+        priority: Priority.high,
+        importance: Importance.high,
+        icon: 'sj_sm_logo',
+        styleInformation: BeautyStyleInformation(
+          title: randomMotivation2.title,
+          body: randomMotivation2.body,
+          image:'sj_notice_big',
+          button:'Claim',
+          appIcon:'sj_logo',
+        ),
+        //“groupKey”：防止通知被系统折叠
+        groupKey: "$ids",
+      ),
+      'screenon',
     );
   }
 

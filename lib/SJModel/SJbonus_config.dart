@@ -4,6 +4,9 @@ part 'SJbonus_config.g.dart';
 
 @JsonSerializable(explicitToJson: true)
 class BonusConfig {
+  @JsonKey(name: 'win_pop')
+  final List<WinPopModel> winpop;
+
   @JsonKey(name: 'extra_bonus')
   final BonusItem extraBonus;
 
@@ -35,6 +38,7 @@ class BonusConfig {
   final int boxInterval;
 
   BonusConfig({
+    required this.winpop,
     required this.extraBonus,
     required this.goldRush,
     required this.secretStash,
@@ -51,6 +55,27 @@ class BonusConfig {
       _$BonusConfigFromJson(json);
 
   Map<String, dynamic> toJson() => _$BonusConfigToJson(this);
+}
+/// 🧩 通用模式
+@JsonSerializable()
+class WinPopModel {
+  @JsonKey(name: 'first_number')
+  final int firstnumber;
+  @JsonKey(name: 'super_win')
+  final List<int> superwin;
+  @JsonKey(name: 'end_number')
+  final int endnumber;
+
+
+  const WinPopModel({
+    this.firstnumber = 0,
+    this.superwin = const [],
+    this.endnumber = 0,
+  });
+
+  factory WinPopModel.fromJson(Map<String, dynamic> json) =>
+      _$WinPopModelFromJson(json);
+  Map<String, dynamic> toJson() => _$WinPopModelToJson(this);
 }
 
 @JsonSerializable(explicitToJson: true)

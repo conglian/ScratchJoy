@@ -78,13 +78,13 @@ class SJNumberHelpers {
     // 找到 value 所在的区间
     double range = 0.0;
     for (var item in intModel!.intAd) {
-      if (SJLocalProvider.instance.sj_dolas_number >= item.firstNumber && SJLocalProvider.instance.sj_dolas_number <= item.endNumber) {
+      if (SJLocalProvider.instance.sj_dolas_old_number >= item.firstNumber && SJLocalProvider.instance.sj_dolas_old_number <= item.endNumber) {
         range = item.point;
         break;
       }
     }
     'range=$range'.log();
-    if (SJLocalProvider.instance.sj_dolas_number >= 1000){
+    if (SJLocalProvider.instance.sj_dolas_old_number >= 1000){
       return true;
     }
 

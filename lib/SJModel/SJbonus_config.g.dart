@@ -7,6 +7,9 @@ part of 'SJbonus_config.dart';
 // **************************************************************************
 
 BonusConfig _$BonusConfigFromJson(Map<String, dynamic> json) => BonusConfig(
+  winpop: (json['win_pop'] as List<dynamic>)
+      .map((e) => WinPopModel.fromJson(e as Map<String, dynamic>))
+      .toList(),
   extraBonus: BonusItem.fromJson(json['extra_bonus'] as Map<String, dynamic>),
   goldRush: BonusItem.fromJson(json['gold_rush'] as Map<String, dynamic>),
   secretStash: BonusItem.fromJson(json['secret_stash'] as Map<String, dynamic>),
@@ -27,6 +30,7 @@ BonusConfig _$BonusConfigFromJson(Map<String, dynamic> json) => BonusConfig(
 
 Map<String, dynamic> _$BonusConfigToJson(BonusConfig instance) =>
     <String, dynamic>{
+      'win_pop': instance.winpop.map((e) => e.toJson()).toList(),
       'extra_bonus': instance.extraBonus.toJson(),
       'gold_rush': instance.goldRush.toJson(),
       'secret_stash': instance.secretStash.toJson(),
@@ -37,6 +41,23 @@ Map<String, dynamic> _$BonusConfigToJson(BonusConfig instance) =>
       'dice_numeric': instance.diceNumeric.map((e) => e.toJson()).toList(),
       'box_reward': instance.boxReward.map((e) => e.toJson()).toList(),
       'box_interval': instance.boxInterval,
+    };
+
+WinPopModel _$WinPopModelFromJson(Map<String, dynamic> json) => WinPopModel(
+  firstnumber: (json['first_number'] as num?)?.toInt() ?? 0,
+  superwin:
+      (json['super_win'] as List<dynamic>?)
+          ?.map((e) => (e as num).toInt())
+          .toList() ??
+      const [],
+  endnumber: (json['end_number'] as num?)?.toInt() ?? 0,
+);
+
+Map<String, dynamic> _$WinPopModelToJson(WinPopModel instance) =>
+    <String, dynamic>{
+      'first_number': instance.firstnumber,
+      'super_win': instance.superwin,
+      'end_number': instance.endnumber,
     };
 
 BonusItem _$BonusItemFromJson(Map<String, dynamic> json) => BonusItem(

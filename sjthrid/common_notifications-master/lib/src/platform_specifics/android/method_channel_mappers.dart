@@ -1,3 +1,5 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+
 import 'enums.dart';
 import 'initialization_settings.dart';
 import 'message.dart';
@@ -117,6 +119,21 @@ extension BeautyStyleInformationMapper on BeautyStyleInformation {
       'image': image,
       'button': button,
       'appIcon': appIcon,
+    });
+}
+
+extension ForegroundStyleInfomationMapper on ForegroundStyleInformation {
+  Map<String, Object?> toMap() => _convertDefaultStyleInformationToMap(this)
+    ..addAll(<String, Object?>{
+      'value': value,
+      'image': image,
+    });
+}
+
+extension MediaStyleInformationMapper on MediaStyleInformation {
+  Map<String, Object?> toMap() => _convertDefaultStyleInformationToMap(this)
+    ..addAll(<String, Object?>{
+      'image': image
     });
 }
 
@@ -278,6 +295,12 @@ extension AndroidNotificationDetailsMapper on AndroidNotificationDetails {
         'style': AndroidNotificationStyle.beauty.index,
         'styleInformation':
             (styleInformation as BeautyStyleInformation?)?.toMap(),
+      };
+    } else if (styleInformation is ForegroundStyleInformation) {
+      return <String, Object?>{
+        'style': AndroidNotificationStyle.foreground.index,
+        'styleInformation':
+        (styleInformation as ForegroundStyleInformation?)?.toMap(),
       };
     } else if (styleInformation is DefaultStyleInformation) {
       return <String, Object?>{

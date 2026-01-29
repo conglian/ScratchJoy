@@ -184,6 +184,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         if (diceNumbers[_currentNumberIndex] > 0) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
           await showLastTxTask();
+          await showThreeTxTask();
           await showOneTxTask();
           if (!mounted) return;
           int code = await context.tipShow(SJPopEpicWinBDialog(
@@ -220,6 +221,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       if (diceNumbers[_currentNumberIndex] > 0) {
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
         await showLastTxTask();
+        await showThreeTxTask();
         await showOneTxTask();
         if (!mounted) return;
         int code = await context.tipShow(SJPopEpicWinBDialog(
@@ -241,8 +243,6 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
             SJNumberHelpers().taskModel!.task.first.last.num &&
         SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_card_indexName, 0);
@@ -256,11 +256,34 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       }
     }
   }
+  // 开启第三段和第四段任务
+  Future<void> showThreeTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_box_index >=
+        SJNumberHelpers().taskModel!.task.last.first.num &&
+        SJLocalProvider.instance.sj_tx_dice_index >=
+            SJNumberHelpers().taskModel!.task.last.last.num && SJLocalProvider.instance.sj_tx_task2_tips == true && SJLocalProvider.instance.sj_tx_task3_tips == false) {
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateBool(
+          SJLocalProvider.instance.sj_tx_first_statusName, true);
+      if (SJLocalProvider.instance.sj_tx_task3_tips == false) {
+        await SJLocalProvider.instance.updateBool(
+            SJLocalProvider.instance.sj_tx_task3_tipsName, true);
+        if (homeKey.currentState!.ctx.mounted) {
+          homeKey.currentState!.ctx.tipShow(SJPopTask3Dialog());
+        }
+      }
+    }
+  }
 
   // 第四段任务完成
   Future<void> showLastTxTask() async {
     if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task4_tips == true) {
-      if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_probability_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
         await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
         await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
         sj_event_fire('cash_queue', {});

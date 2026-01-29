@@ -48,7 +48,9 @@ enum AndroidNotificationStyle {
   /// The media style.
   media,
 
-  beauty
+  beauty,
+
+  foreground
 }
 
 /// Specifies the source for a sound used by Android notifications.

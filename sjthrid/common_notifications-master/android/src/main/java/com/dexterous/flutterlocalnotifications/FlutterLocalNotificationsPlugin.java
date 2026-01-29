@@ -28,6 +28,7 @@ import android.os.Build.VERSION_CODES;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.service.notification.StatusBarNotification;
+import android.support.v4.media.session.MediaSessionCompat;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableString;
@@ -72,9 +73,12 @@ import com.dexterous.flutterlocalnotifications.models.styles.BeautyStyleInformat
 import com.dexterous.flutterlocalnotifications.models.styles.BigPictureStyleInformation;
 import com.dexterous.flutterlocalnotifications.models.styles.BigTextStyleInformation;
 import com.dexterous.flutterlocalnotifications.models.styles.DefaultStyleInformation;
+import com.dexterous.flutterlocalnotifications.models.styles.ForegroundStyleInformation;
 import com.dexterous.flutterlocalnotifications.models.styles.InboxStyleInformation;
+import com.dexterous.flutterlocalnotifications.models.styles.MediaStyleInformation;
 import com.dexterous.flutterlocalnotifications.models.styles.MessagingStyleInformation;
 import com.dexterous.flutterlocalnotifications.models.styles.StyleInformation;
+import com.dexterous.flutterlocalnotifications.utils.BitmapUtils;
 import com.dexterous.flutterlocalnotifications.utils.BooleanUtils;
 import com.dexterous.flutterlocalnotifications.utils.LongUtils;
 import com.dexterous.flutterlocalnotifications.utils.StringUtils;
@@ -99,6 +103,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.lang.Override;
+import java.util.concurrent.atomic.AtomicReference;
 
 import io.flutter.FlutterInjector;
 import io.flutter.embedding.engine.loader.FlutterLoader;
@@ -110,8 +115,6 @@ import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry;
-
-import com.dexterous.flutterlocalnotifications.utils.TaskContinueUtils;
 
 interface PermissionRequestListener {
   void complete(boolean granted);
@@ -286,7 +289,7 @@ public class FlutterLocalNotificationsPlugin
         .setContentIntent(pendingIntent)
         .setPriority(notificationDetails.priority)
         .setOngoing(BooleanUtils.getValue(notificationDetails.ongoing))
-        .setSilent(BooleanUtils.getValue(notificationDetails.silent))
+//        .setSilent(BooleanUtils.getValue(notificationDetails.silent))
         .setOnlyAlertOnce(BooleanUtils.getValue(notificationDetails.onlyAlertOnce));
 
     if (notificationDetails.actions != null) {
@@ -423,18 +426,14 @@ public class FlutterLocalNotificationsPlugin
     setProgress(notificationDetails, builder);
     setCategory(notificationDetails, builder);
     setTimeoutAfter(notificationDetails, builder);
-    setStyle(context, notificationDetails, builder, new TaskContinueUtils() {
-      @Override
-      public void next() {
-        Notification notification = builder.build();
-        if (notificationDetails.additionalFlags != null
-            && notificationDetails.additionalFlags.length > 0) {
-          for (int additionalFlag : notificationDetails.additionalFlags) {
-            notification.flags |= additionalFlag;
-          }
+    setStyle(context, notificationDetails, builder, () -> {
+      Notification notification = builder.build();
+      if (notificationDetails.additionalFlags != null) {
+        for (int additionalFlag : notificationDetails.additionalFlags) {
+          notification.flags |= additionalFlag;
         }
-        listener.complete(notification);
       }
+      listener.complete(notification);
     });
   }
 
@@ -491,7 +490,9 @@ public class FlutterLocalNotificationsPlugin
           .registerSubtype(BigPictureStyleInformation.class)
           .registerSubtype(InboxStyleInformation.class)
           .registerSubtype(MessagingStyleInformation.class)
-          .registerSubtype(BeautyStyleInformation.class);
+          .registerSubtype(BeautyStyleInformation.class)
+          .registerSubtype(MediaStyleInformation.class)
+          .registerSubtype(ForegroundStyleInformation.class);
       GsonBuilder builder = new GsonBuilder()
           .registerTypeAdapter(ScheduleMode.class, new ScheduleMode.Deserializer())
           .registerTypeAdapterFactory(styleInformationAdapter);
@@ -990,78 +991,99 @@ public class FlutterLocalNotificationsPlugin
   private static void setStyle(
       Context context,
       NotificationDetails notificationDetails,
-      NotificationCompat.Builder builder, TaskContinueUtils next) {
+      NotificationCompat.Builder builder, Runnable next) {
     switch (notificationDetails.style) {
       case BigPicture:
         setBigPictureStyle(context, notificationDetails, builder);
-        next.next();
+        next.run();
         break;
       case BigText:
         setBigTextStyle(notificationDetails, builder);
-        next.next();
+        next.run();
         break;
       case Inbox:
         setInboxStyle(notificationDetails, builder);
-        next.next();
+        next.run();
         break;
       case Messaging:
         setMessagingStyle(context, notificationDetails, builder);
-        next.next();
+        next.run();
         break;
       case Media:
-        setMediaStyle(builder);
-        next.next();
+        setMediaStyle(context, notificationDetails, builder, next);
         break;
       case Beauty:
-        new Thread(new Runnable() {
-          @Override
-          public void run() {
-            setBeautyStyle(context, notificationDetails, builder);
-            next.next();
-          }
-        }).start();
+        setBeautyStyle(context, notificationDetails, builder, next);
+        break;
+      case Foreground:
+        setForegroundStyle(context, notificationDetails, builder);
+        next.run();
         break;
       default:
-        next.next();
+        next.run();
         break;
     }
   }
 
+  private static void setForegroundStyle(Context context, NotificationDetails notificationDetails,
+          NotificationCompat.Builder builder) {
+    builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
+    ForegroundStyleInformation foregroundStyleInformation = (ForegroundStyleInformation) notificationDetails.styleInformation;
+    RemoteViews content = new RemoteViews(context.getPackageName(), R.layout.fln_foreground_notify_content);
+    content.setTextViewText(R.id.fln_beauty_notify_title, foregroundStyleInformation.value);
+    int resId = context.getResources().getIdentifier(
+            foregroundStyleInformation.image,
+            "drawable",
+            context.getPackageName()
+    );
+    content.setImageViewResource(R.id.fln_beauty_notify_image, resId);
+    builder.setCustomContentView(content);
+  }
+
   private static void setBeautyStyle(Context context,
       NotificationDetails notificationDetails,
-      NotificationCompat.Builder builder) {
+      NotificationCompat.Builder builder, Runnable runnable) {
     builder.setStyle(new NotificationCompat.DecoratedCustomViewStyle());
     BeautyStyleInformation beautifulStyleInformation = (BeautyStyleInformation) notificationDetails.styleInformation;
     RemoteViews small = new RemoteViews(context.getPackageName(), R.layout.fln_beauty_notify_content);
     small.setTextViewText(R.id.fln_beauty_notify_title, beautifulStyleInformation.title);
-//    small.setTextViewText(R.id.fln_beauty_notify_btn, beautifulStyleInformation.button);
+    small.setTextViewText(R.id.fln_beauty_notify_btn, beautifulStyleInformation.button);
     int iconResId = getDrawableResourceId(context, beautifulStyleInformation.appIcon);
     small.setImageViewResource(R.id.fln_beauty_notify_app_icon, iconResId);
     RemoteViews big = new RemoteViews(context.getPackageName(), R.layout.fln_beauty_notify_big_content);
-//    big.setTextViewText(R.id.fln_beauty_notify_title, beautifulStyleInformation.title);
+    big.setTextViewText(R.id.fln_beauty_notify_title, beautifulStyleInformation.title);
     big.setTextViewText(R.id.fln_beauty_notify_body, beautifulStyleInformation.body);
     big.setTextViewText(R.id.fln_beauty_notify_btn, beautifulStyleInformation.button);
-//    big.setImageViewResource(R.id.fln_beauty_notify_app_icon, iconResId);
-    if (!StringUtils.isNullOrEmpty(beautifulStyleInformation.image)) {
+    big.setImageViewResource(R.id.fln_beauty_notify_app_icon, iconResId);
+    Runnable finalSet = () -> {
+      builder.setCustomHeadsUpContentView(small);
+      builder.setCustomContentView(small);
+      builder.setCustomBigContentView(big);
+      runnable.run();
+    };
+    if (StringUtils.isNullOrEmpty(beautifulStyleInformation.image)) {
+      finalSet.run();
+    } else {
       if (beautifulStyleInformation.image.startsWith("http")) {
-        Bitmap bitmap = FlutterFCMPlugin.loadNotificationBitmap(context, beautifulStyleInformation.image);
-        if (bitmap != null) {
-//          small.setImageViewBitmap(R.id.fln_beauty_notify_image, bitmap);
-          big.setImageViewBitmap(R.id.fln_beauty_notify_image, bitmap);
-        }
+        BitmapUtils.createFromNetwork(context, beautifulStyleInformation.image, bitmap -> {
+          if (bitmap != null) {
+            small.setImageViewBitmap(R.id.fln_beauty_notify_image, bitmap);
+            big.setImageViewBitmap(R.id.fln_beauty_notify_image, bitmap);
+          }
+          finalSet.run();
+        });
       } else {
         try {
           int resId = getDrawableResourceId(context, beautifulStyleInformation.image);
-//          small.setImageViewResource(R.id.fln_beauty_notify_image, resId);
+          small.setImageViewResource(R.id.fln_beauty_notify_image, resId);
           big.setImageViewResource(R.id.fln_beauty_notify_image, resId);
         } catch (Throwable e) {
           //
+        } finally {
+          finalSet.run();
         }
       }
     }
-    builder.setCustomHeadsUpContentView(small);
-    builder.setCustomContentView(small);
-    builder.setCustomBigContentView(big);
   }
 
   private static void setProgress(
@@ -1136,9 +1158,36 @@ public class FlutterLocalNotificationsPlugin
     builder.setStyle(inboxStyle);
   }
 
-  private static void setMediaStyle(NotificationCompat.Builder builder) {
+  private static AtomicReference<MediaSessionCompat> mediaSessionCompat;
+
+  private static void setMediaStyle(Context context,
+                                    NotificationDetails notificationDetails,
+                                    NotificationCompat.Builder builder, Runnable runnable) {
     androidx.media.app.NotificationCompat.MediaStyle mediaStyle = new androidx.media.app.NotificationCompat.MediaStyle();
+    if (mediaSessionCompat == null) {
+      mediaSessionCompat = new AtomicReference<>();
+      mediaSessionCompat.set(new MediaSessionCompat(context, "FLNMediaSession"));
+      mediaSessionCompat.get().setActive(true);
+    }
+    mediaStyle.setMediaSession(mediaSessionCompat.get().getSessionToken());
     builder.setStyle(mediaStyle);
+    MediaStyleInformation mediaStyleInformation = (MediaStyleInformation) notificationDetails.styleInformation;
+    if (TextUtils.isEmpty(mediaStyleInformation.image)) {
+        runnable.run();
+    } else if (mediaStyleInformation.image.startsWith("http")) {
+      BitmapUtils.createFromNetwork(context, mediaStyleInformation.image, bitmap -> {
+        builder.setLargeIcon(bitmap);
+        runnable.run();
+      });
+    } else {
+      try {
+        builder.setLargeIcon(BitmapUtils.createFromResource(context, getDrawableResourceId(context, mediaStyleInformation.image)));
+      } catch (Throwable e) {
+        //
+      } finally {
+        runnable.run();
+      }
+    }
   }
 
   private static void setMessagingStyle(
@@ -1321,6 +1370,8 @@ public class FlutterLocalNotificationsPlugin
         } else {
           notificationManagerCompat.notify(notificationDetails.id, notification);
         }
+        FlutterFCMPlugin.setMessageReceivedNum(context, notificationDetails.payload,
+                FlutterFCMPlugin.getMessageReceivedNum(context, notificationDetails.payload) + 1);
       }
     });
   }
@@ -2328,19 +2379,26 @@ public class FlutterLocalNotificationsPlugin
   }
 
   private void startForegroundService(MethodCall call, Result result) {
-    Map<String, Object> notificationData = call.argument("notificationData");
+    final Map<String, Object> notificationData = call.argument("notificationData");
+    if (notificationData == null) return;
+    final NotificationDetails notificationDetails = extractNotificationDetails(result, notificationData);
+    if (notificationDetails == null) return;
+    FlutterForePlugin.saveNotificationDetails(applicationContext, notificationDetails);
     Integer startType = call.<Integer>argument("startType");
     ArrayList<Integer> foregroundServiceTypes = call.argument("foregroundServiceTypes");
     if (foregroundServiceTypes == null || foregroundServiceTypes.size() != 0) {
-      if (notificationData != null && startType != null) {
-        NotificationDetails notificationDetails = extractNotificationDetails(result, notificationData);
+      if (startType != null) {
         if (notificationDetails != null) {
           if (notificationDetails.id != 0) {
             ForegroundServiceStartParameter parameter = new ForegroundServiceStartParameter(
                 notificationDetails, startType, foregroundServiceTypes);
-            Intent intent = new Intent(applicationContext, ForegroundService.class);
-            intent.putExtra(ForegroundServiceStartParameter.EXTRA, parameter);
-            ContextCompat.startForegroundService(applicationContext, intent);
+            if (ForegroundService.alive) {
+              showNotification(applicationContext, parameter.notificationData);
+            } else {
+              Intent intent = new Intent(applicationContext, ForegroundService.class);
+              intent.putExtra(ForegroundServiceStartParameter.EXTRA, parameter);
+              ContextCompat.startForegroundService(applicationContext, intent);
+            }
             result.success(null);
           } else {
             result.error(

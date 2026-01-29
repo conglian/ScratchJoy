@@ -45,7 +45,7 @@ class SJAudioUtils {
   }
 
   /// 播放背景音乐，循环播放
-  Future<void> playBGM({double volume = 0.6}) async {
+  Future<void> playBGM({double volume = 0.3}) async {
     if (!SJLocalProvider.instance.sj_bg_music) {
       return;
     }
@@ -106,7 +106,7 @@ class SJAudioUtils {
   }
 
   Future<void> playGuakaAudio()async{
-    playTempAudio("sj_guaka".mp3files());
+    playTempAudio("sj_guaka".mp3files(), volume: 2);
   }
 
   Future<void> playDolasAudio()async{

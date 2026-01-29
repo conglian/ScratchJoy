@@ -23,6 +23,7 @@ import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_ad_manger.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
+import '../SJTool/sj_mp3_player.dart';
 import '../SJTool/sj_number_helper.dart';
 import '../SJTool/sj_text.dart';
 import 'SJCash.dart';
@@ -92,6 +93,7 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
     super.initState();
     SJFKManger().initFK();
     SJNoticeHelp().initNotice();
+    SJNoticeHelp().startSJForegroundService();
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作
@@ -102,6 +104,9 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
         context.tipShow(SJBoxOldDiaologWidget());
         SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_old_guideName, true);
       }
+    });
+    Future.delayed(Duration(seconds: 5),(){
+      SJNoticeHelp().showSJNotificationMediaStyle();
     });
     // 100% 中奖处理，只保留当前的记录退出不算
     SJScratchDiceTimerNotificationService.stream.listen((value) async {
@@ -134,6 +139,7 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
         setState(() {});
       }
       await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
       history_index = value;
       if (!mounted)return;
       Navigator.of(context).push(
@@ -221,7 +227,7 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
 
   // 新用户
   Future<void> sj_newUserGuide() async {
-    if (!SJLocalProvider.instance.sj_new_guide){
+    if (!SJLocalProvider.instance.sj_new_guide && SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1){
       var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'home',));
       if (code == 1){
         SJScratchProbabilityUpNotificationService.notify(0);
@@ -1245,12 +1251,24 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
     sj_event_fire('bubble_c', {});
     SJJoyAds().sj_showAd(context, 'scxji_bubble_rv', onCacheResponse: (onCacheResponse){
       _hidePoPT();
-    }, adDidClosed: (adDidClosed){
-      SJLocalProvider.instance.updatedouble(
-        SJLocalProvider.instance.sj_dolas_numberName,
-        SJLocalProvider.instance.sj_dolas_number + _pptReward,
+    }, adDidClosed: (adDidClosed) async {
+      await SJLocalProvider.instance.updatedouble(
+        SJLocalProvider.instance.sj_dolas_numberName, _pptReward
       );
+      playAwardmp3();
       _hidePoPT();
+    });
+  }
+
+  void playAwardmp3(){
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await SJAudioUtils().playDolasAudio();
+      Future.delayed(Duration(milliseconds: 1300), () async {
+        await SJAudioUtils().stopAllTempAudio();
+        if (SJLocalProvider.instance.sj_bg_music){
+          await SJAudioUtils().playBGM();
+        }
+      });
     });
   }
 

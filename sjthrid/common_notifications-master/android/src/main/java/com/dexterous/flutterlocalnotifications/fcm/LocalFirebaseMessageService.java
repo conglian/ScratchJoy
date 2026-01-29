@@ -28,8 +28,6 @@ public class LocalFirebaseMessageService extends FirebaseMessagingService {
         try {
             final Context context = getApplicationContext();
             if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return;
-            FlutterFCMPlugin.setMessageReceivedNum(context, "fcm",
-                    FlutterFCMPlugin.getMessageReceivedNum(context, "fcm") + 1);
             final Map<String, String> data = remoteMessage.getData();
             String image = "";
             if (data.containsKey("imageUrl")) {

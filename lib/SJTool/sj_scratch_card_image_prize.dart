@@ -300,7 +300,6 @@ class _SJLocalImageScratchCardState extends State<SJLocalImageScratchCard> with 
           _currentFingerPosition = details.localPosition;
           _autoCoinPosition = null;
         });
-        sj_event_fire('scratch_card', {'type' : 'user'});
 
         if (SJLocalProvider.instance.sj_sound_music) {
            await SJAudioUtils().playGuakaAudio();

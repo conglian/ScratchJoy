@@ -4,6 +4,7 @@ part 'SJPlayJoyModel.g.dart';
 
 @JsonSerializable()
 class SJPlayJoyModel {
+
   @JsonKey(name: 'extra_bonus')
   final GameMode extraBonus;
 

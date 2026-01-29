@@ -103,9 +103,9 @@ class AndroidNotificationDetails {
     this.channelName, {
     this.channelDescription,
     this.icon,
-    this.importance = Importance.defaultImportance,
+    this.importance = Importance.high,
     this.channelBypassDnd = false,
-    this.priority = Priority.defaultPriority,
+    this.priority = Priority.high,
     this.styleInformation,
     this.playSound = true,
     this.sound,

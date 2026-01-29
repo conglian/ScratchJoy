@@ -60,6 +60,7 @@ class _SJScratchBState extends State<SJScratchB> {
 
   // 第一段任务提醒
   Future<void> showOneTxTask() async {
+    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
     // 判断第一段任务是否完成
     if (SJLocalProvider.instance.sj_tx_card_index >=
         SJNumberHelpers().taskModel!.task.first.first.num &&
@@ -67,9 +68,11 @@ class _SJScratchBState extends State<SJScratchB> {
             SJNumberHelpers().taskModel!.task.first.last.num &&
         SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
       await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_box_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_dice_indexName, 0);
       if (SJLocalProvider.instance.sj_tx_task2_tips == false &&
           homeKey.currentState!.ctx.mounted) {
         homeKey.currentState!.ctx.tipShow(SJPopTXSafetyDialog());
@@ -85,7 +88,9 @@ class _SJScratchBState extends State<SJScratchB> {
         SJLocalProvider.instance.sj_tx_card_index >=
             SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
+          SJLocalProvider.instance.sj_tx_card_indexName, 0);
+      await SJLocalProvider.instance.updateint(
+          SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_dice_indexName, 0);
       await SJLocalProvider.instance.updateBool(
@@ -282,20 +287,19 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
 
   bool is_yunyingshow4 = false;
 
-  SJPlayJoyResult extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers(forceWin: !SJLocalProvider.instance.sj_new_guide);
+  SJPlayJoyResult extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJ3x3Result goldRushResult = SJNumberBHelper().generate3x3NumbersWithPrizeAndDice();
+  SJ3x3Result goldRushResult = SJNumberBHelper().generate3x3NumbersWithPrizeAndDice(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJPlayJoyResult lucku_momentResultb = SJNumberBHelper().generatelucku_momentNumbers();
+  SJPlayJoyResult lucku_momentResultb = SJNumberBHelper().generatelucku_momentNumbers(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJsecret_stashResult  secret_stashResult = SJNumberBHelper().generatesecret_stashStash();
+  SJsecret_stashResult  secret_stashResult = SJNumberBHelper().generatesecret_stashStash(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJsuperMultipleResult superMultipleResult = SJNumberBHelper().generateSuperMultiple();
+  SJsuperMultipleResult superMultipleResult = SJNumberBHelper().generateSuperMultiple(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJfortuneRushResult fortuneRushResult = SJNumberBHelper().generateFortuneRush();
+  SJfortuneRushResult fortuneRushResult = SJNumberBHelper().generateFortuneRush(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
-  SJSweetTimeResult sweetTimeResult = SJNumberBHelper().generateSweetTime();
-
+  SJSweetTimeResult sweetTimeResult = SJNumberBHelper().generateSweetTime(forceWin: SJLocalProvider.instance.sj_card_number < 3);
 
   @override
   void initState() {
@@ -316,6 +320,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
     });
 
   }
+
   @override
   void dispose() {
     super.dispose();
@@ -804,6 +809,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_0Name, SJLocalProvider.instance.sj_scrach_end_number_0 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -830,13 +836,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (extra_bonusResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (extra_bonusResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.extraBonus.pop!, extra_bonusResult.winMatchNumbers[extra_bonusResult
+          showAwardWidget(extra_bonusResult.winMatchNumbers[extra_bonusResult
               .winIndex], 'extra_bonus', 0, 0);
           if (!mounted)return;
           setState(() {
@@ -849,7 +855,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           }
 
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -865,6 +870,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     },child: Container(
@@ -928,6 +934,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           shai_anim = true;
           star_awarad = true;
         });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_1Name, SJLocalProvider.instance.sj_scrach_end_number_1 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -954,13 +961,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (goldRushResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (goldRushResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.goldRush.pop!, goldRushResult.prize, 'gold_rush', 0, 0);
+          showAwardWidget(goldRushResult.prize, 'gold_rush', 0, 0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -972,7 +979,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -988,6 +994,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     },child: Container(
@@ -1056,6 +1063,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_2Name, SJLocalProvider.instance.sj_scrach_end_number_2 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -1082,13 +1090,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (lucku_momentResultb.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (lucku_momentResultb.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.luckyMoment.pop!, lucku_momentResultb.winMatchNumbers.first, 'lucky_moment', 0, 0);
+          showAwardWidget(lucku_momentResultb.winMatchNumbers.first, 'lucky_moment', 0, 0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1100,7 +1108,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -1116,6 +1123,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     }, child: Container(
@@ -1230,6 +1238,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_3Name, SJLocalProvider.instance.sj_scrach_end_number_3 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -1256,13 +1265,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (secret_stashResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (secret_stashResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.secretStash.pop!, 0.to2Double(secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier), 'secret_stash',secret_stashResult.multiplier, secret_stashResult.awards_value);
+          showAwardWidget(0.to2Double(secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier), 'secret_stash',secret_stashResult.multiplier, secret_stashResult.awards_value);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1274,7 +1283,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -1290,6 +1298,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     }, child: Container(
@@ -1374,6 +1383,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_4Name, SJLocalProvider.instance.sj_scrach_end_number_4 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -1400,13 +1410,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (superMultipleResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (superMultipleResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.superMultiple.pop!, 0.to2Double(superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier), 'super_multiple', superMultipleResult.multiplier, superMultipleResult.award_value);
+          showAwardWidget(0.to2Double(superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier), 'super_multiple', superMultipleResult.multiplier, superMultipleResult.award_value);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1418,7 +1428,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -1434,6 +1443,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     }, child: Container(
@@ -1497,6 +1507,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_5Name, SJLocalProvider.instance.sj_scrach_end_number_5 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -1523,13 +1534,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (fortuneRushResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (fortuneRushResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.fortuneRush.pop!, 0.to2Double(fortuneRushResult.prizeValues[fortuneRushResult.winRow]), 'fortune_rush',0,0);
+          showAwardWidget(0.to2Double(fortuneRushResult.prizeValues[fortuneRushResult.winRow]), 'fortune_rush',0,0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1541,7 +1552,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -1557,6 +1567,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     }, child: Container(
@@ -1638,6 +1649,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         shai_anim = true;
         star_awarad = true;
       });
+      sj_event_fire('scratch_card', {'type' : 'user'});
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scrach_end_number_6Name, SJLocalProvider.instance.sj_scrach_end_number_6 + 1);
       Future.delayed(Duration(seconds: 1), () async {
         // 更新本地数据
@@ -1664,13 +1676,13 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
           );
         }
         if (!mounted) return; // ✅ 页面已经被销毁就直接返回
-        SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
         if (sweetTimeResult.diceHit){
-          SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
         }
         if (sweetTimeResult.isWin) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, 0);
-          showAwardWidget(SJNumberHelpers().bonusConfigModel!.sweetTime.pop!, 0.to2Double(sweetTimeResult.prizeValues[sweetTimeResult.winningRow]), 'sweet_time',0 ,0);
+          showAwardWidget(0.to2Double(sweetTimeResult.prizeValues[sweetTimeResult.winningRow]), 'sweet_time',0 ,0);
           if (!mounted)return;
           setState(() {
             shai_anim = false;
@@ -1682,7 +1694,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             showLevelDialog();
           }
         } else {
-          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
           if (!mounted) return;
           var code = await context.tipShow(SJPopUnAwardDialog());
           if(code >= 0){
@@ -1698,6 +1709,7 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             }
             showRatioDilog();
           }
+          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_scratch_not_award_numberName, SJLocalProvider.instance.sj_scratch_not_award_number + 1);
         }
       });
     }, child: Container(
@@ -1773,68 +1785,79 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
     // context.tipShow(SJPopLevelADialog());
   }
   // 展示奖励弹框
-  Future<void> showAwardWidget(List<int> pops, double award, String types, int beishus, double dolas2) async {
+  void showAwardWidget(double award, String types, int beishus, double dolas2) {
     sj_event_fire('scratch_card_suc', {});
-    bool isShow = false;
-    bool isShowThree = false;
+    if (SJNumberBHelper().getAwardType(award) == 0){
+      // 调用弹框
+      if (!mounted) return;
+      (context.tipShow(
+        SJPopYouWinBDialog(
+          award: award,
+          type: types,
+          beishu: beishus,
+          dolas: dolas2,
+        ),
+      ));
 
-    if (award < pops.first) {
-      isShow = false;
-      isShowThree = false;
-    } else if (award < pops.last) {
-      isShow = true;
-      isShowThree = false;
-    } else {
-      isShow = true;
-      isShowThree = true;
+    } else if (SJNumberBHelper().getAwardType(award) == 1){
+      // 调用弹框
+      if (!mounted) return;
+      (context.tipShow(
+        SJPopSuperWinBDialog(
+          award: award,
+          type: types,
+          beishu: beishus,
+          dolas: dolas2,
+        ),
+      ));
+    } else if (SJNumberBHelper().getAwardType(award) == 2){
+      // 调用弹框
+      if (!mounted) return;
+      (context.tipShow(
+        SJPopEpicWinBDialog(
+          award: award,
+          type: types,
+          beishu: beishus,
+          dolas: dolas2,
+        ),
+      ));
     }
-    if(!mounted)return;
-    // 调用弹框
-    await (context.tipShow2(
-      SJPopYouWinBDialog(
-        award: award,
-        is_show: isShow,
-        is_showThree: isShowThree,
-        type: types,
-        beishu: beishus,
-        dolas: dolas2,
-      ),
-    ));
   }
   // 进入下一个主题
   Future<void> popToNextScratch() async {
     Future.delayed(Duration(milliseconds: 50),(){
+      if (!mounted) return;
       nextScratchTask();
     });
   }
 
   Future<void> nextScratchTask() async {
     SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
-    if (SJLocalProvider.instance.sj_Scratch_timeKey_0.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_0 >= 10){
+    if (SJLocalProvider.instance.sj_scrach_end_number_0 >= 10 && widget.type == 0){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_1.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_1 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_1 >= 10 && widget.type == 1){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_2.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_2 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_2 >= 10 && widget.type == 2){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_3.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_3 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_3 >= 10 && widget.type == 3){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_4.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_4 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_4 >= 10 && widget.type == 4){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_5.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_5 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_5 >= 10 && widget.type == 5){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
       return;
-    } else if (SJLocalProvider.instance.sj_Scratch_timeKey_6.isEmpty && SJLocalProvider.instance.sj_scrach_end_number_6 >= 10){
+    } else if (SJLocalProvider.instance.sj_scrach_end_number_6 >= 10 && widget.type == 6){
       Navigator.pop(context);
       SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
       return;
@@ -1843,41 +1866,43 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
       poptxTaskContent();
       showOneTxTask();
       showFourTxTask();
+      showLastTxTask();
+      await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_ratio_strName, '80');
       // 下一张内容刷新
       if (widget.type == 0) {
         setState(() {
-          extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers();
+          extra_bonusResult = SJNumberBHelper().generateextra_bonusNumbers(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 1) {
         setState(() {
           goldRushResult =
-              SJNumberBHelper().generate3x3NumbersWithPrizeAndDice();
+              SJNumberBHelper().generate3x3NumbersWithPrizeAndDice(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 2) {
         setState(() {
-          lucku_momentResultb = SJNumberBHelper().generatelucku_momentNumbers();
+          lucku_momentResultb = SJNumberBHelper().generatelucku_momentNumbers(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 3) {
         setState(() {
-          secret_stashResult = SJNumberBHelper().generatesecret_stashStash();
+          secret_stashResult = SJNumberBHelper().generatesecret_stashStash(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 4) {
         setState(() {
-          superMultipleResult = SJNumberBHelper().generateSuperMultiple();
+          superMultipleResult = SJNumberBHelper().generateSuperMultiple(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 5) {
         setState(() {
-          fortuneRushResult = SJNumberBHelper().generateFortuneRush();
+          fortuneRushResult = SJNumberBHelper().generateFortuneRush(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       } else if (widget.type == 6) {
         setState(() {
-          sweetTimeResult = SJNumberBHelper().generateSweetTime();
+          sweetTimeResult = SJNumberBHelper().generateSweetTime(forceWin: SJLocalProvider.instance.sj_card_number < 3);
           SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
         });
       }
@@ -1909,8 +1934,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
             SJNumberHelpers().taskModel!.task.first.last.num &&
         SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task2_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_box_indexName, 0);
       await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_card_indexName, 0);
@@ -1931,8 +1954,6 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         SJLocalProvider.instance.sj_tx_card_index >=
             SJNumberHelpers().last_taskModel!.task.first.last.num && SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
       await SJLocalProvider.instance.updateint(
-          SJLocalProvider.instance.sj_tx_probability_indexName, 0);
-      await SJLocalProvider.instance.updateint(
           SJLocalProvider.instance.sj_tx_dice_indexName, 0);
       await SJLocalProvider.instance.updateBool(
           SJLocalProvider.instance.sj_tx_first_statusName, true);
@@ -1942,6 +1963,17 @@ class _SJScratchContentBWidgetState extends State<SJScratchContentBWidget> {
         if (homeKey.currentState!.ctx.mounted) {
           homeKey.currentState!.ctx.tipShow(SJPopTask3Dialog());
         }
+      }
+    }
+  }
+
+  // 第四段任务完成
+  Future<void> showLastTxTask() async {
+    if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task4_tips == true) {
+      if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_last_tx_endName, true);
+        sj_event_fire('cash_queue', {});
       }
     }
   }
@@ -2360,10 +2392,13 @@ class _BouncySJImgState extends State<BouncySJImg>
         },
         child:Consumer<SJLocalProvider>(
           builder: (context, provider, child) {
-            return SJImg(
-              name: 'sj_${provider.sj_ratio_str}%_btn',
-              width: 318,
-              height: 48,
+            return Visibility(
+              visible: SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1 ? true : false,
+              child: SJImg(
+                name: 'sj_${provider.sj_ratio_str}%_btn',
+                width: 318,
+                height: 48,
+              ),
             );
           },
         ),

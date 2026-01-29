@@ -13,6 +13,7 @@ import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_ad_manger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_number_helper.dart';
+import 'SJHome.dart';
 import 'SJScratchB.dart';
 
 class SJCash extends StatefulWidget {
@@ -359,6 +360,7 @@ class _SJCashState extends State<SJCash> {
     if (SJLocalProvider.instance.sj_current_ranking - row <= 1) {
     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_current_rankingName, 1);
     await SJLocalProvider.instance.updateTXInStatus(2);
+    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_end_statusName, true);
     if (!mounted) return;
     context.tipShow(SJPopTXSulsDialog());
   } else {
@@ -526,14 +528,33 @@ class _SJCashState extends State<SJCash> {
     );
   }
   // 发起提现
-  void _submitCashTask(int value, int index){
+  Future<void> _submitCashTask(int value, int index) async {
     if (SJLocalProvider.instance.sj_dolas_number < value){
-      context.tipShow(SJPopTXNotDialog());
+      var code = await context.tipShow(SJPopTXNotDialog());
+      if (code == 1){
+        if (!mounted) return;
+        Navigator.pop(context);
+        if (!Navigator.canPop(context)){
+          if(!context.mounted)return;
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (builder) {
+                return SJScratchB(
+                    type: history_index);
+              },
+            ),
+          );
+        }
+      }
     } else {
       if (SJLocalProvider.instance.sj_account_id.isEmpty){
         context.tipShow(SJPopSubmitOneDialog(number_index: index, is_tx: true));
       } else {
-        SJDialogTool.toast(context, 'There are currently withdrawal tasks in progress. You can withdraw again after completion.');
+        if (SJLocalProvider.instance.sj_tx_end_status == true || SJLocalProvider.instance.sj_open_tx == false){
+          context.tipShow(SJPopSubmitOneDialog(number_index: index, is_tx: true));
+        } else {
+          SJDialogTool.toast(context, 'There are currently withdrawal tasks in progress. You can withdraw again after completion.');
+        }
       }
     }
   }
@@ -632,9 +653,9 @@ class _SJCashState extends State<SJCash> {
           .taskModel!
           .task.last.first.num} Box';
       text2 =
-      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+      'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .taskModel!
-          .task.last.last.num} Probability Cards';
+          .task.last.last.num} Dice';
     }
     return [text1, text2];
   }
@@ -666,7 +687,7 @@ class _SJCashState extends State<SJCash> {
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_dice_index < SJNumberHelpers().taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;
@@ -678,7 +699,7 @@ class _SJCashState extends State<SJCash> {
   List<String> _getTxTaskString2(){
     String text1 = '';
     String text2 = '';
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
       text2 =
       'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
           .last_taskModel!
@@ -689,9 +710,9 @@ class _SJCashState extends State<SJCash> {
           .task.first.first.num} Box';
     } else {
       text2 =
-      'Draw ${SJLocalProvider.instance.sj_tx_probability_index}/${SJNumberHelpers()
+      'Scratch ${SJLocalProvider.instance.sj_tx_card_index}/${SJNumberHelpers()
           .last_taskModel!
-          .task.last.last.num} probability cards';
+          .task.last.last.num} Card';
       text1 =
       'Play ${SJLocalProvider.instance.sj_tx_dice_index}/${SJNumberHelpers()
           .last_taskModel!
@@ -703,7 +724,7 @@ class _SJCashState extends State<SJCash> {
   List<bool> _getTxTaskStatus2(){
     bool text1 = false;
     bool text2 = false;
-    if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num || SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.first.last.num) {
+    if (SJLocalProvider.instance.sj_tx_task3_tips == true && SJLocalProvider.instance.sj_tx_task4_tips == false) {
       if (SJLocalProvider.instance.sj_tx_box_index < SJNumberHelpers().last_taskModel!.task.first.first.num) {
         text1 = false;
       } else {
@@ -720,7 +741,7 @@ class _SJCashState extends State<SJCash> {
       } else {
         text1 = true;
       }
-      if (SJLocalProvider.instance.sj_tx_probability_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
+      if (SJLocalProvider.instance.sj_tx_card_index < SJNumberHelpers().last_taskModel!.task.last.last.num) {
         text2 = false;
       } else {
         text2 = true;

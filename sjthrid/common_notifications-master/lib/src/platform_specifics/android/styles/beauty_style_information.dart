@@ -1,7 +1,8 @@
 import 'default_style_information.dart';
 
 class BeautyStyleInformation extends DefaultStyleInformation {
-  const BeautyStyleInformation(this.title, this.body, this.image, this.button, this.appIcon)
+  const BeautyStyleInformation(
+      {this.title = "", this.body = "", this.image = "", this.button = "", this.appIcon = ""})
       : super(false, false);
 
   final String title;

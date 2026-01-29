@@ -10,5 +10,6 @@ public enum NotificationStyle {
   Inbox,
   Messaging,
   Media,
-  Beauty
+  Beauty,
+  Foreground
 }

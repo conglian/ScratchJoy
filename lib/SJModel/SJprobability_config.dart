@@ -4,6 +4,9 @@ part 'SJprobability_config.g.dart';
 
 @JsonSerializable()
 class ProbabilityConfig {
+  @JsonKey(name: 'probability_open')
+  final double probabilityopen;
+
   @JsonKey(name: 'probability_0.8')
   final double probability08;
 
@@ -14,6 +17,7 @@ class ProbabilityConfig {
   final double probability1;
 
   ProbabilityConfig({
+    required this.probabilityopen,
     required this.probability08,
     required this.probability099,
     required this.probability1,

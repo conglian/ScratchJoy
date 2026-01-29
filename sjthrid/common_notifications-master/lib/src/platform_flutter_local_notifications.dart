@@ -394,7 +394,7 @@ class AndroidFlutterLocalNotificationsPlugin
     RepeatInterval repeatInterval, {
     AndroidNotificationDetails? notificationDetails,
     String? payload,
-    AndroidScheduleMode scheduleMode = AndroidScheduleMode.exact,
+    AndroidScheduleMode scheduleMode = AndroidScheduleMode.inexactAllowWhileIdle,
   }) async {
     validateId(id);
     await _channel.invokeMethod('periodicallyShow', <String, Object?>{
@@ -417,7 +417,7 @@ class AndroidFlutterLocalNotificationsPlugin
     Duration repeatDurationInterval, {
     AndroidNotificationDetails? notificationDetails,
     String? payload,
-    AndroidScheduleMode scheduleMode = AndroidScheduleMode.exact,
+    AndroidScheduleMode scheduleMode = AndroidScheduleMode.inexactAllowWhileIdle,
   }) async {
     validateId(id);
     validateRepeatDurationInterval(repeatDurationInterval);

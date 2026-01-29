@@ -2,12 +2,9 @@ package com.dexterous.flutterlocalnotifications.fcm;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.WorkerThread;
 
-import com.bumptech.glide.Glide;
 import com.dexterous.flutterlocalnotifications.FlutterLocalNotificationsPlugin;
 import com.dexterous.flutterlocalnotifications.models.NotificationDetails;
 import com.google.gson.Gson;
@@ -16,22 +13,6 @@ import com.google.gson.reflect.TypeToken;
 import java.lang.reflect.Type;
 
 public class FlutterFCMPlugin {
-
-    @WorkerThread
-    public static Bitmap loadNotificationBitmap(Context context, String image) {
-        Bitmap bitmap = null;
-        try {
-            bitmap = Glide.with(context)
-                    .asBitmap()
-                    .skipMemoryCache(true)
-                    .load(image)
-                    .submit()
-                    .get();
-        } catch (Throwable e) {
-            //
-        }
-        return bitmap;
-    }
 
     public static void setMessageReceivedNum(final Context context, @NonNull final String payload, int num) {
         if (context == null) return;
