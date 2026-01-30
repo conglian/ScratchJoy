@@ -64,7 +64,7 @@ class _SJCashState extends State<SJCash> {
                     SizedBox(height: 18.h),
                     Container(
                       width: 343.w,
-                      height: 151.h,
+                      height: 172.h,
                       decoration: BoxDecoration(image: SJDImg('sj_mybanner_bg')),
                       child: Column(
                         children: [

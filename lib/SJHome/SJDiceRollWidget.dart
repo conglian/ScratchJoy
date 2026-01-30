@@ -183,13 +183,12 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
         _isRolling = false;
         if (diceNumbers[_currentNumberIndex] > 0) {
           await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
-          await showLastTxTask();
-          await showThreeTxTask();
-          await showOneTxTask();
           if (!mounted) return;
           int code = await context.tipShow(SJPopEpicWinBDialog(
               award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice', beishu: 0, dolas: 0));
           if (code >= 0){
+            await showOneTxTask();
+            await showLastTxTask();
             setState(() {
               diceNumbers = SJNumberHelpers().getDiceValueByBalance();
             });
@@ -220,13 +219,12 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
       _isRolling = false;
       if (diceNumbers[_currentNumberIndex] > 0) {
         await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, SJLocalProvider.instance.sj_tx_dice_index + 1);
-        await showLastTxTask();
-        await showThreeTxTask();
-        await showOneTxTask();
         if (!mounted) return;
         int code = await context.tipShow(SJPopEpicWinBDialog(
             award: 0.to2Double(diceNumbers[_currentNumberIndex]), type: 'dice', beishu: 0, dolas: 0));
         if (code >= 0){
+          await showOneTxTask();
+          await showLastTxTask();
           setState(() {
             diceNumbers = SJNumberHelpers().getDiceValueByBalance();
           });
@@ -236,6 +234,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
   }
 
   Future<void> showOneTxTask() async {
+    await showThreeTxTask();
     // 判断第一段任务是否完成
     if (SJLocalProvider.instance.sj_tx_card_index >=
         SJNumberHelpers().taskModel!.task.first.first.num &&

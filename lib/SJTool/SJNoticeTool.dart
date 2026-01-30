@@ -1,3 +1,4 @@
+import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:flutter_lifecycle_detector/flutter_lifecycle_detector.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
