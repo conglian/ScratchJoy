@@ -184,7 +184,7 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
             top: 535.h,
             right: 40.w,
             child: Visibility(
-              visible: SJLocalProvider.instance.sj_card_number >= 4,
+              visible: false,
               child: InkWell(
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
@@ -2167,12 +2167,10 @@ class SJPopTXSafetyDialogState extends State<SJPopTXSafetyDialog> {
 
     // ✅ 2 秒后关闭弹窗
     Future.delayed(const Duration(seconds: 2), () {
-      if (!mounted) return;
-      Navigator.pop(context);
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
+      if (mounted){
+        Navigator.of(context).pop();
         context.tipShow(SJPopTXLastDialog());
-      });
+      }
     });
 
   }
@@ -2465,139 +2463,141 @@ class SJPopSubmitOneDialogState extends State<SJPopSubmitOneDialog> {
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 329.w,
-                height: 493.h,
-                decoration: BoxDecoration(
-                  image: SJDImg('sj_tx_sub_bg')
-                ),
-                child: Column(
-                  children: [
-                    SizedBox(height: 29.h,),
-                    SJText(text: 'Payment Information', size: 18.sp, color: '#42401E'.color(), weight: FontWeight.w400),
-                    SizedBox(height: 18.h,),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      onTap: (){
-                        setState(() {
-                          seletecd_index = 0;
-                        });
-                      },
-                      child: SJImg(name: seletecd_index == 0 ? 'sj_account_0_s' : 'sj_account_0_n', width: 176.w, height: 61.w,),
-                    ),
-                    SizedBox(height: 12.h,),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      onTap: (){
-                        setState(() {
-                          seletecd_index = 1;
-                        });
-                      },
-                      child: SJImg(name: seletecd_index == 1 ? 'sj_account_1_s' : 'sj_account_1_n', width: 176.w, height: 61.w,),
-                    ),
-                    SizedBox(height: 40.h,),
-                    Row(
-                      children: [
-                        SizedBox(width: 22.w,),
-                        SJText(text: 'Account/Phone', size: 16.sp, color: '#4D3C3C'.color(), weight: FontWeight.w400)
-                      ],
-                    ),
-                    SizedBox(height: 6.h,),
-                    Container(
-                      width: 287.w,
-                      height: 48.h,
-                      decoration: BoxDecoration(
-                        color: '#D8D8D3'.color(),
-                        borderRadius: BorderRadius.all(Radius.circular(5))
+          SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 329.w,
+                  height: 493.h,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_tx_sub_bg')
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 29.h,),
+                      SJText(text: 'Payment Information', size: 18.sp, color: '#42401E'.color(), weight: FontWeight.w400),
+                      SizedBox(height: 18.h,),
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: (){
+                          setState(() {
+                            seletecd_index = 0;
+                          });
+                        },
+                        child: SJImg(name: seletecd_index == 0 ? 'sj_account_0_s' : 'sj_account_0_n', width: 176.w, height: 61.w,),
                       ),
-                      child: TextField(
-                        controller: _controller,
-                        focusNode: _focusNode,
-                        decoration:  InputDecoration(
-                          labelText: seletecd_index == 0 ? 'E.G. 123456789@abc.com' : '1234567890',
-                          labelStyle: TextStyle(
-                            color: '#9A9881'.color(), // 设置字体颜色为蓝色
-                            fontSize: 13.0,     // 可选：设置字体大小
+                      SizedBox(height: 12.h,),
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: (){
+                          setState(() {
+                            seletecd_index = 1;
+                          });
+                        },
+                        child: SJImg(name: seletecd_index == 1 ? 'sj_account_1_s' : 'sj_account_1_n', width: 176.w, height: 61.w,),
+                      ),
+                      SizedBox(height: 40.h,),
+                      Row(
+                        children: [
+                          SizedBox(width: 22.w,),
+                          SJText(text: 'Account/Phone', size: 16.sp, color: '#4D3C3C'.color(), weight: FontWeight.w400)
+                        ],
+                      ),
+                      SizedBox(height: 6.h,),
+                      Container(
+                        width: 287.w,
+                        height: 48.h,
+                        decoration: BoxDecoration(
+                          color: '#D8D8D3'.color(),
+                          borderRadius: BorderRadius.all(Radius.circular(5))
+                        ),
+                        child: TextField(
+                          controller: _controller,
+                          focusNode: _focusNode,
+                          decoration:  InputDecoration(
+                            labelText: seletecd_index == 0 ? 'E.G. 123456789@abc.com' : '1234567890',
+                            labelStyle: TextStyle(
+                              color: '#9A9881'.color(), // 设置字体颜色为蓝色
+                              fontSize: 13.0,     // 可选：设置字体大小
+                              fontWeight: FontWeight.bold, // 可选：设置字体粗细
+                            ),
+                            border:  OutlineInputBorder(),
+                            // 设置启用状态下的边框颜色
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: Colors.transparent),
+                            ),
+                            // 设置聚焦状态下的边框颜色
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(color: '#E38AF9'.color()),
+                            ),
+                          ),
+                          style: TextStyle(
+                            color: '#000000'.color(), // 设置字体颜色为蓝色
+                            fontSize: 15.0,     // 可选：设置字体大小
                             fontWeight: FontWeight.bold, // 可选：设置字体粗细
                           ),
-                          border:  OutlineInputBorder(),
-                          // 设置启用状态下的边框颜色
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: Colors.transparent),
-                          ),
-                          // 设置聚焦状态下的边框颜色
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: '#E38AF9'.color()),
-                          ),
-                        ),
-                        style: TextStyle(
-                          color: '#000000'.color(), // 设置字体颜色为蓝色
-                          fontSize: 15.0,     // 可选：设置字体大小
-                          fontWeight: FontWeight.bold, // 可选：设置字体粗细
                         ),
                       ),
-                    ),
-                    SizedBox(height: 34.h,),
-                    Row(
-                      children: [
-                        SizedBox(width: 22.w,),
-                        if (seletecd_index == 0)
-                          SJText(text: 'Direct To Your Paypal  Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
-                        if (seletecd_index == 1)
-                          SJText(text: 'Direct To Your Cash App Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
-                      ],
-                    ),
-                    SizedBox(height: 7.h,),
-                    Row(
-                      children: [
-                        SizedBox(width: 22.w,),
-                        SizedBox(width: 15,),
-                      ],
-                    ),
-                    SizedBox(height: 30.h,),
-                    InkWell(
-                      splashColor: Colors.transparent,
-                      highlightColor: Colors.transparent,
-                      hoverColor: Colors.transparent,
-                      focusColor: Colors.transparent,
-                      onTap: () async {
-                        if (_controller.text.isEmpty){
-                          Navigator.pop(context);
-                          SJDialogTool.toast(context, 'Please Enter Your Account.');
-                        } else {
-                          Navigator.pop(context);
-                          await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_account_idName, _controller.text);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_numberName, widget.number_index);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_account_seled_indexName, seletecd_index);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_accountName, seletecd_index);
-                          if(!widget.is_tx) return;
-                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_end_statusName, false);
-                          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
-                          await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (tx_list2[widget.number_index]).toDouble());
-                          await SJLocalProvider.instance.updateTXInStatus(1);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
-                          await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
-                          if(homeKey.currentState!.ctx.mounted){
-                            homeKey.currentState!.ctx.tipShow(SJPopAccountConfinDialog());
+                      SizedBox(height: 34.h,),
+                      Row(
+                        children: [
+                          SizedBox(width: 22.w,),
+                          if (seletecd_index == 0)
+                            SJText(text: 'Direct To Your Paypal  Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                          if (seletecd_index == 1)
+                            SJText(text: 'Direct To Your Cash App Instant Payment', size: 14.sp, color: '#5A5544'.color(), weight: FontWeight.w400),
+                        ],
+                      ),
+                      SizedBox(height: 7.h,),
+                      Row(
+                        children: [
+                          SizedBox(width: 22.w,),
+                          SizedBox(width: 15,),
+                        ],
+                      ),
+                      SizedBox(height: 30.h,),
+                      InkWell(
+                        splashColor: Colors.transparent,
+                        highlightColor: Colors.transparent,
+                        hoverColor: Colors.transparent,
+                        focusColor: Colors.transparent,
+                        onTap: () async {
+                          if (_controller.text.isEmpty){
+                            Navigator.pop(context);
+                            SJDialogTool.toast(context, 'Please Enter Your Account.');
+                          } else {
+                            Navigator.pop(context);
+                            await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_account_idName, _controller.text);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_numberName, widget.number_index);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_account_seled_indexName, seletecd_index);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_ing_accountName, seletecd_index);
+                            if(!widget.is_tx) return;
+                            await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_end_statusName, false);
+                            await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_open_txName, true);
+                            await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (tx_list2[widget.number_index]).toDouble());
+                            await SJLocalProvider.instance.updateTXInStatus(1);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_dice_indexName, 0);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_card_indexName, 0);
+                            await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_tx_box_indexName, 0);
+                            if(homeKey.currentState!.ctx.mounted){
+                              homeKey.currentState!.ctx.tipShow(SJPopAccountConfinDialog());
+                            }
                           }
-                        }
-                      },
-                      child: SJImg(name: 'sj_submit_btn', width: 202.w, height: 51.5.h,),
-                    )
-                  ],
-                ),
-              )
-            ],
+                        },
+                        child: SJImg(name: 'sj_submit_btn', width: 202.w, height: 51.5.h,),
+                      )
+                    ],
+                  ),
+                )
+              ],
+            ),
           ),
         ],
       ),
