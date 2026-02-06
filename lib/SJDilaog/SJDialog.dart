@@ -1109,7 +1109,6 @@ class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
                     onTap: (){
                       Navigator.pop(context);
                       sj_event_fire('ad_retry_c', {});
-                      SJJoyAds().init();
                     },
                   ),
                 ),
