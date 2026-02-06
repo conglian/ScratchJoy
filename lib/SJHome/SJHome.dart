@@ -6,6 +6,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:lottie/lottie.dart';
 import 'package:provider/provider.dart';
+import 'package:scratchjoy/SJHome/SJScratchA.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_GradientText.dart';
 import 'package:scratchjoy/SJTool/sj_NumberHelper.dart';
@@ -91,23 +92,23 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
   void initState() {
     // TODO: implement initState
     super.initState();
-    SJFKManger().initFK();
-    SJNoticeHelp().initNotice();
-    SJNoticeHelp().startSJForegroundService();
+    if (SJLocalProvider.instance.sj_login_status) {
+      '1111111111'.log();
+      SJLocatilNoticeHelper().initSJNotifications();
+    }
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
       // 在这里执行需要更新UI的操作
+      shownewGuideA();
       sj_setStarTime();
       sjsj_startTimer();
       sj_newUserGuide();
-      if (SJLocalProvider.instance.sj_old_guide == false) {
+      if (SJLocalProvider.instance.sj_old_guide == false && SJLocalProvider.instance.sj_login_status) {
         context.tipShow(SJBoxOldDiaologWidget());
         SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_old_guideName, true);
       }
     });
-    Future.delayed(Duration(seconds: 5),(){
-      SJNoticeHelp().showSJNotificationMediaStyle();
-    });
+
     // 100% 中奖处理，只保留当前的记录退出不算
     SJScratchDiceTimerNotificationService.stream.listen((value) async {
       sj_event_fire('countdown_open', {});
@@ -145,7 +146,8 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (builder) {
-            return SJScratchB(
+            return SJLocalProvider.instance.sj_login_status == true ? SJScratchB(
+                type: value == 6 ? 0 : value + 1) : SJScratchA(
                 type: value == 6 ? 0 : value + 1);
           },
         )
@@ -159,6 +161,12 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
       });
     });
     sj_event_fire('home_page', {});
+  }
+
+  void shownewGuideA(){
+    if (!SJLocalProvider.instance.sj_login_status && SJLocalProvider.instance.sj_newA_guide == false){
+      context.tipShow(SJPopQuestDialog());
+    }
   }
 
   void _refresh() {
@@ -227,7 +235,7 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
 
   // 新用户
   Future<void> sj_newUserGuide() async {
-    if (!SJLocalProvider.instance.sj_new_guide && SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1){
+    if (!SJLocalProvider.instance.sj_new_guide && SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1 && SJLocalProvider.instance.sj_login_status){
       var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'home',));
       if (code == 1){
         SJScratchProbabilityUpNotificationService.notify(0);
@@ -456,47 +464,48 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
                     }
                 ),
               ),
-              Positioned(
-                bottom: 174.h,
-                left: 16.w,
-                width: 70,
-                height: 66,
-                child: InkWell(
-                  onTap: (){
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (builder) {
-                        return SJwebkitview(
-                          url: "https://tinyurl.com/ycy7yfzz",
-                          title: 'More Game',
-                        );
-                      }),
-                    );
-                  },
-                  child: SJImg(name: 'sj_moregame_icon', width: 70, height: 66),
-                )
-              ),
-              Positioned(
-                  bottom: 174.h,
-                  right: 16.w,
-                  width: 66,
-                  height: 68,
-                  child: InkWell(
-                    onTap: () async {
-                      String gaids = await FlutterTbaInfo.instance.getGaid();
-                      'gaids=$gaids'.log();
-                      Navigator.of(homeKey.currentState!.ctx).push(
-                      MaterialPageRoute(builder: (builder) {
-                          return SJwebkitview(
-                            url: "https://blog.crystalliax.com/scene?sk=q81aa21d0e9c080ad&lzdid=${gaids}",
-                            title: 'GamePlay',
-                          );
-                        }),
-                      );
-                    },
-                    child: SJImg(name: 'sj_7h5_icon', width: 66, height: 68),
-                  )
-              ),
-              Positioned(child: SJBubbleButton()),
+              // Positioned(
+              //   bottom: 174.h,
+              //   left: 16.w,
+              //   width: 70,
+              //   height: 66,
+              //   child: InkWell(
+              //     onTap: (){
+              //       Navigator.of(context).push(
+              //         MaterialPageRoute(builder: (builder) {
+              //           return SJwebkitview(
+              //             url: "https://tinyurl.com/ycy7yfzz",
+              //             title: 'More Game',
+              //           );
+              //         }),
+              //       );
+              //     },
+              //     child: SJImg(name: 'sj_moregame_icon', width: 70, height: 66),
+              //   )
+              // ),
+              // Positioned(
+              //     bottom: 174.h,
+              //     right: 16.w,
+              //     width: 66,
+              //     height: 68,
+              //     child: InkWell(
+              //       onTap: () async {
+              //         String gaids = await FlutterTbaInfo.instance.getGaid();
+              //         'gaids=$gaids'.log();
+              //         Navigator.of(homeKey.currentState!.ctx).push(
+              //         MaterialPageRoute(builder: (builder) {
+              //             return SJwebkitview(
+              //               url: "https://blog.crystalliax.com/scene?sk=q81aa21d0e9c080ad&lzdid=${gaids}",
+              //               title: 'GamePlay',
+              //             );
+              //           }),
+              //         );
+              //       },
+              //       child: SJImg(name: 'sj_7h5_icon', width: 66, height: 68),
+              //     )
+              // ),
+              if (SJLocalProvider.instance.sj_login_status)
+                Positioned(child: SJBubbleButton()),
             ],
           )
         ),
@@ -507,17 +516,17 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
 
 
 class SJClickableImageList extends StatelessWidget {
-  final List<String> imageNames = const [
+  final List<String> imageNames = [
     'sj_scratch_list_0',
     'sj_scratch_list_1',
-    'sj_scratch_list_2',
+    SJLocalProvider.instance.sj_login_status ? 'sj_scratch_list_2' : 'sj_scratch_list_2s',
     'sj_scratch_list_3',
     'sj_scratch_list_4',
     'sj_scratch_list_5',
     'sj_scratch_list_6',
   ];
   final List<Duration?> sjRemainingDurations; // 👈 新增
-  const SJClickableImageList({super.key, required this.sjRemainingDurations});
+  SJClickableImageList({super.key, required this.sjRemainingDurations});
 
   @override
   Widget build(BuildContext context) {
@@ -536,8 +545,9 @@ class SJClickableImageList extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (builder) {
-                    return SJScratchB(
-                      type: index);
+                    return SJLocalProvider.instance.sj_login_status == true ? SJScratchB(
+                      type: index) : SJScratchA(
+                        type: index);
                   },
                 ),
               );
@@ -619,7 +629,7 @@ class SJClickableImageList extends StatelessWidget {
                               gradientColor = ['#FFE342'.color(),'#FFFADD'.color()];
                               strokeColors = '#8B0746'.color();
                             }
-                            return SJGradientStrokeText(text: '\$$num', fontSize: 22, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
+                            return SJGradientStrokeText(text: SJLocalProvider.instance.sj_login_status ? '\$$num' : '${1000 * (index + 1)}', fontSize: 22, gradientColors: gradientColor, strokeWidth: 2,strokeColor: strokeColors, width: 60, height: 30,);
                           }
                       ),
                     ),
@@ -747,19 +757,19 @@ class SJClickableImageList extends StatelessWidget {
   double numberTopValue(int index){
     double num = 0;
     if (index == 0){
-      num = 108.h;
+      num = 110.h;
     } else if (index == 1){
-      num = 42.h;
+      num = 45.h;
     } else if (index == 2){
-      num = 113.h;
+      num = 115.h;
     } else if (index == 3){
-      num = 112.h;
+      num = 115.h;
     } else if (index == 4){
       num = 34.h;
     } else if (index == 5){
-      num = 68.h;
+      num = 70.h;
     } else if (index == 6){
-      num = 111.h;
+      num = 113.h;
     }
     return num;
 
@@ -793,13 +803,15 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                 height: 49,
                 child: InkWell(
                   onTap: (){
-                    Navigator.of(homeKey.currentState!.ctx).push(
-                      MaterialPageRoute(
-                        builder: (builder) {
-                          return SJCash();
-                        },
-                      ),
-                    );
+                    if (SJLocalProvider.instance.sj_login_status){
+                      Navigator.of(homeKey.currentState!.ctx).push(
+                        MaterialPageRoute(
+                          builder: (builder) {
+                            return SJCash();
+                          },
+                        ),
+                      );
+                    }
                   },
                   child: Stack(
                     children: [
@@ -816,13 +828,13 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                                     padding: EdgeInsets.only(top: 2.0, left: 32.12),
                                     child: Center(
                                       child: SJGradientNumberRoller(
-                                        value: provider.sj_dolas_number,
+                                        value: provider.sj_login_status ? provider.sj_dolas_number : provider.sj_domand_number,
                                         duration: 800,
                                         fontSize: 20.0,
                                         gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
                                         borderColor: '#FFFFFF'.color(),
                                         borderWidth: 0.0,
-                                        decimalPlaces: 2,
+                                        decimalPlaces: provider.sj_login_status ? 2 : 0,
                                       ),
                                     ),
                                 );
@@ -831,14 +843,16 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
                         ),
                       ),
                       InkWell(onTap: (){
-                        Navigator.of(homeKey.currentState!.ctx).push(
-                          MaterialPageRoute(
-                            builder: (builder) {
-                              return SJCash();
-                            },
-                          ),
-                        );
-                      },child: SJImg(name: 'sj_dolas_icon', width: 49, height: 49,))
+                        if (SJLocalProvider.instance.sj_login_status){
+                          Navigator.of(homeKey.currentState!.ctx).push(
+                            MaterialPageRoute(
+                              builder: (builder) {
+                                return SJCash();
+                              },
+                            ),
+                          );
+                        }
+                      },child: SJImg(name: !SJLocalProvider.instance.sj_login_status ? 'sj_home_domand_icon' : 'sj_dolas_icon', width: 49, height: 49,))
                     ],
                   ),
                 )
@@ -954,7 +968,6 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
               onTap: (){
                 // test
                 // SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
-                // context.tipShow(SJPopTXLoadingDialog());
                 context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
@@ -993,6 +1006,7 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
               height: 89,
               child: InkWell(
                 onTap: () async {
+                  if (!SJLocalProvider.instance.sj_login_status) return;
                   if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
                     await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
                     context.tipShow(SJBoxOpenDiaologWidget());
@@ -1000,54 +1014,57 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                     SJDialogTool.toast(context, 'open a gift chest every 3 scratches');
                   }
                 },
-                child: Stack(
-                  children: [
-                    Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
-                    Positioned(top: 68,child:Stack(
-                      children: [
-                        // 背景图 71 × 15
-                        SizedBox(
-                          width: 71,
-                          height: 15,
-                          child: SJImg(name: 'sj_box_pro_bg'),
-                        ),
-                        // 进度条（居中）67 × 11
-                        Positioned(
-                          left: (71 - 67) / 2,  // = 2 px
-                          top: 1,   // = 2 px
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Container(
-                              width: 67,
-                              height: 11,
-                              color: Colors.transparent,
-                              child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Consumer<SJLocalProvider>(
-                                    builder: (context, provider, child) {
-                                      return  Container(
-                                        width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
-                                        height: 11,
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                            colors: [
-                                              Color(0xFFFDEB5A),
-                                              Color(0xFFFFC700),
-                                              Color(0xFFB87400),
-                                            ],
+                child: Visibility(
+                  visible: SJLocalProvider.instance.sj_login_status,
+                  child: Stack(
+                    children: [
+                      Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                      Positioned(top: 68,child:Stack(
+                        children: [
+                          // 背景图 71 × 15
+                          SizedBox(
+                            width: 71,
+                            height: 15,
+                            child: SJImg(name: 'sj_box_pro_bg'),
+                          ),
+                          // 进度条（居中）67 × 11
+                          Positioned(
+                            left: (71 - 67) / 2,  // = 2 px
+                            top: 1,   // = 2 px
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(6),
+                              child: Container(
+                                width: 67,
+                                height: 11,
+                                color: Colors.transparent,
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Consumer<SJLocalProvider>(
+                                      builder: (context, provider, child) {
+                                        return  Container(
+                                          width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
+                                          height: 11,
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                              colors: [
+                                                Color(0xFFFDEB5A),
+                                                Color(0xFFFFC700),
+                                                Color(0xFFB87400),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    })
+                                        );
+                                      })
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    ))
-                  ],
+                        ],
+                      ))
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -1057,15 +1074,41 @@ class _SJBottomBarWidgetState extends State<SJBottomBarWidget> {
                 padding: EdgeInsets.only(top: 0),
                 child: InkWell(
                   onTap: ()  {
-                    Navigator.of(homeKey.currentState!.ctx).push(
-                      MaterialPageRoute(
-                        builder: (builder) {
-                          return SJCash();
-                        },
-                      ),
-                    );
+                    if (SJLocalProvider.instance.sj_login_status){
+                      Navigator.of(homeKey.currentState!.ctx).push(
+                        MaterialPageRoute(
+                          builder: (builder) {
+                            return SJCash();
+                          },
+                        ),
+                      );
+                    } else {
+                      int row = 0;
+                      if (SJLocalProvider.instance.sj_scrach_end_number_0 < 10){
+                        row = 0;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_1 < 10){
+                        row = 1;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_2 < 10){
+                        row = 2;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_3 < 10){
+                        row = 3;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_4 < 10){
+                        row = 4;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_5 < 10){
+                        row = 5;
+                      } else if (SJLocalProvider.instance.sj_scrach_end_number_6 < 10){
+                        row = 6;
+                      }
+                      Navigator.of(homeKey.currentState!.ctx).push(
+                        MaterialPageRoute(
+                          builder: (builder) {
+                            return SJScratchA(type: row);
+                          },
+                        ),
+                      );
+                    }
                   },
-                  child: SJImg(name: 'sj_cash_btns', width: 200.w, height: 75),
+                  child: SJImg(name: SJLocalProvider.instance.sj_login_status ? 'sj_cash_btns' : 'sj_cards_btn', width: 200.w, height: 75),
                 ),
               ),
             ),

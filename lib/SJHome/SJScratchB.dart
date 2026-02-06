@@ -2206,6 +2206,7 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
             height: 89,
             child: InkWell(
               onTap: () async {
+                if (!SJLocalProvider.instance.sj_login_status) return;
                 if (SJLocalProvider.instance.sj_box_index >= SJNumberBHelper().numberEntity!.boxInterval){
                   await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_show_box_tipsName, false);
                   if (!context.mounted) return;
@@ -2214,54 +2215,57 @@ class _SJBottomDetailsBarWidgetState extends State<SJBottomDetailsBarWidget> {
                   SJDialogTool.toast(homeKey.currentState!.ctx, 'open A gift chest every 3 scratches');
                 }
               },
-              child: Stack(
-                children: [
-                  Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
-                  Positioned(top: 68,child:Stack(
-                    children: [
-                      // 背景图 71 × 15
-                      SizedBox(
-                        width: 71,
-                        height: 15,
-                        child: SJImg(name: 'sj_box_pro_bg'),
-                      ),
-                      // 进度条（居中）67 × 11
-                      Positioned(
-                        left: (71 - 67) / 2,  // = 2 px
-                        top: 1,   // = 2 px
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6),
-                          child: Container(
-                            width: 67,
-                            height: 11,
-                            color: Colors.transparent,
-                            child: Align(
-                                alignment: Alignment.centerLeft,
-                                child: Consumer<SJLocalProvider>(
-                                    builder: (context, provider, child) {
-                                      return  Container(
-                                        width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
-                                        height: 11,
-                                        decoration: const BoxDecoration(
-                                          gradient: LinearGradient(
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                            colors: [
-                                              Color(0xFFFDEB5A),
-                                              Color(0xFFFFC700),
-                                              Color(0xFFB87400),
-                                            ],
+              child: Visibility(
+                visible: SJLocalProvider.instance.sj_login_status,
+                child: Stack(
+                  children: [
+                    Positioned(top: 18,child: SJImg(name: 'sj_box_icon', width: 65, height: 65)),
+                    Positioned(top: 68,child:Stack(
+                      children: [
+                        // 背景图 71 × 15
+                        SizedBox(
+                          width: 71,
+                          height: 15,
+                          child: SJImg(name: 'sj_box_pro_bg'),
+                        ),
+                        // 进度条（居中）67 × 11
+                        Positioned(
+                          left: (71 - 67) / 2,  // = 2 px
+                          top: 1,   // = 2 px
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(6),
+                            child: Container(
+                              width: 67,
+                              height: 11,
+                              color: Colors.transparent,
+                              child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Consumer<SJLocalProvider>(
+                                      builder: (context, provider, child) {
+                                        return  Container(
+                                          width: 67 * (provider.sj_box_index / SJNumberBHelper().numberEntity!.boxInterval.toDouble()), // 根据进度变化
+                                          height: 11,
+                                          decoration: const BoxDecoration(
+                                            gradient: LinearGradient(
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
+                                              colors: [
+                                                Color(0xFFFDEB5A),
+                                                Color(0xFFFFC700),
+                                                Color(0xFFB87400),
+                                              ],
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    })
+                                        );
+                                      })
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ],
-                  ))
-                ],
+                      ],
+                    ))
+                  ],
+                ),
               ),
             ),
           ),
@@ -2393,7 +2397,7 @@ class _BouncySJImgState extends State<BouncySJImg>
         child:Consumer<SJLocalProvider>(
           builder: (context, provider, child) {
             return Visibility(
-              visible: SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1 ? true : false,
+              visible: SJLocalProvider.instance.sj_login_status ?  SJNumberHelpers().probabilityConfigModel!.probabilityopen == 1 ? true : false : true,
               child: SJImg(
                 name: 'sj_${provider.sj_ratio_str}%_btn',
                 width: 318,
@@ -2446,6 +2450,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                             builder: (context, provider, child) {
                               return InkWell(
                                 onTap: (){
+                                  if (!SJLocalProvider.instance.sj_login_status) return;
                                   if (widget.isCash) return;
                                   Navigator.of(homeKey.currentState!.ctx).push(
                                     MaterialPageRoute(
@@ -2459,13 +2464,13 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                                   padding: EdgeInsets.only(top: 2.0, left: 32.12),
                                   child: Center(
                                     child: SJGradientNumberRoller(
-                                      value: provider.sj_dolas_number,
+                                      value: provider.sj_login_status ? provider.sj_dolas_number : provider.sj_domand_number,
                                       duration: 800,
                                       fontSize: 20.0,
                                       gradientColors: ['#FFFFFF'.color(), '#FFCD61'.color()],
                                       borderColor: '#FFFFFF'.color(),
                                       borderWidth: 0.0,
-                                      decimalPlaces: 2,
+                                      decimalPlaces: provider.sj_login_status ? 2 : 0,
                                     ),
                                   ),
                                 ),
@@ -2475,6 +2480,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                       ),
                     ),
                     InkWell(onTap: (){
+                      if (!SJLocalProvider.instance.sj_login_status) return;
                       if (widget.isCash) return;
                       Navigator.of(homeKey.currentState!.ctx).push(
                         MaterialPageRoute(
@@ -2483,7 +2489,7 @@ class _SJDetailsBarWidgetState extends State<SJDetailsBarWidget> {
                           },
                         ),
                       );
-                    },child: SJImg(name: 'sj_dolas_icon', width: 49, height: 49,))
+                    },child: SJImg(name:SJLocalProvider.instance.sj_login_status ? 'sj_dolas_icon' : 'sj_home_domand_icon', width: 49, height: 49,))
                   ],
                 )
             ),

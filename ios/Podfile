@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -29,6 +29,36 @@ flutter_ios_podfile_setup
 
 target 'Runner' do
   use_frameworks!
+  use_modular_headers!
+
+  pod 'AppLovinMediationChartboostAdapter', '~> 9.8.1'
+  pod 'AppLovinMediationGoogleAdManagerAdapter'
+  pod 'AppLovinMediationGoogleAdapter'
+  pod 'AppLovinMediationInMobiAdapter'
+  pod 'AppLovinMediationUnityAdsAdapter'
+#   pod 'AppLovinDSPLinkedInAdapter'
+  pod 'AppLovinMediationIronSourceAdapter'
+  pod 'AppLovinMediationVungleAdapter'
+  pod 'AppLovinMediationFacebookAdapter'
+  pod 'AppLovinMediationMintegralAdapter'
+  pod 'AppLovinMediationMolocoAdapter'
+  pod 'AppLovinMediationByteDanceAdapter'
+  pod 'AppLovinMediationBidMachineAdapter'
+  pod 'AppLovinMediationBigoAdsAdapter'
+  pod 'AppLovinMediationFyberAdapter'
+  pod 'GoogleUserMessagingPlatform'
+#   pod 'TPNiOS','6.5.42'
+  #TPN Adx SDK(necessary)
+#   pod 'TPNMediationAdxSmartdigimktAdapter','6.5.42.1'
+#   pod 'TPNMediationUnityAdsAdapter','4.16.4.0'
+#   pod 'TPNMediationIronSourceAdapter','9.2.0.0.0'
+#   pod 'TPNMediationBigoAdapter','5.0.0.0'
+#   pod 'TPNMediationPangleAdapter','7.8.5.7.0'
+#   pod 'TPNMediationInmobiAdapter','10.8.8.0'
+#   pod 'TPNMediationApplovinAdapter','13.5.0.1'
+#   pod 'TPNMediationMintegralAdapter','8.0.4.0'
+#   pod 'TPNMediationChartboostAdapter','9.10.1.0'
+#   pod 'TPNMediationFyberAdapter','8.4.1.0'
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
   target 'RunnerTests' do
@@ -39,5 +69,14 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+  end
+end
+
+pre_install do |installer|
+  installer.pod_targets.each do |pod|
+    if pod.name == 'LinkedinAudienceNetwork'
+      puts "🚫 Removing deprecated LinkedinAudienceNetwork pod"
+      pod.remove_from_project
+    end
   end
 end

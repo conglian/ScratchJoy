@@ -8,7 +8,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../SJModel/SJTXModel.dart';
 import '../main.dart';
-import 'SJNoticeTool.dart';
 
 class SJLocalProvider extends ChangeNotifier {
   // 1. 私有构造函数（禁止外部直接创建实例）
@@ -77,6 +76,11 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_tx_task3_tips = false;
   bool sj_tx_task4_tips = false;
   bool sj_tx_end_status = false;
+  bool sj_afSwitch = false;
+  bool sj_set_root = false;
+  bool sj_af_status = false;
+  bool sj_newA_guide = false;
+  bool sj_good_review_status = false;
 
   int sj_scrach_unlock_index_0 = 0; // 存储的本地值
   int sj_scrach_unlock_index_1 = 0; // 存储的本地值
@@ -106,6 +110,7 @@ class SJLocalProvider extends ChangeNotifier {
   int sj_Level_number = 1; // 存储的本地值
   int sj_Level_inedx = 1; // 存储的本地值
   int sj_dice_number = 0;
+  int sj_card_a_number = 0;
   int sj_scrach_end_number_0 = 0; // 存储的本地值
   int sj_scrach_end_number_1 = 0; // 存储的本地值
   int sj_scrach_end_number_2 = 0; // 存储的本地值
@@ -198,6 +203,13 @@ class SJLocalProvider extends ChangeNotifier {
   String get sj_tx_task4_tipsName => 'sj_tx_task4_tips';
   String get sj_tx_end_statusName => 'sj_tx_end_status';
   String get sj_dolas_old_numberName => 'sj_dolas_old_number';
+  String get sj_afSwitchName => 'sj_afSwitch';
+  String get sj_set_rootName => 'sj_set_root';
+  String get sj_login_statusName => 'sj_login_status';
+  String get sj_af_statusName => 'sj_af_status';
+  String get sj_newA_guideName => 'sj_newA_guide';
+  String get sj_good_review_statusName => 'sj_good_review_status';
+  String get sj_card_a_numberName => 'sj_card_a_number';
 
 
   // 3. 初始化：从本地存储加载数据（组件初始化时调用）
@@ -223,6 +235,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_tx_task_index = prefs.getInt('sj_tx_task_index') ?? 0;
     sj_tx_ing_account = prefs.getInt('sj_tx_ing_account') ?? 0;
     sj_tx_ing_number = prefs.getInt('sj_tx_ing_number') ?? 0;
+    sj_card_a_number = prefs.getInt('sj_card_a_number') ?? 0;
     sj_scratch_not_award_number = prefs.getInt('sj_scratch_not_award_number') ?? 0;
     sj_account_seled_index = prefs.getInt('sj_account_seled_index') ?? 0;
     sj_scrach_unlock_index_0 = prefs.getInt('sj_scrach_unlock_index_0') ?? 0;
@@ -237,8 +250,12 @@ class SJLocalProvider extends ChangeNotifier {
     sj_tx_task4_tips = prefs.getBool('sj_tx_task4_tips') ?? false;
     sj_txing_status = prefs.getBool('sj_txing_status') ?? false;
     sj_login_status = prefs.getBool('sj_login_status') ?? false;
+    sj_good_review_status = prefs.getBool('sj_good_review_status') ?? false;
     sj_open_tx = prefs.getBool('sj_open_tx') ?? false;
     sj_show_box = prefs.getBool('sj_show_box') ?? false;
+    sj_afSwitch = prefs.getBool('sj_afSwitch') ?? false;
+    sj_set_root = prefs.getBool('sj_set_root') ?? false;
+    sj_af_status = prefs.getBool('sj_af_status') ?? false;
     is_end_Scratch = prefs.getBool('is_end_Scratch') ?? true;
     sj_cloak_status = prefs.getBool('sj_cloak_status') ?? false;
     sj_show_box_tips = prefs.getBool('sj_show_box_tips') ?? false;
@@ -248,6 +265,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_fk_ad_short_show = prefs.getBool('sj_fk_ad_short_show') ?? false;
     sj_fk_ad_short_close = prefs.getBool('sj_fk_ad_short_close') ?? false;
     sj_fk_ip_status = prefs.getBool('sj_fk_ip_status') ?? false;
+    sj_newA_guide = prefs.getBool('sj_newA_guide') ?? false;
     sj_scratch_guide = prefs.getBool('sj_scratch_guide') ?? true;
     sj_old_guide = prefs.getBool('sj_old_guide') ?? true;
     sj_new_guide = prefs.getBool('sj_new_guide') ?? false;
@@ -350,7 +368,7 @@ class SJLocalProvider extends ChangeNotifier {
       await updateBool(sj_show_dolas_aniName, true);
     }
     if (key == SJLocalProvider.instance.sj_dolas_numberName){
-      SJNoticeHelp().startSJForegroundService();
+      // SJNoticeHelp().startSJForegroundService();
     }
     init();
     notifyListeners();

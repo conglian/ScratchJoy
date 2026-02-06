@@ -61,7 +61,7 @@ class SJNumberAHelper {
     bool isWin = forceWin || (_rand.nextDouble() < pointRate);
 
     // 5️⃣ 若中奖，只替换一个位置为 winNumbers 中的一个
-    int winIndex = -1;
+    int winIndex = 0;
     if (isWin) {
       winIndex = _rand.nextInt(displayNumbers.length);
       int winNumber = winNumbers[_rand.nextInt(winNumbers.length)];
@@ -178,7 +178,7 @@ class SJNumberAHelper {
 
     // 🎰 Step 3: 生成9个数（0~4）
     List<int> numbers = List.generate(9, (_) => _rand.nextInt(5));
-    int winIndex = -1;
+    int winIndex = 0;
     List<int> winIndexes = []; // ✅ 新增
 
     if (isWin) {
@@ -269,7 +269,7 @@ class SJNumberAHelper {
 
     // Step 2: 生成10个数字（1~5）
     List<int> numbers = List.generate(10, (_) => _rand.nextInt(5) + 1);
-    int winIndex = -1;
+    int winIndex = 0;
 
     if (isWin) {
       // 中奖数字只出现一个

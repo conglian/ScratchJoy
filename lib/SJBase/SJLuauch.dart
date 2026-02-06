@@ -1,23 +1,15 @@
 import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:provider/provider.dart';
-import 'package:scratchjoy/SJDilaog/SJDialog.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_img.dart';
-import 'package:scratchjoy/SJTool/sj_numberBHelper.dart';
-import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import '../SJHome/SJHome.dart';
-import '../SJTool/SJNoticeTool.dart';
 import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_init_sdk.dart';
-import '../main.dart';
-import 'package:scratchjoy/SJHome/SJHome.dart';
 
 
 class SJSratchJoyLaunch extends StatefulWidget {
@@ -33,7 +25,6 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
   @override
   void initState() {
     super.initState();
-    SJNoticeHelp().setNoticeStatus();
     _setConfigDateInfoData();
     sj_getSBUserCloakConfig();
     sj_event_fire('launch_page', {});
@@ -62,7 +53,7 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
 
   void sj_getSBUserCloakConfig() async {
     try {
-      SJSDKHelpers().initAdjust();
+      SJSDKHelpers().initAdjustSDk();
       var responseData = await SJRequestHelpers().getCloak();
       print('Solitairejoy Config Result: $responseData');
       sj_event_fire("cloak_req", {});
@@ -103,17 +94,37 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
               SJImg(name: 'sj_luach_top', width: 240, height: 168,),
               Spacer(),
               SJGradientProgressBar(onCompleted: (){
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SJHome(key: homeKey),
-                  ),
-                );
+                _sjLoginStatusEvent();
               },),
               SizedBox(height: 195.h,)
             ],
           ),
         ],
+      ),
+    );
+  }
+
+
+  void _sjLoginStatusEvent() async {
+    if (SJLocalProvider.instance.sj_afSwitch == false && SJLocalProvider.instance.sj_cloak_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+    }
+
+    if (SJLocalProvider.instance.sj_cloak_status == true && SJLocalProvider.instance.sj_af_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+    }
+    if (SJLocalProvider.instance.sj_cloak_status == false){
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, false);
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, false);
+    }
+    // 调试
+    // await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => SJHome(key: homeKey),
       ),
     );
   }

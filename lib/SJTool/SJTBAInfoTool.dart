@@ -56,13 +56,13 @@ class SJRequestHelpers {
   SJRequestHelpers._internal();
 
   static String cloak_Url =
-      "https://angstrom.crazerushscrajoy.com/buttrick/distal/inherent";
-
-  // static String tba_event_Url =
-  //     "https://test-gallup.crazerushscrajoy.com/shoemake/mango/row";
+      "https://ouzo.simulatedcardscrajoycc.com/alga/thrush/alumna";
 
   static String tba_event_Url =
-      "https://gallup.crazerushscrajoy.com/ps/parish/grackle";
+      "https://test-hummock.simulatedcardscrajoycc.com/suffice/deject/gulp";
+
+  // static String tba_event_Url =
+  //     "https://hummock.simulatedcardscrajoycc.com/pork/concerti/wingtip";
 
   final Map<String, String> normalHeader = {
     'Content-Type': 'application/json',

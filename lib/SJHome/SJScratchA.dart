@@ -112,24 +112,25 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
 
   bool is_100ratio = false;
 
-  SJPlayJoyResult extra_bonusResult = SJNumberAHelper().generateextra_bonusNumbers();
+  SJPlayJoyResult extra_bonusResult = SJNumberAHelper().generateextra_bonusNumbers(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJ3x3Result goldRushResult = SJNumberAHelper().generate3x3NumbersWithPrizeAndDice();
+  SJ3x3Result goldRushResult = SJNumberAHelper().generate3x3NumbersWithPrizeAndDice(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJPlayJoyResult lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers();
+  SJPlayJoyResult lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJsecret_stashResult  secret_stashResult = SJNumberAHelper().generatesecret_stashStash();
+  SJsecret_stashResult  secret_stashResult = SJNumberAHelper().generatesecret_stashStash(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJsuperMultipleResult superMultipleResult = SJNumberAHelper().generateSuperMultiple();
+  SJsuperMultipleResult superMultipleResult = SJNumberAHelper().generateSuperMultiple(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJfortuneRushResult fortuneRushResult = SJNumberAHelper().generateFortuneRush();
+  SJfortuneRushResult fortuneRushResult = SJNumberAHelper().generateFortuneRush(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
-  SJSweetTimeResult sweetTimeResult = SJNumberAHelper().generateSweetTime();
+  SJSweetTimeResult sweetTimeResult = SJNumberAHelper().generateSweetTime(forceWin: SJLocalProvider.instance.sj_card_a_number <= 0);
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
     // 100% 中奖处理，只保留当前的记录退出不算
     SJScratchProbabilityUpNotificationService.stream.listen((value) async {
       if (widget.type == 0){
@@ -169,6 +170,53 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
         });
       }
     });
+    // 100% 中奖处理，只保留当前的记录退出不算
+    SJScratchProbabilityUpNotificationService.stream.listen((value) async {
+      // 当前帧构建完成后
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        updateBaifenbai();
+      });
+    });
+  }
+
+  Future<void> updateBaifenbai() async {
+    await Future.delayed(Duration(milliseconds: 50)); // 重要：等待 overlay 完全 detach
+    if (widget.type == 0){
+      setState(() {
+        extra_bonusResult = SJNumberAHelper().generateextra_bonusNumbers(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 1){
+      setState(() {
+        goldRushResult = SJNumberAHelper().generate3x3NumbersWithPrizeAndDice(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 2){
+      setState(() {
+        lucku_momentResult = SJNumberAHelper().generatelucku_momentNumbers(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 3){
+      setState(() {
+        secret_stashResult = SJNumberAHelper().generatesecret_stashStash(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 4){
+      setState(() {
+        superMultipleResult = SJNumberAHelper().generateSuperMultiple(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 5){
+      setState(() {
+        fortuneRushResult = SJNumberAHelper().generateFortuneRush(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    } else if (widget.type == 6){
+      setState(() {
+        sweetTimeResult = SJNumberAHelper().generateSweetTime(forceWin: true);
+        SJScratchUpdateNotificationService.sendToDomandNumberNotification(0);
+      });
+    }
   }
 
   @override
@@ -191,13 +239,14 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
            Future.delayed(Duration(seconds: 2), () async {
              if (!mounted) return; // ✅ 页面已经被销毁就直接返回
              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+             SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
              if (extra_bonusResult.diceHit){
                SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
              }
              if (extra_bonusResult.isWin) {
                var code = await context.tipShow(SJPopYouWinADialog(
                    award: extra_bonusResult.winMatchNumbers[extra_bonusResult
-                       .winIndex].toInt()));
+                       .winIndex].toInt(), is_dice: false));
                if (code >= 0) {
                  setState(() {
                    shai_anim = false;
@@ -283,7 +332,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                               if(extra_bonusResult.displayNumbers[index] != -2)
                                Positioned(width: 56,child: SJBouncyText(text: '${extra_bonusResult.displayNumbers[index]}', fontSize: 36, color: '#3A3025'.color(), enableAnimation: (extra_bonusResult.winNumbers.contains(extra_bonusResult.displayNumbers[index]) && star_awarad == true))),
                               if(extra_bonusResult.displayNumbers[index] != -2)
-                               Positioned(top: 32,width: 56,child: SJBouncyText(text: '${extra_bonusResult.winMatchNumbers[index]}', fontSize: 24, color: '#62594E'.color(), enableAnimation: (extra_bonusResult.winNumbers.contains(extra_bonusResult.displayNumbers[index]) && star_awarad == true))),
+                               Positioned(top: 32,width: 56,child: SJBouncyText(text: '${extra_bonusResult.winMatchNumbers[index].toInt()}', fontSize: 24, color: '#62594E'.color(), enableAnimation: (extra_bonusResult.winNumbers.contains(extra_bonusResult.displayNumbers[index]) && star_awarad == true))),
                             ]
                         )
                     );
@@ -301,7 +350,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             child: Stack(
               children: [
                 Positioned(left: 180, top: 12, child: SJGradientNumberRoller(
-                  value: SJNumberAHelper().numberEntity.extraBonus.winupNumber,
+                  value: 1000,
                   duration: 800,
                   fontSize: 32.0,
                   gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -359,12 +408,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (goldRushResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (goldRushResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: goldRushResult.prize));
+                    award: goldRushResult.prize, is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -467,8 +517,8 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               ),
               child: Stack(
                 children: [
-                  Positioned(left: 132, top: 10, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.goldRush.winupNumber,
+                  Positioned(left: 118, top: 10, child: SJGradientNumberRoller(
+                    value: 2000,
                     duration: 800,
                     fontSize: 32.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -518,7 +568,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
     } else if (widget.type == 2) {
       return Stack(
         children: [
-          SJLocalImageScratchCard(autoStartY: 230.h,coverImagePath: 'sj_scratch_content_2'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: (){
+          SJLocalImageScratchCard(autoStartY: 230.h,coverImagePath: SJLocalProvider.instance.sj_login_status ? 'sj_scratch_content_2' : 'sj_scratch_content_2s'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: (){
             setState(() {
               shai_anim = true;
               star_awarad = true;
@@ -526,12 +576,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (lucku_momentResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (lucku_momentResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: lucku_momentResult.winMatchNumbers.first.toInt()));
+                    award: lucku_momentResult.winMatchNumbers.first.toInt(), is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -580,7 +631,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             width: 0.width(context),
             height: scratch_h,
             decoration: BoxDecoration(
-              image: SJDImg('sj_scratch_bg_2')
+              image: SJDImg(SJLocalProvider.instance.sj_login_status ? 'sj_scratch_bg_2' : 'sj_scratch_bg_2s')
             ),
             child: Column(
               children: [
@@ -589,17 +640,17 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                   children: [
                     SizedBox(width: 55.w,),
                     if(lucku_momentResult.winIndex == 0)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first.toInt()}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 0)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     SizedBox(width: 70.w,),
                     if(lucku_momentResult.winIndex == 1)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first.toInt()}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 1)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     Spacer(),
                     if(lucku_momentResult.winIndex == 2)
-                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first}', size: 28, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
+                      SizedBox(width: 50, height: 30,child: SJStrokeText(text: '${lucku_momentResult.winMatchNumbers.first.toInt()}', size: 24, color: '#FBE600'.color(), weight: FontWeight.w900, skWidth: 2, skColor: '#23362B'.color())),
                     if(lucku_momentResult.winIndex != 2)
                       SJImg(name: 'sj_scratch_icon_2_0', width: 50, height: 30,),
                     SizedBox(width: 55.w,),
@@ -656,8 +707,8 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               ),
               child: Stack(
                 children: [
-                  Positioned(left: 180, top: 0, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.luckuMoment.winupNumber,
+                  Positioned(left: 180, top: -1, child: SJGradientNumberRoller(
+                    value: 3000,
                     duration: 800,
                     fontSize: 32.0,
                     gradientColors: ['#FEFFED'.color(), '#FFD900'.color()],
@@ -715,12 +766,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (secret_stashResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (secret_stashResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: (secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier).toInt()));
+                    award: (secret_stashResult.prizeValues[secret_stashResult.winIndex] * secret_stashResult.multiplier).toInt(), is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -808,7 +860,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                                     if(secret_stashResult.numbers[index] != -2)
                                       Positioned(width: 53,child: SJBouncyImage(imagePath: 'sj_scratch_icon_3_${secret_stashResult.numbers[index]}'.image(), width: 53, height: 53, enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
                                     if(secret_stashResult.numbers[index] != -2)
-                                      Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${secret_stashResult.prizeValues[index]}', fontSize: 20, color: '#30190A'.color(), enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
+                                      Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${secret_stashResult.prizeValues[index].toInt()}', fontSize: 20, color: '#30190A'.color(), enableAnimation: (secret_stashResult.winNumbers.contains(secret_stashResult.numbers[index]) && star_awarad == true))),
                                   ]
                               )
                           );
@@ -828,8 +880,8 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               ),
               child: Stack(
                 children: [
-                  Positioned(left: 160, top: 30, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.secretStash.winupNumber,
+                  Positioned(left: 142, top: 30, child: SJGradientNumberRoller(
+                    value: 4000,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFFFFF'.color(), '#FFEE91'.color()],
@@ -880,12 +932,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (superMultipleResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (superMultipleResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: (superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier).toInt()));
+                    award: (superMultipleResult.prizeValues[superMultipleResult.winIndex] * superMultipleResult.multiplier).toInt(), is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -963,7 +1016,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
                                 if(superMultipleResult.numbers[index] != -5)
                                   Positioned(width: 53,child: SJBouncyImage(imagePath: 'sj_scratch_icon_4_${superMultipleResult.numbers[index]}'.image(), width: 50, height: 50, enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                                 if(superMultipleResult.numbers[index] != -5)
-                                  Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${superMultipleResult.prizeValues[index]}', fontSize: 16, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
+                                  Positioned(width: 53,top: 38.h,child: SJBouncyText(text: '${superMultipleResult.prizeValues[index].toInt()}', fontSize: 16, color: '#22292E'.color(), enableAnimation: (superMultipleResult.numbers[index] < 0 && star_awarad == true))),
                               ]
                           )
                       );
@@ -979,7 +1032,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 0, top: 0, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.superMultiple.winupNumber,
+                    value: 5000,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -1030,12 +1083,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (fortuneRushResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (fortuneRushResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: fortuneRushResult.prizeValues[fortuneRushResult.winRow]));
+                    award: fortuneRushResult.prizeValues[fortuneRushResult.winRow], is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -1156,8 +1210,8 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               ),
               child: Stack(
                 children: [
-                  Positioned(left: 160, top: 28, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.fortuneRush.winupNumber,
+                  Positioned(left: 130, top: 28, child: SJGradientNumberRoller(
+                    value: 6000,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],
@@ -1215,12 +1269,13 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
             Future.delayed(Duration(seconds: 2), () async {
               if (!mounted) return; // ✅ 页面已经被销毁就直接返回
               SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_Level_inedxName, SJLocalProvider.instance.sj_Level_inedx + 1);
+              SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_card_a_numberName, SJLocalProvider.instance.sj_card_a_number + 1);
               if (sweetTimeResult.diceHit){
                 SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_dice_numberName, SJLocalProvider.instance.sj_dice_number + 1);
               }
               if (sweetTimeResult.isWin) {
                 var code = await context.tipShow(SJPopYouWinADialog(
-                    award: sweetTimeResult.prizeValues[sweetTimeResult.winningRow]));
+                    award: sweetTimeResult.prizeValues[sweetTimeResult.winningRow], is_dice: false));
                 if (code == 0 || code == 1) {
                   setState(() {
                     shai_anim = false;
@@ -1331,7 +1386,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
               child: Stack(
                 children: [
                   Positioned(left: 160, top: 10, child: SJGradientNumberRoller(
-                    value: SJNumberAHelper().numberEntity.sweetTime.winupNumber,
+                    value: 7000,
                     duration: 800,
                     fontSize: 36.0,
                     gradientColors: ['#FFE342'.color(), '#FFFADD'.color()],

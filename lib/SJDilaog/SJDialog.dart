@@ -154,19 +154,34 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                   sj_event_fire('coin_pop_c', {'source_from' : widget.type});
                   if (SJLocalProvider.instance.sj_card_number >= 4){
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
+                      if (!context.mounted) return;
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     }, adDidClosed: (adDidClosed) async {
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
+                      if (!context.mounted) return;
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     });
                   } else {
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
+                    if (!context.mounted) return;
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }
                 },
                 child: Container(
@@ -209,12 +224,20 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                         if (!mounted)return;
                         Navigator.pop(context, 0);
                         SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                        if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                          if (!context.mounted)return;
+                          context.tipShow(SJPopGoodReviewDialog());
+                        }
                       }, adDidClosed: (adDidClosed) async {
                         await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                         if (!context.mounted) return;
                         Navigator.pop(context, 0);
                         SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                         playAwardmp3();
+                        if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                          if (!context.mounted)return;
+                          context.tipShow(SJPopGoodReviewDialog());
+                        }
                       });
                     } else {
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
@@ -222,6 +245,10 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     }
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
@@ -256,12 +283,20 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                     if (!mounted)return;
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) async {
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                     if (!context.mounted) return;
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
@@ -269,6 +304,10 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                   Navigator.pop(context, 0);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               },
               child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -291,13 +330,25 @@ class SJPopdiceBwardDialogState extends State<SJPopYouWinBDialog>
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) {
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               }, child: SJImg(name: 'sj_close_btn')),
             ),
@@ -432,18 +483,29 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     }, adDidClosed: (adDidClosed) async {
                       Navigator.pop(context, 0);
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     });
                   } else {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
-
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }
                 },
                 child: Container(
@@ -493,11 +555,19 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                     SJJoyAds().sj_showAd(context, 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     }, adDidClosed: (adDidClosed) async {
                       Navigator.pop(context, 0);
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     });
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
@@ -516,16 +586,28 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) async {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 0);
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               },
               child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -548,13 +630,22 @@ class SJPopSuperWinBDialogState extends State<SJPopSuperWinBDialog>
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) {
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               }, child: SJImg(name: 'sj_close_btn')),
             ),
@@ -711,17 +802,29 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) async {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 0);
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               },
               child: Container(
@@ -750,11 +853,19 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                     SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                       Navigator.pop(context, 0);
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     }, adDidClosed: (adDidClosed) async {
                       Navigator.pop(context, 0);
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
                       SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                       playAwardmp3();
+                      if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                        if (!context.mounted)return;
+                        context.tipShow(SJPopGoodReviewDialog());
+                      }
                     });
                   },
                   child: SJImg(name: 'sj_rv_icon', width: 70.w, height: 70.w,)),
@@ -773,16 +884,28 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_int' : 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 0);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) async {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                     playAwardmp3();
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 0);
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               },
               child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '\$${widget.award.toStringAsFixed(2)}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
@@ -805,13 +928,25 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   }, adDidClosed: (adDidClosed) {
                     Navigator.pop(context, 3);
                     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                      if (!context.mounted)return;
+                      context.tipShow(SJPopGoodReviewDialog());
+                    }
                   });
                 } else {
                   Navigator.pop(context, 3);
                   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
+                    if (!context.mounted)return;
+                    context.tipShow(SJPopGoodReviewDialog());
+                  }
                 }
               }, child: SJImg(name: 'sj_close_btn')),
             ),
@@ -868,7 +1003,177 @@ class VerticalGradientProgress extends StatelessWidget {
     );
   }
 }
+// 好评
+class SJPopGoodReviewDialog extends StatefulWidget {
+  SJPopGoodReviewDialog({super.key});
+  @override
+  State<SJPopGoodReviewDialog> createState() => SJPopGoodReviewDialogState();
+}
 
+class SJPopGoodReviewDialogState extends State<SJPopGoodReviewDialog> {
+
+  int seletecd_index = 0;
+
+  static const MethodChannel _nativeHelper = MethodChannel('Scratch_joy_channel');
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Container(
+            width: 263.w,
+            height: 370.h,
+            decoration: BoxDecoration(
+                image: SJDImg('sj_pop_bg_1')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 20.h,),
+                SJStrokeText(text: 'Five-Star Review', size: 22, color: '#FFFEE8'.color(), weight: FontWeight.w400, skWidth: 1, skColor: '#000000'.color()),
+                SizedBox(height: 28.0.h,),
+                Container(
+                  width: 193.w,
+                  height: 163.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_review_center')
+                  ),
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20),
+                      SJImg(name: 'sj_review_logo', width: 83.w, height: 83.w,),
+                      SizedBox(height: 12),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                seletecd_index = 1;
+                              });
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                              Future.delayed(Duration(milliseconds: 2),(){
+                                if (!context.mounted) return;
+                                Navigator.pop(context, 1);
+                              });
+                            },
+                            child: SJImg(name: seletecd_index >= 1 ? 'sj_review_s' : 'sj_review_n', width: 31, height: 29),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                seletecd_index = 2;
+                              });
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                              Future.delayed(Duration(milliseconds: 2),(){
+                                if (!context.mounted) return;
+                                Navigator.pop(context, 1);
+                              });
+                            },
+                            child: SJImg(name: seletecd_index >= 2 ? 'sj_review_s' : 'sj_review_n', width: 31, height: 29),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                seletecd_index = 3;
+                              });
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                              Future.delayed(Duration(milliseconds: 2),(){
+                                if (!context.mounted) return;
+                                Navigator.pop(context, 1);
+                              });
+                            },
+                            child: SJImg(name: seletecd_index >= 3 ? 'sj_review_s' : 'sj_review_n', width: 31, height: 29),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                seletecd_index = 4;
+                              });
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                              Future.delayed(Duration(milliseconds: 2),(){
+                                if (!context.mounted) return;
+                                Navigator.pop(context, 1);
+                                _nativeHelper.invokeMethod('showAppReview');
+                              });
+                            },
+                            child: SJImg(name: seletecd_index >= 4 ? 'sj_review_s' : 'sj_review_n', width: 31, height: 29),
+                          ),
+                          InkWell(
+                            onTap: () async {
+                              setState(() {
+                                seletecd_index = 5;
+                              });
+                              await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                              Future.delayed(Duration(milliseconds: 2),(){
+                                if (!context.mounted) return;
+                                Navigator.pop(context, 1);
+                                _nativeHelper.invokeMethod('showAppReview');
+                              });
+                            },
+                            child: SJImg(name: seletecd_index >= 5 ? 'sj_review_s' : 'sj_review_n', width: 31, height: 29),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+                SizedBox(height: 15.h,),
+                SizedBox(
+                  width: 209.w,
+                  height: 34.h,
+                  child: SJText(text: 'Your Encouragement Makes Us Better', size: 13, color: '#F4D896'.color(), weight: FontWeight.w400, maxLines: 2, align: TextAlign.center),
+                ),
+                SizedBox(height: 0.h,),
+                Container(
+                  width: 197.w,
+                  height: 56.h,
+                  decoration: BoxDecoration(
+                      image: SJDImg('sj_feed_btn')
+                  ),
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    highlightColor: Colors.transparent,
+                    hoverColor: Colors.transparent,
+                    focusColor: Colors.transparent,
+                    onTap: () async {
+                      setState(() {
+                        seletecd_index = 5;
+                      });
+                      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_good_review_statusName, true);
+                      Future.delayed(Duration(milliseconds: 2),(){
+                        if (!context.mounted) return;
+                        Navigator.pop(context, 1);
+                        _nativeHelper.invokeMethod('showAppReview');
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Positioned(
+            right: 48.w,
+            top: (0.height(context) - 370.h) * 0.48,
+            width: 45,
+            height: 48,
+            child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                hoverColor: Colors.transparent,
+                focusColor: Colors.transparent,onTap: (){
+              Navigator.pop(context);
+            }, child: SJImg(name: 'sj_close_btn')),
+          ),
+        ],
+      ),
+    );
+  }
+
+}
 // 广告上线
 class SJPopAdLimitDialog extends StatefulWidget {
   SJPopAdLimitDialog({super.key});
@@ -4453,7 +4758,8 @@ class SJPopNotdiceDialogState extends State<SJPopNotdiceDialog> {
 // 骰子🎲奖励
 class SJPopYouWinADialog extends StatefulWidget {
   final int award;
-  SJPopYouWinADialog({super.key, required this.award});
+  final bool is_dice;
+  SJPopYouWinADialog({super.key, required this.award, required this.is_dice});
   @override
   State<SJPopYouWinADialog> createState() => SJPopdiceAwardDialogState();
 }
@@ -4529,7 +4835,7 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
         children: [
           // ✅ 顶部加放大缩小动画
           Positioned(
-            top: 257.h,
+            top: 200.h,
             left: (0.width(context) - 267) * 0.5,
             child: ScaleTransition(
               scale: _scaleAnimation,
@@ -4553,69 +4859,78 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
           ),
           Positioned(top: 295.h, left: (0.width(context) - 211) * 0.5, child: SJImg(name: 'sj_dice_conten_3', width: 211, height: 211)),
           Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
-          Positioned(top: 560.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
+          Positioned(top: 540.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               splashColor: Colors.transparent,
               highlightColor: Colors.transparent,
               hoverColor: Colors.transparent,
               focusColor: Colors.transparent,
-              onTap: (){
-                Navigator.pop(context, 1);
-                SJAdAHelper().show(context, (hasCache){
-                  if (!hasCache){
-                    SJAdAHelper().resetBlock();
-                  }
-                }, (finished) async {
-                  SJAdAHelper().resetBlock();
+              onTap: () async {
+                if (widget.is_dice){
+                  SJJoyAds().sj_showAd(context, 'show_a', onCacheResponse: (onCacheResponse){}, adDidClosed: (adDidClosed) async {
+                    Navigator.pop(context, 1);
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    playAwardmp3();
+                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award));
+                    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
+                  });
+                } else {
+                  Navigator.pop(context, 1);
+                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
                   playAwardmp3();
-                  Navigator.pop(context);
-                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                });
+                  await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award));
+                  await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
+                }
+
               },
               child: Container(
                 width: 260, height: 74,
                 decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
                 child: Stack(
                   children: [
-                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim ${widget.award * 2}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    Positioned(top: 18,child: SJGradientStrokeText(text: 'Claim ${widget.award}', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
                   ],
                 ),
               )
           )),
           Positioned(
-            top: 542.h,
+            top: 522.h,
             right: 60.w,
-            child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-                focusColor: Colors.transparent,
-                onTap: (){
-                  // 看ad-重新刷新
-                  SJAdAHelper().show(context, (hasCache){
-                    if (!hasCache){
-                      SJAdAHelper().resetBlock();
-                    }
-                  }, (finished) async {
-                    SJAdAHelper().resetBlock();
-                    playAwardmp3();
-                    Navigator.pop(context);
-                    await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
-                  });
-                },
-                child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            child: Visibility(
+              visible: widget.is_dice,
+              child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  hoverColor: Colors.transparent,
+                  focusColor: Colors.transparent,
+                  onTap: (){
+                    // 看ad-重新刷新
+                    SJJoyAds().sj_showAd(context, 'show_a', onCacheResponse: (onCacheResponse){}, adDidClosed: (adDidClosed) async {
+                      playAwardmp3();
+                      Navigator.pop(context);
+                      await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + (widget.award * 2));
+                    });
+                  },
+                  child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
+            ),
           ),
-          Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            hoverColor: Colors.transparent,
-            focusColor: Colors.transparent,
-            onTap: () async {
-              playAwardmp3();
+          // Positioned(top: 560.h + 74,left: (0.width(context) - 260) * 0.5, child: InkWell(
+          //   splashColor: Colors.transparent,
+          //   highlightColor: Colors.transparent,
+          //   hoverColor: Colors.transparent,
+          //   focusColor: Colors.transparent,
+          //   onTap: () async {
+          //     playAwardmp3();
+          //     Navigator.pop(context, 0);
+          //     await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
+          //   },
+          //   child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
+          // )),
+          Positioned(right: 30.w,top: 120.h,child: InkWell(
+            onTap: (){
               Navigator.pop(context, 0);
-              await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number + widget.award);
             },
-            child: SizedBox(width: 260, height:74,child: SJUnderlineTextButton(text: '${widget.award}', fontSize: 24.spMin, underlineColor: '#C5A213'.color(),gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),],)),
-          )),
+            child: SJImg(name: 'sj_close_btn', width: 38, height: 38),
+          ))
         ],
       ),
     );
@@ -4890,23 +5205,26 @@ class SJPopUnluckADialogState extends State<SJPopUnluckADialog>
                 },
                 child: SJImg(name: 'sj_rv_icon', width: 70, height: 70,)),
           ),
-          // Positioned(top: 528.h,left: (0.width(context) - 124) * 0.5, child: InkWell(
-          //   splashColor: Colors.transparent,
-          //   highlightColor: Colors.transparent,
-          //   hoverColor: Colors.transparent,
-          //   focusColor: Colors.transparent,
-          //   onTap: () async {
-          //      if (SJLocalProvider.instance.sj_domand_number >= 1000){
-          //        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
-          //        unlocklevelsluck();
-          //      } else {
-          //        Navigator.pop(context);
-          //        SJDialogTool.toast(context, 'Not enough coins? Go play games to earn more!');
-          //      }
-          //   },
-          //   child: SJImg(name: 'sj_spend_btn', width: 124, height: 22,),
-          // )),
-          Positioned(top: 528.h,left: (0.width(context) - 45) * 0.5, child: InkWell(
+          Positioned(top: 535.h,left: (0.width(context) - 124) * 0.5, child: Visibility(
+            visible: !SJLocalProvider.instance.sj_login_status,
+            child: InkWell(
+              splashColor: Colors.transparent,
+              highlightColor: Colors.transparent,
+              hoverColor: Colors.transparent,
+              focusColor: Colors.transparent,
+              onTap: () async {
+                 if (SJLocalProvider.instance.sj_domand_number >= 1000){
+                   await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_domand_numberName, SJLocalProvider.instance.sj_domand_number - 1000);
+                   unlocklevelsluck();
+                 } else {
+                   Navigator.pop(context);
+                   SJDialogTool.toast(context, 'Not enough coins? Go play games to earn more!');
+                 }
+              },
+              child: SJImg(name: 'sj_spend_btn', width: 124, height: 22,),
+            ),
+          )),
+          Positioned(top: 180.h,right: 32.w, child: InkWell(
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
             hoverColor: Colors.transparent,
@@ -5007,18 +5325,20 @@ class SJPopUnAwardDialogState extends State<SJPopUnAwardDialog> {
                   highlightColor: Colors.transparent,
                   hoverColor: Colors.transparent,
                   focusColor: Colors.transparent,
-                  onTap: (){
+                  onTap: () async {
                     sj_event_fire('scratch_card_fail_pop_c', {});
                     Navigator.of(context).pop(0);
-                    if(SJNumberHelpers().checkProbability()){
-                      SJJoyAds().sj_showAd(context, 'scxji_playagain_int', onCacheResponse: (onCacheResponse){
-                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
-                      }, adDidClosed: (adDidClosed) async {
-                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
-                      });
-                    } else {
-                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
-                    }
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.is_end_ScratchName, true);
+                    // if(SJNumberHelpers().checkProbability()){
+                    //   SJJoyAds().sj_showAd(context, 'scxji_playagain_int', onCacheResponse: (onCacheResponse){
+                    //     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    //   }, adDidClosed: (adDidClosed) async {
+                    //     SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    //   });
+                    // } else {
+                    //   SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    // }
                   },
                   child: SJImg(name: 'sj_playagin_btn', width: 262, height: 76,),
                 ),
@@ -5391,6 +5711,563 @@ class _ThreeRowHorizontalMarqueeState extends State<ThreeRowHorizontalMarquee> {
             );
           }),
         ),
+      ),
+    );
+  }
+}
+
+// 调查问卷
+class SJPopQuestDialog extends StatefulWidget {
+  SJPopQuestDialog({super.key});
+  @override
+  State<SJPopQuestDialog> createState() => SJPopQuestDialogState();
+}
+
+class SJPopQuestDialogState extends State<SJPopQuestDialog>
+    with TickerProviderStateMixin {
+
+  int seletecd_index_0 = -1;
+
+  int seletecd_index_1 = -1;
+
+  int seletecd_index_2 = -1;
+
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: AlignmentGeometry.center,
+        children: [
+          Container(
+            width: 329,
+            height: 663,
+            decoration: BoxDecoration(
+              image: SJDImg('sj_quest_bg')
+            ),
+            child: Column(
+              children: [
+                SizedBox(height: 21),
+                SizedBox(width: 200, height: 44,child: SJText(text: 'Payment New User\nWelcome Questionnaire', size: 18, color: '#3F3C0B'.color(), weight: FontWeight.w900, align: TextAlign.center,maxLines: 2)),
+                SizedBox(height: 34),
+                SizedBox(width: 263, height: 28,child: SJText(text: '1. Do You Enjoy Playing Online Simulation Games?(Single choice)', size: 12, color: '#5A5544'.color(), weight: FontWeight.w900, align: TextAlign.left,maxLines: 2)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                         setState(() {
+                           seletecd_index_0 = 0;
+                         });
+                      },
+                      child: SJImg(name:seletecd_index_0 == 0 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                         setState(() {
+                           seletecd_index_0 = 0;
+                         });
+                      },
+                      child: SJText(text: 'Yes, very much', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    ) 
+                  ],
+                ) ,
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_0 = 1;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_0 == 1 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_0 = 1;
+                        });
+                      },
+                      child: SJText(text: 'Sometimes', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ) ,
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_0 = 2;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_0 == 2 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_0 = 2;
+                        });
+                      },
+                      child: SJText(text: 'Not Really', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ) ,
+                SizedBox(height: 17),
+                SizedBox(width: 263, height: 28,child: SJText(text: '2. What types of casual games do you enjoy most?(Multiple choice)', size: 12, color: '#5A5544'.color(), weight: FontWeight.w900, align: TextAlign.left,maxLines: 2)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 0;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_1 == 0 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 0;
+                        });
+                      },
+                      child: SJText(text: 'Scratch card / Lucky draw games', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ) ,
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 1;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_1 == 1 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 1;
+                        });
+                      },
+                      child: SJText(text: 'Puzzle & merge games', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 2;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_1 == 2 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 2;
+                        });
+                      },
+                      child: SJText(text: 'Idle or simulation games', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 3;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_1 == 3 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 3;
+                        });
+                      },
+                      child: SJText(text: 'Bingo / card-style games', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 4;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_1 == 4 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_1 = 4;
+                        });
+                      },
+                      child: SJText(text: 'Other', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 17),
+                SizedBox(width: 263, height: 28,child: SJText(text: '3. What features would you like to see in this game?(Multiple choice)', size: 12, color: '#5A5544'.color(), weight: FontWeight.w900, align: TextAlign.left,maxLines: 2)),
+                SizedBox(height: 10),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 0;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_2 == 0 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 0;
+                        });
+                      },
+                      child: SJText(text: 'More scratch card styles or themes', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ) ,
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 1;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_2 == 1 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 1;
+                        });
+                      },
+                      child: SJText(text: 'Daily rewards or sign-in bonuses', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 8),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 2;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_2 == 2 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    SizedBox(
+                      width: 250,
+                      height: 34,
+                      child: InkWell(
+                        onTap: (){
+                          setState(() {
+                            seletecd_index_2 = 2;
+                          });
+                        },
+                        child: SJText(text: 'Reward boosts (e.g. double rewards After watching ads)', size: 14, color: '#381212'.color(), weight: FontWeight.w900, align: TextAlign.left, maxLines: 2),
+                      ),
+                    )
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 3;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_2 == 3 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 3;
+                        });
+                      },
+                      child: SJText(text: 'Simple mini-games or Events', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 4),
+                Row(
+                  children: [
+                    SizedBox(width: 32),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 4;
+                        });
+                      },
+                      child: SJImg(name:seletecd_index_2 == 4 ? 'sj_quest_s' : 'sj_quest_n', width: 12, height: 12),
+                    ),
+                    SizedBox(width: 8),
+                    InkWell(
+                      onTap: (){
+                        setState(() {
+                          seletecd_index_2 = 4;
+                        });
+                      },
+                      child: SJText(text: 'Cleaner UI And Smoother Experience', size: 14, color: '#381212'.color(), weight: FontWeight.w900),
+                    )
+                  ],
+                ),
+                SizedBox(height: 31),
+                Container(
+                  width: 202,
+                  height: 53.5,
+                  decoration: BoxDecoration(
+                    image: SJDImg('sj_submit_btn')
+                  ),
+                  child: InkWell(
+                    onTap: (){
+                      if (seletecd_index_0 == -1 || seletecd_index_1 == -1 || seletecd_index_2 == -1){
+                        SJDialogTool.toast(context, 'Please complete the three multiple-choice questions to proceed to the next step.');
+                      } else {
+                        Navigator.pop(context, 1);
+                        context.tipShow(SJPopCardOneDialog());
+                      }
+                    },
+                  ),
+                ),
+                SizedBox(height: 10),
+                SizedBox(
+                  width: 124,
+                  height: 37,
+                  child: SJUnderlineTextButton(text: 'Later On', textColor: '#3B3012'.color(), onPressed: (){
+                    Navigator.pop(context, 1);
+                    context.tipShow(SJPopCardOneDialog());
+                  }),
+                )
+              ],
+            ),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+//
+class SJPopCardOneDialog extends StatefulWidget {
+  SJPopCardOneDialog({super.key});
+  @override
+  State<SJPopCardOneDialog> createState() => SJPopCardOneDialogState();
+}
+
+class SJPopCardOneDialogState extends State<SJPopCardOneDialog>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 匀速旋转动画
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: AlignmentGeometry.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJImg(name: 'sj_tips_1s', width: 285, height: 116),
+              SizedBox(
+                width: 278,
+                height: 278,
+                child: Stack(
+                  alignment: AlignmentGeometry.center,
+                  children: [
+                    RotationTransition(
+                      turns: _controller,
+                      child: SJImg(
+                        name: 'sj_guang_icons',
+                        width: 278,
+                        height: 278,
+                      ),
+                    ),
+                    SJImg(name: 'sj_scrach_cards_image', width: 259, height: 187)
+                  ],
+                ),
+              ),
+              SizedBox(height: 108,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context, 1);
+                  context.tipShow(SJPopCardTwoDialog());
+                },
+                child: SJImg(name: 'sj_next_btm', width: 202, height: 51.5),
+              )
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+//
+class SJPopCardTwoDialog extends StatefulWidget {
+  SJPopCardTwoDialog({super.key});
+  @override
+  State<SJPopCardTwoDialog> createState() => SJPopCardTwoDialogState();
+}
+
+class SJPopCardTwoDialogState extends State<SJPopCardTwoDialog>
+    with TickerProviderStateMixin {
+  late final AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 匀速旋转动画
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 6),
+    )..repeat();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  // 新用户
+  Future<void> sj_newUserGuide() async {
+    if (!SJLocalProvider.instance.sj_new_guide){
+      var code = await context.tipShow(CardShuffleAnimation(is_start: false, souce_fromat: 'home',));
+      if (code == 1){
+        SJScratchProbabilityUpNotificationService.notify(0);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 0.width(context),
+      height: 0.height(context),
+      child: Stack(
+        alignment: AlignmentGeometry.center,
+        children: [
+          Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SJImg(name: 'sj_tips_2s', width: 285, height: 176),
+              SizedBox(
+                width: 278,
+                height: 278,
+                child: Stack(
+                  children: [
+                    Positioned(top: -10,
+                      child: RotationTransition(
+                        turns: _controller,
+                        child: SJImg(
+                          name: 'sj_guang_icons',
+                          width: 138,
+                          height: 138,
+                        ),
+                      ),
+                    ),
+                    SJImg(name: 'sj_tips2_icns', width: 258, height: 305)
+                  ],
+                ),
+              ),
+              SizedBox(height: 21,),
+              InkWell(
+                onTap: () async {
+                  Navigator.pop(context, 1);
+                  await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_newA_guideName, true);
+                  sj_newUserGuide();
+                },
+                child: SJImg(name: 'sj_next_btm', width: 202, height: 51.5),
+              )
+            ],
+          ),
+        ],
       ),
     );
   }

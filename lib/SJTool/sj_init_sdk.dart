@@ -1,19 +1,23 @@
 import 'dart:convert';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
-import 'package:anythink_sdk/at_init.dart';
+// import 'package:anythink_sdk/at_init.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
+import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_ad_help.dart';
 import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
+import '../SJHome/SJHome.dart';
 import '../SJModel/SJAdModel.dart';
 import '../SJModel/SJFkModel.dart';
 import '../SJModel/SJbonus_config.dart';
@@ -46,30 +50,30 @@ class SJSDKHelpers {
   int sj_remoteConfigTryCount = 0;
 
   Future<void> initSDK() async {
-    _initTopon();
+    // _initTopon();
     _initAppMAX();
-    _sjinitloadFireBase();
+    // _sjinitloadFireBase();
   }
 
-  Future<void> _initTopon() async {
-    sj_topon_start = DateTime.now();
-    await ATInitManger.initAnyThinkSDK(
-        appidStr: 'h694b94649d3c4',
-        appidkeyStr: 'a582c4a423cc3968df36cdb03b4c53dff').then((value){
-      print('topon init faild Success');
-      sj_event_fire('scxji_ad_initsuc', {
-        'ad_platform' : 'topon',
-        'ad_init_time' : DateTime.now().difference(sj_topon_start).inMilliseconds
-      });
-    }).catchError((error){
-      print('topon init faild error=$error');
-    });
-    // 打开SDK的Debug log，强烈建议在测试阶段打开，方便排查问题。
-    await ATInitManger
-        .setLogEnabled(
-      logEnabled: true,
-    );
-  }
+  // Future<void> _initTopon() async {
+  //   sj_topon_start = DateTime.now();
+  //   await ATInitManger.initAnyThinkSDK(
+  //       appidStr: 'h694b94649d3c4',
+  //       appidkeyStr: 'a582c4a423cc3968df36cdb03b4c53dff').then((value){
+  //     print('topon init faild Success');
+  //     sj_event_fire('scxji_ad_initsuc', {
+  //       'ad_platform' : 'topon',
+  //       'ad_init_time' : DateTime.now().difference(sj_topon_start).inMilliseconds
+  //     });
+  //   }).catchError((error){
+  //     print('topon init faild error=$error');
+  //   });
+  //   // 打开SDK的Debug log，强烈建议在测试阶段打开，方便排查问题。
+  //   await ATInitManger
+  //       .setLogEnabled(
+  //     logEnabled: true,
+  //   );
+  // }
 
 
   Future<void> _initAppMAX() async {
@@ -99,14 +103,13 @@ class SJSDKHelpers {
     return;
   }
 
-  initAdjust() async {
-    const String appToken1 = '1dqdrosdaw74'; // relsease
-    const String appToken2 = '4qedga65udq8'; // debug
+  initAdjustSDk() async {
+    const String appToken1 = 'r0fn8ph82874'; // relsease
     var disId = await FlutterTbaInfo.instance.getDistinctId();
     'disId=$disId'.log();
     Adjust.addGlobalCallbackParameter('customer_user_id', disId);
     final config = AdjustConfig(appToken1, AdjustEnvironment.production);
-    // final config = AdjustConfig(kReleaseMode ? appToken1 : appToken2, AdjustEnvironment.production);
+    config.logLevel = AdjustLogLevel.verbose;
     // 归因信息
     config.attributionCallback = (AdjustAttribution attributionChangedData) {
       print('[Adjust]: Attribution changed!');
@@ -116,6 +119,22 @@ class SJSDKHelpers {
       if (attributionChangedData.trackerName != null) {
         sj_event_fire('adjust_suc', {'adjust_user' : attributionChangedData.trackerName == 'Organic' ? 0 : 1});
         print('[Adjust]: Tracker name: ${attributionChangedData.trackerName}');
+        if (attributionChangedData.trackerName != 'Organic'){
+          sj_event_fire('organic_to_buy', {});
+          SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_af_statusName, true);
+          if (SJLocalProvider.instance.sj_set_root == false &&
+              SJLocalProvider.instance.sj_cloak_status == true) {
+            SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
+            SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+            print('organic_to_buy');
+            Navigator.pushReplacement(
+              homeKey as BuildContext,
+              MaterialPageRoute(
+                builder: (_) => SJHome(key: homeKey),
+              ),
+            );
+          }
+        }
       }
       if (attributionChangedData.campaign != null) {
         print('[Adjust]: Campaign: ${attributionChangedData.campaign}');

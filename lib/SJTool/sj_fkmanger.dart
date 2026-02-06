@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'package:ScratchJoyFK/ScratchJoyFK.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tba_info/flutter_tba_info.dart';
 import 'package:http/http.dart' as http;
@@ -109,34 +108,34 @@ class SJFKManger {
 
  // 数字联盟
   sj_checkNum()async{
-    var numberUnitID = await ScratchJoyFK.instance.sj_getNumberUnitID();
-    var url = Uri.parse('https://sg-ddi.shuzilm.cn/q');
-    try {
-      var response = await http.post(
-        url,
-        headers: eventHeader,
-        body: jsonEncode({"protocol":2,"pkg":await FlutterTbaInfo.instance.getBundleId(),"did":numberUnitID}),
-      );
-      print("upload event [Number] success ${response.body}");
-
-      try{
-        //{"protocol":2,"ver":"1.0.1","err":0,"device_type":0,"normal_times":0,
-        // "duplicate_times":0,"update_times":1,"recall_times":0}
-        var json = jsonDecode(response.body);
-        if(json["err"] == 0 && json["device_type"] != 0 && fkModel.ui.number == 1){
-          sj_event_fire('risk_chance', {'risk_from' : 'number'});
-          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,true);
-        }else{
-          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
-        }
-      }catch(e){
-        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
-      }
-
-    } catch (e) {
-      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
-      "upload event [Number] faild".log();
-    }
+    // var numberUnitID = await ScratchJoyFK.instance.sj_getNumberUnitID();
+    // var url = Uri.parse('https://sg-ddi.shuzilm.cn/q');
+    // try {
+    //   var response = await http.post(
+    //     url,
+    //     headers: eventHeader,
+    //     body: jsonEncode({"protocol":2,"pkg":await FlutterTbaInfo.instance.getBundleId(),"did":numberUnitID}),
+    //   );
+    //   print("upload event [Number] success ${response.body}");
+    //
+    //   try{
+    //     //{"protocol":2,"ver":"1.0.1","err":0,"device_type":0,"normal_times":0,
+    //     // "duplicate_times":0,"update_times":1,"recall_times":0}
+    //     var json = jsonDecode(response.body);
+    //     if(json["err"] == 0 && json["device_type"] != 0 && fkModel.ui.number == 1){
+    //       sj_event_fire('risk_chance', {'risk_from' : 'number'});
+    //       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,true);
+    //     }else{
+    //       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
+    //     }
+    //   }catch(e){
+    //     await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
+    //   }
+    //
+    // } catch (e) {
+    //   await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_number_statusName,false);
+    //   "upload event [Number] faild".log();
+    // }
 
   }
 
@@ -197,80 +196,80 @@ class SJFKManger {
   }
 
   Future<bool> sj_checkRoot() async {
-    var result = await ScratchJoyFK.instance.sj_root();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(result && fkModel.device.contains('root')){
-      sj_event_fire('risk_chance', {'risk_from' : 'root'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_root();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(result && fkModel.device.contains('root')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'root'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 
   Future<bool> sj_checkVpn() async {
-    var result = await ScratchJoyFK.instance.sj_vpn();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(result && fkModel.device.contains('vpn')){
-      sj_event_fire('risk_chance', {'risk_from' : 'vpn'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_vpn();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(result && fkModel.device.contains('vpn')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'vpn'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 
   Future<bool> sj_checkSim() async {
-    var result = await ScratchJoyFK.instance.sj_sim();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(!result && fkModel.device.contains('sim')){
-      sj_event_fire('risk_chance', {'risk_from' : 'sim'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_sim();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(!result && fkModel.device.contains('sim')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'sim'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 
   Future<bool> sj_checkSimulator() async {
-    var result = await ScratchJoyFK.instance.sj_simulator();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(result && fkModel.device.contains('simulator')){
-      sj_event_fire('risk_chance', {'risk_from' : 'simulator'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_simulator();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(result && fkModel.device.contains('simulator')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'simulator'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 
   Future<bool> sj_checkDeveloper() async {
-    var result = await ScratchJoyFK.instance.sj_developer();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(result && fkModel.device.contains('developer')){
-      sj_event_fire('risk_chance', {'risk_from' : 'developer'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_developer();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(result && fkModel.device.contains('developer')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'developer'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 
   Future<bool> sj_checkStore() async {
-    var result = await ScratchJoyFK.instance.sj_store();
-    if(fkModel.ui.device == 0){
-      return false;
-    }
-    if(!result && fkModel.device.contains('googleplay')){
-      sj_event_fire('risk_chance', {'risk_from' : 'googleplay'});
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
-      return true;
-    }
+    // var result = await ScratchJoyFK.instance.sj_store();
+    // if(fkModel.ui.device == 0){
+    //   return false;
+    // }
+    // if(!result && fkModel.device.contains('googleplay')){
+    //   sj_event_fire('risk_chance', {'risk_from' : 'googleplay'});
+    //   SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_decvice_statusName,true);
+    //   return true;
+    // }
     return false;
   }
 }

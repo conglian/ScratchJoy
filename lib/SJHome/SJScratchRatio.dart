@@ -244,6 +244,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
   }
   // 开启第三段和第四段任务
   Future<void> showThreeTxTask() async {
+    if (!SJLocalProvider.instance.sj_login_status) return;
     if (SJLocalProvider.instance.sj_tx_box_index >=
         SJNumberHelpers().taskModel!.task.last.first.num &&
         SJLocalProvider.instance.sj_tx_dice_index >=
@@ -267,6 +268,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
 
   // 第四段任务完成
   Future<void> showLastTxTask() async {
+    if (!SJLocalProvider.instance.sj_login_status) return;
     if (SJLocalProvider.instance.sj_tx_first_status == true && SJLocalProvider.instance.sj_open_tx == true && SJLocalProvider.instance.sj_tx_last_status == false && SJLocalProvider.instance.sj_tx_task4_tips == true) {
       if (SJLocalProvider.instance.sj_tx_dice_index >= SJNumberHelpers().last_taskModel!.task.last.first.num && SJLocalProvider.instance.sj_tx_card_index >= SJNumberHelpers().last_taskModel!.task.last.last.num) {
         await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_tx_last_statusName, true);
@@ -387,10 +389,16 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     _startShuffle();
                   } else {
                     sj_event_fire('probability_pop_up', {});
-                    SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
-                    }, adDidClosed: (adDidClosed){
-                      _startShuffle();
-                    });
+                    if (SJLocalProvider.instance.sj_login_status){
+                      SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
+                      }, adDidClosed: (adDidClosed){
+                        _startShuffle();
+                      });
+                    } else {
+                      SJJoyAds().sj_showAd(context, 'show_a', onCacheResponse: (onCacheResponse){}, adDidClosed: (adDidClosed) async {
+                        _startShuffle();
+                      });
+                    }
                   }
                 },
                 child: SJImg(name: !SJLocalProvider.instance.sj_new_guide ? 'sj_allin_btn' : 'sj_up_btn', width: 260, height: 74),
@@ -410,7 +418,8 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (builder) {
-                            return SJScratchB(
+                            return SJLocalProvider.instance.sj_login_status ? SJScratchB(
+                                type: history_index) : SJScratchA(
                                 type: history_index);
                           },
                         ),
@@ -418,14 +427,24 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     }
                   } else {
                     sj_event_fire('probability_pop_continue_up', {});
-                    SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
-                    }, adDidClosed: (adDidClosed) async {
-                      Navigator.pop(context);
-                      var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
-                      if (code == 1){
-                        SJScratchProbabilityUpNotificationService.notify(0);
-                      }
-                    });
+                    if (SJLocalProvider.instance.sj_login_status){
+                      SJJoyAds().sj_showAd(context, 'scxji_olduser_rv', onCacheResponse: (onCacheResponse){
+                      }, adDidClosed: (adDidClosed) async {
+                        Navigator.pop(context);
+                        var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
+                        if (code == 1){
+                          SJScratchProbabilityUpNotificationService.notify(0);
+                        }
+                      });
+                    } else {
+                      SJJoyAds().sj_showAd(context, 'show_a', onCacheResponse: (onCacheResponse){}, adDidClosed: (adDidClosed) async {
+                        Navigator.pop(context);
+                        var code = await context.tipShow(CardShuffleAnimation(is_start: true, souce_fromat: 'card',));
+                        if (code == 1){
+                          SJScratchProbabilityUpNotificationService.notify(0);
+                        }
+                      });
+                    }
                   }
                 },
                 child: SJImg(name: _middleCardIndex == 0 ? 'sj_playnow_btn' : 'sj_continueup_btn', width: 260, height: 74),
@@ -440,7 +459,7 @@ class _CardShuffleAnimationState extends State<CardShuffleAnimation>
                     if (_isShuffling == true){
                       return;
                     }
-                    if (SJNumberHelpers().checkProbability()){
+                    if (SJNumberHelpers().checkProbability() && SJLocalProvider.instance.sj_login_status){
                       SJJoyAds().sj_showAd(context, 'scxji_olduser_int', onCacheResponse: (onCacheResponse){
                         Navigator.pop(context);
                       }, adDidClosed: (adDidClosed) {

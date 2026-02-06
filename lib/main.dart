@@ -1,6 +1,4 @@
 import 'dart:ui';
-
-import 'package:ScratchJoyFK/ScratchJoyFK.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +8,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../SJHome/SJHome.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
-
 import '../SJTool/sj_NumberHelper.dart';
 import '../SJTool/sj_init_sdk.dart';
 import '../SJTool/sj_mp3_player.dart';
@@ -49,9 +46,7 @@ Future<void> main() async {
   final localStorageProvider = SJLocalProvider.instance;
   await localStorageProvider.init();
   await trigger.init();
-  await SJFKManger().initFKJson();
-  print(BoomUniqueStringUtil.decrypt('z8T19cbT28jJ7djL6vThzMPTx8DA08PG0fXD9dHDyMDDz9vutsnh+OD609vh0MHN5dHKsu740Pbk98ut6OTk2s3a8srX2tDU77HB0Ov7zM62z7fXstT7sfPBqcrNtLat47PY2LDExOHJzsW0u+3N9NfpwffP8LLBw/XHw8PTv78=', 130));
-  await ScratchJoyFK.instance.sj_initNumberUnit(apiKey: BoomUniqueStringUtil.decrypt('z8T19cbT28jJ7djL6vThzMPTx8DA08PG0fXD9dHDyMDDz9vutsnh+OD609vh0MHN5dHKsu740Pbk98ut6OTk2s3a8srX2tDU77HB0Ov7zM62z7fXstT7sfPBqcrNtLat47PY2LDExOHJzsW0u+3N9NfpwffP8LLBw/XHw8PTv78=', 130));
+
   // 2. 注入Provider，包裹MyApp
   runApp(
     ChangeNotifierProvider(
@@ -127,17 +122,3 @@ class _MyAppState extends State<MyApp> {
   }
 
 }
-
-// 使用单例模式管理导航状态
-// class NavigationService {
-//   static final NavigationService _instance = NavigationService._internal();
-//   factory NavigationService() => _instance;
-//   NavigationService._internal();
-//
-//   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-//   // final GlobalKey<_BottomNavigationExampleState> bottomNavKey = GlobalKey<_BottomNavigationExampleState>();
-//
-//   // void changeTab(int index) {
-//   //   bottomNavKey.currentState?.changeTab(index);
-//   // }
-// }
