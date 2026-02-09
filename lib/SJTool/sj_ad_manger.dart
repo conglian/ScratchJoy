@@ -13,7 +13,6 @@ import 'package:flutter/material.dart';
 import 'package:scratchjoy/SJTool/SJTBAInfoTool.dart';
 import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
-import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_init_sdk.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
 import '../SJDilaog/SJDialog.dart';
@@ -157,22 +156,6 @@ class SJJoyAds {
   }) async {
     if (skipAd) {
       adDidClosed.call(true);
-      resetHandler();
-      return;
-    }
-    // 展示上限
-    if (SJLocalProvider.instance.sj_ad_show_index > SJFKManger().fkModel.behavior.ad_daily_show && SJLocalProvider.instance.sj_login_status){
-      SJDialogTool.toast(context, 'see you tommorow');
-      onCacheResponse.call(false);
-      resetHandler();
-      return;
-    }
-    // 风控
-    if (await SJFKManger().sj_checkAllStatus()){
-      '风控不发起广告显示'.log();
-      SJDialogTool.toast(context, 'Something went wrong, please try again later.');
-      sj_event_fire('sj_fk_un', {});
-      onCacheResponse.call(false);
       resetHandler();
       return;
     }
@@ -382,26 +365,20 @@ class SJJoyAds {
 
     {
       // to fb
-      SJFacebookAnalytics.logPurchase(ad.ecpm, "USD");
+      // SJFacebookAnalytics.logPurchase(ad.ecpm, "USD");
     }
   }
 
   // 显示失败弹框
   showfaildDiolog(BuildContext context) async {
-    // 展示上限
-    if (SJLocalProvider.instance.sj_ad_show_index >= SJFKManger().fkModel.behavior.ad_daily_show){
-      sj_event_fire('see_you_tommorow', {});
-      context.tipShow(SJPopAdLimitDialog());
+    // 无网络
+    bool isConnected = await NetworkUtils.isConnected();
+    if (isConnected) {
+      print("有网加载失败");
+      context.tipShow(SJPopAdLoadFailDialog());
     } else {
-      // 无网络
-      bool isConnected = await NetworkUtils.isConnected();
-      if (isConnected) {
-        print("有网加载失败");
-        context.tipShow(SJPopAdLoadFailDialog());
-      } else {
-        context.tipShow(SJPopAdNotWiFiDialog());
-        print("设备无网络连接");
-      }
+      context.tipShow(SJPopAdNotWiFiDialog());
+      print("设备无网络连接");
     }
   }
 
@@ -818,17 +795,17 @@ extension AdServiceExtension on SJJoyAds {
       await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_reawrd_all_numberName, SJLocalProvider.instance.sj_ad_reawrd_all_number + 1);
       // 判断两次播放间隔小于30s
       int secondsDiff = DateTime.now().difference(_savedTime!).inSeconds;
-      if (secondsDiff < SJFKManger().fkModel.behavior.ad_short_show.duration && _savedTime != null){
-        // 添加次数
-        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_short_show_numberName, SJLocalProvider.instance.sj_ad_short_show_number + 1);
-        // 大于等于次数被风控
-        'SJFKManger().fkModel.behavior.ad_short_show.value=${SJFKManger().fkModel.behavior.ad_short_show.value}'.log();
-        'WUUserHelpers().wu_ad_short_show_number=${SJLocalProvider.instance.sj_ad_short_show_number}'.log();
-        if (SJFKManger().fkModel.behavior.ad_short_show.value <= SJLocalProvider.instance.sj_ad_short_show_number){
-          sj_event_fire('risk_chance', {'risk_from' : 'ad_short_show'});
-          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_ad_short_showName, true);
-        }
-      }
+      // if (secondsDiff < SJFKManger().fkModel.behavior.ad_short_show.duration && _savedTime != null){
+      //   // 添加次数
+      //   await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_short_show_numberName, SJLocalProvider.instance.sj_ad_short_show_number + 1);
+      //   // 大于等于次数被风控
+      //   'SJFKManger().fkModel.behavior.ad_short_show.value=${SJFKManger().fkModel.behavior.ad_short_show.value}'.log();
+      //   'WUUserHelpers().wu_ad_short_show_number=${SJLocalProvider.instance.sj_ad_short_show_number}'.log();
+      //   if (SJFKManger().fkModel.behavior.ad_short_show.value <= SJLocalProvider.instance.sj_ad_short_show_number){
+      //     sj_event_fire('risk_chance', {'risk_from' : 'ad_short_show'});
+      //     await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_ad_short_showName, true);
+      //   }
+      // }
     }
 
     "$runtimeType ad did display success [${_ads[index].source}] type = ${_ads[index].type} id = ${_ads[index].ad_identifer}"
@@ -864,16 +841,16 @@ extension AdServiceExtension on SJJoyAds {
 
     if (_ads[index].getTypeToServer() == "rv") {
       // 判断播发到关闭播放间隔小于20s
-      int secondsDiff = DateTime.now().difference(_savedPlayAndCloseTime!).inSeconds;
-      if (secondsDiff < SJFKManger().fkModel.behavior.ad_short_close.duration && _savedPlayAndCloseTime != null){
-        // 添加次数
-        await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_short_close_numberName, SJLocalProvider.instance.sj_ad_short_close_number + 1);
-        // 大于等于次数被风控
-        if (SJFKManger().fkModel.behavior.ad_short_close.value <= SJLocalProvider.instance.sj_ad_short_close_number){
-          sj_event_fire('risk_chance', {'risk_from' : 'ad_short_close'});
-          await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_ad_short_closeName, true);
-        }
-      }
+      // int secondsDiff = DateTime.now().difference(_savedPlayAndCloseTime!).inSeconds;
+      // if (secondsDiff < SJFKManger().fkModel.behavior.ad_short_close.duration && _savedPlayAndCloseTime != null){
+      //   // 添加次数
+      //   await SJLocalProvider.instance.updateint(SJLocalProvider.instance.sj_ad_short_close_numberName, SJLocalProvider.instance.sj_ad_short_close_number + 1);
+      //   // 大于等于次数被风控
+      //   if (SJFKManger().fkModel.behavior.ad_short_close.value <= SJLocalProvider.instance.sj_ad_short_close_number){
+      //     sj_event_fire('risk_chance', {'risk_from' : 'ad_short_close'});
+      //     await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_fk_ad_short_closeName, true);
+      //   }
+      // }
     }
 
     onAdClosed?.call(true);

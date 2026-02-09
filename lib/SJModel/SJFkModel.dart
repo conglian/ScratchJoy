@@ -37,7 +37,7 @@ class SJbehaviorModel {
   late int wrong_deem_ad_less = 0;
   late int wrong_deem_ad_more = 0;
   late int no_install = 0;
-  late int ad_daily_show = 0;
+  late int ad_daily_show = 60;
   SJbehaviorModel();
 
   // 工厂构造函数，用于反序列化

@@ -3,28 +3,28 @@
 <plist version="1.0">
 <dict>
 	<key>API_KEY</key>
-	<string>AIzaSyCldhAb6fpHgLN1kGg8vVE1OcApbwg6qlA</string>
+	<string>AIzaSyBQKwMtDa8ZR0SuZJCOiNz-0AIc0snhp18</string>
 	<key>GCM_SENDER_ID</key>
-	<string>209105476297</string>
+	<string>826456880517</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.scratch.windaily.cardfun</string>
+	<string>com.simulatedcard.scrajoycc</string>
 	<key>PROJECT_ID</key>
-	<string>c130-scratch--win-daily</string>
+	<string>c130ios</string>
 	<key>STORAGE_BUCKET</key>
-	<string>c130-scratch--win-daily.firebasestorage.app</string>
+	<string>c130ios.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_GCM_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:209105476297:ios:7be79d4a7567a1d25a0b18</string>
+	<string>1:826456880517:ios:7c57fcfa7ec0c329e7c0ec</string>
 </dict>
 </plist>

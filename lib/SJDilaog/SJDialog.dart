@@ -801,7 +801,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 if (SJLocalProvider.instance.sj_card_number >= 4) {
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 0);
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
                       context.tipShow(SJPopGoodReviewDialog());
@@ -809,7 +811,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   }, adDidClosed: (adDidClosed) async {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     playAwardmp3();
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
@@ -819,7 +823,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 } else {
                   Navigator.pop(context, 0);
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 1));
-                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (widget.type != 'dice'){
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  }
                   playAwardmp3();
                   if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                     if (!context.mounted)return;
@@ -852,7 +858,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                     // 看ad-重新刷新
                     SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_rv' : 'scxji_carreward_rv', onCacheResponse: (onCacheResponse){
                       Navigator.pop(context, 0);
-                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (widget.type != 'dice'){
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }
                       if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                         if (!context.mounted)return;
                         context.tipShow(SJPopGoodReviewDialog());
@@ -860,7 +868,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                     }, adDidClosed: (adDidClosed) async {
                       Navigator.pop(context, 0);
                       await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award * 2));
-                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      if (widget.type != 'dice'){
+                        SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                      }
                       playAwardmp3();
                       if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                         if (!context.mounted)return;
@@ -883,7 +893,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, widget.type == 'dice' ? 'scxji_dicereward_int' : 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 0);
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
                       context.tipShow(SJPopGoodReviewDialog());
@@ -891,7 +903,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   }, adDidClosed: (adDidClosed) async {
                     Navigator.pop(context, 0);
                     await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     playAwardmp3();
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
@@ -901,7 +915,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 } else {
                   Navigator.pop(context, 0);
                   await SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, (widget.award));
-                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (widget.type != 'dice'){
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  }
                   if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                     if (!context.mounted)return;
                     context.tipShow(SJPopGoodReviewDialog());
@@ -927,14 +943,18 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                 if (SJNumberHelpers().checkProbability()) {
                   SJJoyAds().sj_showAd(context, 'scxji_carreward_int', onCacheResponse: (onCacheResponse){
                     Navigator.pop(context, 3);
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
                       context.tipShow(SJPopGoodReviewDialog());
                     }
                   }, adDidClosed: (adDidClosed) {
                     Navigator.pop(context, 3);
-                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    if (widget.type != 'dice'){
+                      SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                    }
                     if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                       if (!context.mounted)return;
                       context.tipShow(SJPopGoodReviewDialog());
@@ -942,7 +962,9 @@ class SJPopEpicWinBDialogState extends State<SJPopEpicWinBDialog>
                   });
                 } else {
                   Navigator.pop(context, 3);
-                  SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  if (widget.type != 'dice'){
+                    SJScratchNextNotificationService.sendToDomandNumberNotification(0);
+                  }
                   if (SJLocalProvider.instance.sj_card_number >= 3 && !SJLocalProvider.instance.sj_good_review_status){
                     if (!context.mounted)return;
                     context.tipShow(SJPopGoodReviewDialog());
@@ -1414,7 +1436,7 @@ class SJPopAdLoadFailDialogState extends State<SJPopAdLoadFailDialog> {
                     onTap: (){
                       Navigator.pop(context);
                       sj_event_fire('ad_retry_c', {});
-                      SJJoyAds().init();
+                      // SJJoyAds().init();
                     },
                   ),
                 ),
@@ -1707,6 +1729,45 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
               ],
             ),
           ),
+          Positioned(bottom: 100.h,child:
+          InkWell(
+            onTap: (){
+              Navigator.pop(context);
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (Navigator.canPop(context)){
+                Navigator.pop(context);
+              }
+              if (SJLocalProvider.instance.sj_scrach_end_number_0 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_1 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_2 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_3 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_4 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_5 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
+              } else if (SJLocalProvider.instance.sj_scrach_end_number_6 < 10){
+                SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
+              }
+            },
+            child: Container(
+              width: 260, height: 74,
+              decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+              child: Stack(
+                children: [
+                  Positioned(top: 18,child: SJGradientStrokeText(text: 'Go', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                ],
+              ),
+            ),
+          )),
           Positioned(
             right: 32.w,
             top: (0.height(context) - 398.h) * 0.35,
@@ -2597,6 +2658,45 @@ class SJPopTXLastDialogState extends State<SJPopTXLastDialog> {
                     )
                   ],
                 ),
+              ),
+              SizedBox(height: 28,),
+              InkWell(
+                onTap: (){
+                  Navigator.pop(context);
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (Navigator.canPop(context)){
+                    Navigator.pop(context);
+                  }
+                  if (SJLocalProvider.instance.sj_scrach_end_number_0 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(0);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_1 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(1);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_2 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(2);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_3 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(3);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_4 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(4);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_5 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(5);
+                  } else if (SJLocalProvider.instance.sj_scrach_end_number_6 < 10){
+                    SJScratchPushNextNotificationService.sendToDomandNumberNotification(6);
+                  }
+                },
+                child: Container(
+                  width: 260, height: 74,
+                  decoration: BoxDecoration(image: SJDImg('sj_dice_btn_bg')),
+                  child: Stack(
+                    children: [
+                      Positioned(top: 18,child: SJGradientStrokeText(text: 'Go', gradientColors: ['#BE982A'.color(),'#FFE9A3'.color(),'#FFF6D7'.color(),'#FFF0B4'.color(),], fontSize: 32, strokeWidth: 2, strokeColor: '#000000'.color(),width: 260, height: 40,),)
+                    ],
+                  ),
+                ),
               )
             ],
           )
@@ -2971,7 +3071,7 @@ class SJPopSubmitAccountDialogState extends State<SJPopSubmitAccountDialog> {
               SizedBox(height: 4.h,),
               SizedBox(
                 width: 0.width(context),
-                height: 220.h,
+                height: 222.h,
                 child: Stack(
                   children: [
                     Column(
@@ -4857,7 +4957,7 @@ class SJPopdiceAwardDialogState extends State<SJPopYouWinADialog>
               child: SJImg(name: 'sj_dice_conten_2', width: 222, height: 222),
             ),
           ),
-          Positioned(top: 295.h, left: (0.width(context) - 211) * 0.5, child: SJImg(name: 'sj_dice_conten_3', width: 211, height: 211)),
+          Positioned(top: 295.h, left: (0.width(context) - 211) * 0.5, child: SJImg(name: SJLocalProvider.instance.sj_login_status ? 'sj_dice_conten_3' : 'sj_dice_conten_31', width: 211, height: 211)),
           Positioned(top: 438.h, width: 0.width(context), height:30,child: SJGradientStrokeText(text: '${widget.award}', gradientColors: ['#FFFFFF'.color(),'#FFFB8E'.color()], fontSize: 40, strokeWidth: 2, strokeColor: '#3F1D05'.color(), width: 260, height: 42,)),
           Positioned(top: 540.h,left: (0.width(context) - 260) * 0.5, child: InkWell(
               splashColor: Colors.transparent,

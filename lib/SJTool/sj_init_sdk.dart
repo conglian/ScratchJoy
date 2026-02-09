@@ -15,7 +15,6 @@ import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_ad_help.dart';
 import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
-import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
 import '../SJHome/SJHome.dart';
 import '../SJModel/SJAdModel.dart';
@@ -50,30 +49,9 @@ class SJSDKHelpers {
   int sj_remoteConfigTryCount = 0;
 
   Future<void> initSDK() async {
-    // _initTopon();
     _initAppMAX();
-    // _sjinitloadFireBase();
+    _sjinitloadFireBase();
   }
-
-  // Future<void> _initTopon() async {
-  //   sj_topon_start = DateTime.now();
-  //   await ATInitManger.initAnyThinkSDK(
-  //       appidStr: 'h694b94649d3c4',
-  //       appidkeyStr: 'a582c4a423cc3968df36cdb03b4c53dff').then((value){
-  //     print('topon init faild Success');
-  //     sj_event_fire('scxji_ad_initsuc', {
-  //       'ad_platform' : 'topon',
-  //       'ad_init_time' : DateTime.now().difference(sj_topon_start).inMilliseconds
-  //     });
-  //   }).catchError((error){
-  //     print('topon init faild error=$error');
-  //   });
-  //   // 打开SDK的Debug log，强烈建议在测试阶段打开，方便排查问题。
-  //   await ATInitManger
-  //       .setLogEnabled(
-  //     logEnabled: true,
-  //   );
-  // }
 
 
   Future<void> _initAppMAX() async {
@@ -121,19 +99,7 @@ class SJSDKHelpers {
         print('[Adjust]: Tracker name: ${attributionChangedData.trackerName}');
         if (attributionChangedData.trackerName != 'Organic'){
           sj_event_fire('organic_to_buy', {});
-          SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_af_statusName, true);
-          if (SJLocalProvider.instance.sj_set_root == false &&
-              SJLocalProvider.instance.sj_cloak_status == true) {
-            SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
-            SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
-            print('organic_to_buy');
-            Navigator.pushReplacement(
-              homeKey as BuildContext,
-              MaterialPageRoute(
-                builder: (_) => SJHome(key: homeKey),
-              ),
-            );
-          }
+          _toHome();
         }
       }
       if (attributionChangedData.campaign != null) {
@@ -162,6 +128,26 @@ class SJSDKHelpers {
     sj_event_fire('adjust_req', {});
   }
 
+  Future<void> _toHome() async {
+    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_af_statusName, true);
+    '22222222'.log();
+    'sj_set_root=${SJLocalProvider.instance.sj_set_root}'.log();
+    'sj_cloak_status=${SJLocalProvider.instance.sj_cloak_status}'.log();
+    if (SJLocalProvider.instance.sj_set_root == false &&
+        SJLocalProvider.instance.sj_cloak_status == true) {
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+      print('organic_to_buy');
+      Navigator.pushReplacement(
+        homeKey as BuildContext,
+        MaterialPageRoute(
+          builder: (_) => SJHome(key: homeKey),
+        ),
+      );
+    }
+
+  }
+
   void _sjinitloadFireBase() async {
     final remoteConfig = FirebaseRemoteConfig.instance;
     await remoteConfig.setConfigSettings(
@@ -175,28 +161,16 @@ class SJSDKHelpers {
     try {
       await remoteConfig.fetchAndActivate();
 
-      final scratchjoy_fb130 =
-      remoteConfig.getValue("c130scratchjoy_fb").asString();
-      'c130scratchjoy_fb=$scratchjoy_fb130'.log();
-      // facebook_init
-      if (scratchjoy_fb130 != ''){
-        Map<String, dynamic> jsonMap = json.decode(scratchjoy_fb130);
-        SJFacebookAnalytics.init(appId: jsonMap['app_id'], clientToken: jsonMap['client_token'], appName: jsonMap['app_name']);
-      } else {
-        SJFacebookAnalytics.init(appId: '1475766213481674', clientToken: '9becc07e1ef0cf1f14ea70c055f5167b', appName: 'C130_GP');
-      }
-
-      final risk_control = remoteConfig.getValue('risk_control').asString();
-      if (risk_control != ''){
-        try {
-          Map<String, dynamic> jsonMap = json.decode(risk_control);
-          var fkEntity = SJFkModel.fromJson(jsonMap);
-          SJFKManger().fkModel = fkEntity;
-          "app firebase remoteconfig risk_control data ${jsonMap}".log();
-        } catch (error) {
-          print("app firebase remoteconfig risk_control error ${error}");
-        }
-      }
+      // final scratchjoy_fb130 =
+      // remoteConfig.getValue("c130scratchjoy_fb").asString();
+      // 'c130scratchjoy_fb=$scratchjoy_fb130'.log();
+      // // facebook_init
+      // if (scratchjoy_fb130 != ''){
+      //   Map<String, dynamic> jsonMap = json.decode(scratchjoy_fb130);
+      //   SJFacebookAnalytics.init(appId: jsonMap['app_id'], clientToken: jsonMap['client_token'], appName: jsonMap['app_name']);
+      // } else {
+      //   SJFacebookAnalytics.init(appId: '', clientToken: '', appName: 'C130_GP');
+      // }
 
       final c130_ad_int = remoteConfig.getValue('c130_ad_int').asString();
       if (c130_ad_int != ''){
@@ -292,7 +266,7 @@ class SJSDKHelpers {
       adjustAdRevenue.adRevenueNetwork = max.networkPlacement;
       adjustAdRevenue.adRevenuePlacement = max.placement;
       Adjust.trackAdRevenue(adjustAdRevenue);
-      await SJFacebookAnalytics.logPurchase(max.revenue, 'USD');
+      // await SJFacebookAnalytics.logPurchase(max.revenue, 'USD');
       "af logs:: af revenue success ${max.revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();
@@ -308,7 +282,7 @@ class SJSDKHelpers {
       adjustAdRevenue.setRevenue(revenue, 'USD');
       adjustAdRevenue.adRevenueNetwork = network;
       Adjust.trackAdRevenue(adjustAdRevenue);
-      await SJFacebookAnalytics.logPurchase(revenue, 'USD');
+      // await SJFacebookAnalytics.logPurchase(revenue, 'USD');
       "af logs:: af revenue success ${revenue}".log();
     } catch (e) {
       "af logs:: af revenue error $e".log();
@@ -316,31 +290,5 @@ class SJSDKHelpers {
   }
 
 
-}
-
-class SJFacebookAnalytics {
-
-  static final channel = MethodChannel("com.example.scratchjoy/facebook");
-
-  /// 初始化 Facebook SDK（动态传入 appId、clientToken、appName）
-  static Future<void> init({
-    required String appId,
-    required String clientToken,
-    required String appName,
-  }) async {
-    await channel.invokeMethod("initFacebook", {
-      "app_id": appId,
-      "client_token": clientToken,
-      "app_name": appName,
-    });
-  }
-
-  /// 购买打点（无参数）
-  static Future<void> logPurchase(double amount, String currency) async {
-    await channel.invokeMethod("logPurchase", {
-      "amount": amount,
-      "currency": currency,
-    });
-  }
 }
 

@@ -8,7 +8,6 @@ import 'package:intl/intl.dart';
 import '../SJHome/SJHome.dart';
 import '../SJTool/SJTBAInfoTool.dart';
 import '../SJTool/sj_LocalProvider.dart';
-import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_init_sdk.dart';
 
 
@@ -26,7 +25,9 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
   void initState() {
     super.initState();
     _setConfigDateInfoData();
-    sj_getSBUserCloakConfig();
+    Future.delayed(Duration(milliseconds: 2),(){
+      sj_getSBUserCloakConfig();
+    });
     sj_event_fire('launch_page', {});
   }
 
@@ -65,11 +66,26 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
         sj_install_fire();
         prefs.setBool('sp_install_status', true);
       }
-      SJFKManger().sj_add_tabsession_custom();
       sj_session_fire();
-      SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_cloak_statusName, responseData.toString() == "meredith" ? true : false);
+      if (responseData == null){
+        sj_getSBUserCloakConfig();
+        return;
+      }
+      await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_cloak_statusName, responseData.toString() == "meredith" ? true : false);
+      if (SJLocalProvider.instance.sj_set_root == false &&
+          SJLocalProvider.instance.sj_cloak_status == true && SJLocalProvider.instance.sj_af_status == true) {
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
+        await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+        print('organic_to_buy');
+        Navigator.pushReplacement(
+          homeKey as BuildContext,
+          MaterialPageRoute(
+            builder: (_) => SJHome(key: homeKey),
+          ),
+        );
+      }
     } catch (e) {
-      print('Solitaireplayland Request Error: $e');
+      print('Solitairejoy Request Error: $e');
       Future.delayed(Duration(seconds: 1), () {
         sj_getSBUserCloakConfig();
       });
@@ -106,6 +122,9 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
 
 
   void _sjLoginStatusEvent() async {
+    'sj_afSwitch=${SJLocalProvider.instance.sj_afSwitch}'.log();
+    'sj_cloak_status=${SJLocalProvider.instance.sj_cloak_status}'.log();
+    'sj_af_status=${SJLocalProvider.instance.sj_af_status}'.log();
     if (SJLocalProvider.instance.sj_afSwitch == false && SJLocalProvider.instance.sj_cloak_status == true) {
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, true);
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
@@ -119,6 +138,7 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_set_rootName, false);
       await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, false);
     }
+    'sj_set_root=${SJLocalProvider.instance.sj_set_root}'.log();
     // 调试
     // await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
     Navigator.pushReplacement(

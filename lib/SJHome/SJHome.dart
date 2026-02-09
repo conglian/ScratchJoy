@@ -22,7 +22,6 @@ import '../SJTool/sj_GradientNumber.dart';
 import '../SJTool/sj_LocalProvider.dart';
 import '../SJTool/sj_WebKitView.dart';
 import '../SJTool/sj_ad_manger.dart';
-import '../SJTool/sj_fkmanger.dart';
 import '../SJTool/sj_img.dart';
 import '../SJTool/sj_mp3_player.dart';
 import '../SJTool/sj_number_helper.dart';
@@ -93,8 +92,8 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
     // TODO: implement initState
     super.initState();
     if (SJLocalProvider.instance.sj_login_status) {
-      '1111111111'.log();
       SJLocatilNoticeHelper().initSJNotifications();
+      sj_event_fire('user_source', {'from' : SJLocalProvider.instance.sj_login_status ? 'b' : 'a'});
     }
     // 当前帧构建完成后
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -117,25 +116,25 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
     // push next
     SJScratchPushNextNotificationService.stream.listen((value) async {
       sjsj_startTimer();
-      if (value == 0){
+      if (value == 0 && SJLocalProvider.instance.sj_scrach_end_number_0 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_0Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 1){
+      } else if (value == 1 && SJLocalProvider.instance.sj_scrach_end_number_1 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_1Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 2){
+      } else if (value == 2 && SJLocalProvider.instance.sj_scrach_end_number_2 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_2Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 3){
+      } else if (value == 3 && SJLocalProvider.instance.sj_scrach_end_number_3 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_3Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 4){
+      } else if (value == 4 && SJLocalProvider.instance.sj_scrach_end_number_4 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_4Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 5){
+      } else if (value == 5 && SJLocalProvider.instance.sj_scrach_end_number_5 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_5Name,DateTime.now().toIso8601String());
         setState(() {});
-      } else if (value == 6){
+      } else if (value == 6 && SJLocalProvider.instance.sj_scrach_end_number_6 >= 10){
         await SJLocalProvider.instance.updateString(SJLocalProvider.instance.sj_Scratch_timeKey_6Name,DateTime.now().toIso8601String());
         setState(() {});
       }
@@ -965,9 +964,7 @@ class _SJNavBarWidgetState extends State<SJNavBarWidget> {
             //   child: SJImg(name: 'sp_h5_icon', width: 34, height: 34,),
             // ),
             InkWell(
-              onTap: (){
-                // test
-                // SJLocalProvider.instance.updatedouble(SJLocalProvider.instance.sj_dolas_numberName, SJLocalProvider.instance.sj_dolas_number + 500);
+              onTap: () async {
                 context.tipShow(SJPopSettingDialog());
               },
               child: SJImg(name: 'sj_home_set_icon', width: 34, height: 34,),
@@ -1250,8 +1247,11 @@ class _SJBubbleButtonState extends State<SJBubbleButton>
       _top = maxH;
       _dy = -_dy;
     }
-
-    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override

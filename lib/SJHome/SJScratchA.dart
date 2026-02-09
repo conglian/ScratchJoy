@@ -231,7 +231,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
     if (widget.type == 0) {
       return Stack(
         children: [
-          SJLocalImageScratchCard(autoStartY: 235.h,coverImagePath: 'sj_scratch_content_0'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: () async {
+          SJLocalImageScratchCard(autoStartY: 235.h,coverImagePath: 'sj_scratch_content_0s'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: () async {
            setState(() {
              shai_anim = true;
              star_awarad = true;
@@ -758,7 +758,7 @@ class _SJScratchContentAWidgetState extends State<SJScratchContentAWidget> {
     } else if (widget.type == 3) {
       return Stack(
         children: [
-          SJLocalImageScratchCard(autoStartY: 210.h,coverImagePath: 'sj_scratch_content_3'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: (){
+          SJLocalImageScratchCard(autoStartY: 210.h,coverImagePath: 'sj_scratch_content_3s'.image(), contentW: 0.width(context), contentH: scratch_h, onScratchEnd: (){
             setState(() {
               shai_anim = true;
               star_awarad = true;

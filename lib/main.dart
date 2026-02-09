@@ -13,7 +13,6 @@ import '../SJTool/sj_init_sdk.dart';
 import '../SJTool/sj_mp3_player.dart';
 import 'SJBase/SJLuauch.dart';
 import 'SJTool/sj_ad_help.dart';
-import 'SJTool/sj_fkmanger.dart';
 import 'SJTool/sj_numberBHelper.dart';
 import 'SJTool/sj_number_helper.dart';
 

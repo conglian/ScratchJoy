@@ -58,11 +58,11 @@ class SJRequestHelpers {
   static String cloak_Url =
       "https://ouzo.simulatedcardscrajoycc.com/alga/thrush/alumna";
 
-  static String tba_event_Url =
-      "https://test-hummock.simulatedcardscrajoycc.com/suffice/deject/gulp";
-
   // static String tba_event_Url =
-  //     "https://hummock.simulatedcardscrajoycc.com/pork/concerti/wingtip";
+  //     "https://test-hummock.simulatedcardscrajoycc.com/suffice/deject/gulp";
+
+  static String tba_event_Url =
+      "https://hummock.simulatedcardscrajoycc.com/pork/concerti/wingtip";
 
   final Map<String, String> normalHeader = {
     'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ class SJRequestHelpers {
   };
 
   Future<dynamic> getCloak() async {
-    var url = Uri.parse("${cloak_Url}?${await getConfigQueryString()}");
+    var url = Uri.parse("${cloak_Url}?cab=${await FlutterTbaInfo.instance.getBundleId()}&afghan=sarasota&merry=${await FlutterTbaInfo.instance.getAppVersion()}&archaic=${DateTime.now().millisecondsSinceEpoch}");
     "scratch play land config request ${url}".log();
     try {
       var response = await http.get(
@@ -82,7 +82,7 @@ class SJRequestHelpers {
       );
       return _handleResponse(response);
     } catch (e) {
-      throw Exception('Failed to perform GET request: $e');
+      "upload event [cloak] faild error $e".log();
     }
   }
 
@@ -140,9 +140,10 @@ extension RequestHelpersExtension on SJRequestHelpers {
   Future<String> getConfigQueryString() async {
     var queryBody = {
       "cab": await FlutterTbaInfo.instance.getBundleId(),
-      "afghan": 'fleming',
+      "afghan": 'sarasota',
       "merry": await FlutterTbaInfo.instance.getAppVersion(),
     };
+    'queryBody=$queryBody'.log();
     return Uri(queryParameters: queryBody).query;
   }
 
@@ -152,7 +153,7 @@ extension RequestHelpersExtension on SJRequestHelpers {
       'aaron' : await FlutterTbaInfo.instance.getBrand(),
       'leftmost' : await FlutterTbaInfo.instance.getOsCountry(),
       'graceful' : await FlutterTbaInfo.instance.getDistinctId(),
-      'afghan' : 'fleming',
+      'afghan' : 'sarasota',
       "against": await FlutterTbaInfo.instance.getLogId(),
       'eidetic' : await FlutterTbaInfo.instance.getManufacturer(),
       "durance": await FlutterTbaInfo.instance.getNetworkType(),

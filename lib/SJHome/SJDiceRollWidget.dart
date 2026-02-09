@@ -234,6 +234,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
           var code = await context.tipShow(SJPopYouWinADialog(
               award: diceNumbers[_currentNumberIndex], is_dice: true));
           if (code >= 0){
+            if (!context.mounted) return;
             setState(() {
               diceNumbers = SJNumberHelpers().getDiceValueByBalance();
             });
@@ -363,7 +364,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                 Container(
                   width: 375.w,
                   height: 502.h,
-                  decoration: BoxDecoration(image: SJDImg('sj_shai_center')),
+                  decoration: BoxDecoration(image: SJDImg(SJLocalProvider.instance.sj_login_status ? 'sj_shai_center' : 'sj_shai_centers')),
                   child: Stack(
                     alignment: Alignment.center,
                     children: [
@@ -453,7 +454,7 @@ class _SJDiceRollWidgetState extends State<SJDiceRollWidget>
                             height: numberSize,
                             decoration: BoxDecoration(
                               image: SJDImg(
-                                  i == _currentNumberIndex ? 'sj_numbers_s' : 'sj_numbers_n'),
+                                  i == _currentNumberIndex ? SJLocalProvider.instance.sj_login_status ? 'sj_numbers_s' : 'sj_numbers_s1' : SJLocalProvider.instance.sj_login_status ? 'sj_numbers_n' : 'sj_numbers_n1'),
                             ),
                             child: Column(
                               children: [

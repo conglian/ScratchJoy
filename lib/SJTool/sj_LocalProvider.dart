@@ -76,7 +76,7 @@ class SJLocalProvider extends ChangeNotifier {
   bool sj_tx_task3_tips = false;
   bool sj_tx_task4_tips = false;
   bool sj_tx_end_status = false;
-  bool sj_afSwitch = false;
+  bool sj_afSwitch = true;
   bool sj_set_root = false;
   bool sj_af_status = false;
   bool sj_newA_guide = false;
@@ -253,7 +253,7 @@ class SJLocalProvider extends ChangeNotifier {
     sj_good_review_status = prefs.getBool('sj_good_review_status') ?? false;
     sj_open_tx = prefs.getBool('sj_open_tx') ?? false;
     sj_show_box = prefs.getBool('sj_show_box') ?? false;
-    sj_afSwitch = prefs.getBool('sj_afSwitch') ?? false;
+    sj_afSwitch = prefs.getBool('sj_afSwitch') ?? true;
     sj_set_root = prefs.getBool('sj_set_root') ?? false;
     sj_af_status = prefs.getBool('sj_af_status') ?? false;
     is_end_Scratch = prefs.getBool('is_end_Scratch') ?? true;

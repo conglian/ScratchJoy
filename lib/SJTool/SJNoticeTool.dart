@@ -64,23 +64,23 @@ class SJLocatilNoticeHelper {
         "flutter receive native notification ${lists}".log();
         if (lists[0] == "background") {
           if (lists[1] == "notificationIdentiferOne") {
-            sj_event_fire("inform_c", {'inform_from': 'fix'});
+            sj_event_fire("all_noti_c", {'inform_from': 'fix'});
           } else if (lists[1] == "notificationIdentiferTwo") {
-            sj_event_fire("inform_c", {'inform_from': 'sign'});
+            sj_event_fire("all_noti_c", {'inform_from': 'sign'});
           } else if (lists[1] == "notificationIdentiferThree") {
-            sj_event_fire("inform_c", {'inform_from': 'card'});
+            sj_event_fire("all_noti_c", {'inform_from': 'card'});
           } else if (lists[1] == "notificationIdentiferFour") {
-            sj_event_fire("inform_c", {'inform_from': 'cash'});
+            sj_event_fire("all_noti_c", {'inform_from': 'cash'});
           }
         } else if (lists[0] == "active") {
           if (lists[1] == "notificationIdentiferOne") {
-            sj_event_fire("inform_c", {'inform_from': 'fix'});
+            sj_event_fire("all_noti_c", {'inform_from': 'fix'});
           } else if (lists[1] == "notificationIdentiferTwo") {
-            sj_event_fire("inform_c", {'inform_from': 'sign'});
+            sj_event_fire("all_noti_c", {'inform_from': 'sign'});
           } else if (lists[1] == "notificationIdentiferThree") {
-            sj_event_fire("inform_c", {'inform_from': 'card'});
+            sj_event_fire("all_noti_c", {'inform_from': 'card'});
           } else if (lists[1] == "notificationIdentiferFour") {
-            sj_event_fire("inform_c", {'inform_from': 'cash'});
+            sj_event_fire("all_noti_c", {'inform_from': 'cash'});
           }
         }
       }
