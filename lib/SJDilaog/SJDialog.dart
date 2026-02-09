@@ -5184,7 +5184,7 @@ class SJPopSettingDialogState extends State<SJPopSettingDialog> {
                       Navigator.of(context).push(
                         MaterialPageRoute(builder: (builder) {
                           return SJwebkitview(
-                            url: "https://sites.google.com/view/130scratchjoyprivacy-policy/home",
+                            url: "https://simulatedcardscrajoycc.com/privacy/",
                             title: 'Privacy Policy',
                           );
                         }),
