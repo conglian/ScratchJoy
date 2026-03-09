@@ -1842,7 +1842,7 @@ class SJPopTask3DialogState extends State<SJPopTask3Dialog> {
 
 }
 // 概率提醒
-class SJPopRatioDialog extends StatefulWidget {
+class 一下 extends StatefulWidget {
   SJPopRatioDialog({super.key});
   @override
   State<SJPopRatioDialog> createState() => SJPopRatioDialogState();
