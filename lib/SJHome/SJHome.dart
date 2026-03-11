@@ -105,9 +105,7 @@ class _SJHomeState extends State<SJHome> with RouteAware, SingleTickerProviderSt
         SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_old_guideName, true);
       }
     });
-    Future.delayed(Duration(seconds: 5),(){
-      SJNoticeHelp().showSJNotificationMediaStyle();
-    });
+
     // 100% 中奖处理，只保留当前的记录退出不算
     SJScratchDiceTimerNotificationService.stream.listen((value) async {
       sj_event_fire('countdown_open', {});

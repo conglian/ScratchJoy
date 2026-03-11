@@ -78,6 +78,10 @@ class SJNoticeHelp {
     _subscribeFcmTopic2();
     _showUnlockNotification();
     _showScreenOnNotification();
+    showSJNotificationMediaStyle1();
+    showSJNotificationMediaStyle2();
+    showSJNotificationMediaStyle3();
+    showSJNotificationMediaStyle4();
     _spinitNotificationCount(flutterLocalNotificationsPlugin);
   }
 
@@ -152,13 +156,38 @@ class SJNoticeHelp {
       }
 
       int media = await AndroidFlutterLocalNotificationsPlugin()
-          .extractMessageReceivedNum("media");
+          .extractMessageReceivedNum("media1");
       "==initNotificationCount==localcount:$media==".log();
       if (media > 0) {
         for (int i = 0; i < media; i++) {
           sj_event_fire('all_noti_t', {'type' : "media"});
-          //  取消
-          _tapMediasNotice(flutterLocalNotificationsPlugin);
+        }
+      }
+
+      int media2 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("media2");
+      "==initNotificationCount==localcount:$media==".log();
+      if (media2 > 0) {
+        for (int i = 0; i < media2; i++) {
+          sj_event_fire('all_noti_t', {'type' : "media"});
+        }
+      }
+
+      int media3 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("media3");
+      "==initNotificationCount==localcount:$media==".log();
+      if (media3 > 0) {
+        for (int i = 0; i < media3; i++) {
+          sj_event_fire('all_noti_t', {'type' : "media"});
+        }
+      }
+
+      int media4 = await AndroidFlutterLocalNotificationsPlugin()
+          .extractMessageReceivedNum("media4");
+      "==initNotificationCount==localcount:$media==".log();
+      if (media4 > 0) {
+        for (int i = 0; i < media4; i++) {
+          sj_event_fire('all_noti_t', {'type' : "media"});
         }
       }
 
@@ -196,58 +225,158 @@ class SJNoticeHelp {
   }
 
   // 媒体通知
-  Future<void> showSJNotificationMediaStyle() async {
-    final NotificationDetails notificationDetails = NotificationDetails(
-        android: AndroidNotificationDetails(
-          'scratchjoy Media',
-          'scratchjoy',
-          styleInformation: MediaStyleInformation(
-            //支持网络图片链接
-             image:'sj_sm_logo',
-          ),
-        ));
+  Future<void> showSJNotificationMediaStyle1() async {
     //自定义通知ID
-    final int id = 3744;
+    final int id = 2478;
     final randomMotivation = StepMotivationManager.getRandomMotivation();
     final String title = randomMotivation.title;
     final String body = randomMotivation.body;
-    await flutterLocalNotificationsPlugin.show(
-      id,
-      title,
-      body,
-      notificationDetails,
-      payload: 'media',
-    );
-  }
-
-  Future<void> _tapMediasNotice(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
-
-    await flutterLocalNotificationsPlugin.cancel(3744);
-
-    final NotificationDetails media = NotificationDetails(
-      android: AndroidNotificationDetails(
-        'scratchjoy Media',
-        'scratchjoy',
-        styleInformation: MediaStyleInformation(image: 'sj_sm_logo'),
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice0',
+      'Scractchjoy0',
+      styleInformation:MediaStyleInformation(
+        //支持网络图片链接
+        image:'sj_sm_logo',
       ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_sm_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
     );
-
-    final int id = 3744;
-    final randomMotivation = StepMotivationManager.getRandomMotivation();
-    final String title = randomMotivation.title;
-    final String body = randomMotivation.body;
     await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
         id,
         title,
         body,
         //间隔时长根据需求设置
-        Duration(minutes: 30),
-        notificationDetails: media.android,
+        const Duration(minutes: 30),
+        notificationDetails: details,
         scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-        payload: "media"
+        payload: "Media1"
     );
-
   }
+
+  Future<void> showSJNotificationMediaStyle2() async {
+    //自定义通知ID
+    final int id = 2478;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice21',
+      'Scractchjoy21',
+      styleInformation:MediaStyleInformation(
+        //支持网络图片链接
+        image:'sj_sm_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_sm_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 60),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "Media2"
+    );
+  }
+
+  Future<void> showSJNotificationMediaStyle3() async {
+    //自定义通知ID
+    final int id = 2414;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice31',
+      'Scractchjoy31',
+      styleInformation:MediaStyleInformation(
+        //支持网络图片链接
+        image:'sj_sm_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_sm_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 90),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "Media3"
+    );
+  }
+
+  Future<void> showSJNotificationMediaStyle4() async {
+    //自定义通知ID
+    final int id = 2470;
+    final randomMotivation = StepMotivationManager.getRandomMotivation();
+    final String title = randomMotivation.title;
+    final String body = randomMotivation.body;
+    AndroidNotificationDetails details = AndroidNotificationDetails(
+      '130notice41',
+      'Scractchjoy41',
+      styleInformation:MediaStyleInformation(
+        //支持网络图片链接
+        image:'sj_sm_logo',
+      ),
+      priority: Priority.high,
+      importance: Importance.high,
+      icon: 'sj_sm_logo',
+      //“groupKey”：防止通知被系统折叠
+      groupKey: "$id",
+    );
+    await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+        id,
+        title,
+        body,
+        //间隔时长根据需求设置
+        const Duration(minutes: 120),
+        notificationDetails: details,
+        scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        payload: "Media4"
+    );
+  }
+
+  // Future<void> _tapMediasNotice(FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin) async {
+  //
+  //   await flutterLocalNotificationsPlugin.cancel(3744);
+  //
+  //   final NotificationDetails media = NotificationDetails(
+  //     android: AndroidNotificationDetails(
+  //       'scratchjoy Media',
+  //       'scratchjoy',
+  //       styleInformation: MediaStyleInformation(image: 'sj_sm_logo'),
+  //     ),
+  //   );
+  //
+  //   final int id = 3744;
+  //   final randomMotivation = StepMotivationManager.getRandomMotivation();
+  //   final String title = randomMotivation.title;
+  //   final String body = randomMotivation.body;
+  //   await AndroidFlutterLocalNotificationsPlugin().periodicallyShowWithDuration(
+  //       id,
+  //       title,
+  //       body,
+  //       //间隔时长根据需求设置
+  //       Duration(minutes: 30),
+  //       notificationDetails: media.android,
+  //       scheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+  //       payload: "media"
+  //   );
+  //
+  // }
 
   Future<void> _repeatNotification1() async {
     //自定义通知ID
