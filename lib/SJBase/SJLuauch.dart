@@ -140,7 +140,7 @@ class SJSratchJoyLaunchState extends State<SJSratchJoyLaunch>  with SingleTicker
     }
     'sj_set_root=${SJLocalProvider.instance.sj_set_root}'.log();
     // 调试
-    await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
+    // await SJLocalProvider.instance.updateBool(SJLocalProvider.instance.sj_login_statusName, true);
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(

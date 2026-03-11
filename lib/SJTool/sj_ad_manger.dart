@@ -2,11 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:adjust_sdk/adjust.dart';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
-// import 'package:anythink_sdk/at_interstitial.dart';
-// import 'package:anythink_sdk/at_interstitial_response.dart';
-// import 'package:anythink_sdk/at_listener.dart';
-// import 'package:anythink_sdk/at_rewarded.dart';
-// import 'package:anythink_sdk/at_rewarded_response.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +10,11 @@ import 'package:scratchjoy/SJTool/sj_LocalProvider.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_init_sdk.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
+import 'package:thinkup_sdk/at_interstitial.dart';
+import 'package:thinkup_sdk/at_interstitial_response.dart';
+import 'package:thinkup_sdk/at_listener.dart';
+import 'package:thinkup_sdk/at_rewarded.dart';
+import 'package:thinkup_sdk/at_rewarded_response.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJModel/SJAdModel.dart';
 
@@ -39,7 +39,6 @@ Map<String, dynamic> sj_defaultAdConfig = {
     }
   ]
 };
-
 
 class SJJoyAdModel {
   String type;
@@ -275,16 +274,16 @@ class SJJoyAds {
         AppLovinMAX.showInterstitial(ad.ad_identifer);
       }
     } else {
-      // if (ad.type == "reward") {
-      //   final ready = await ATRewardedManager.rewardedVideoReady(
-      //     placementID: ad.ad_identifer,
-      //   );
-      //   if (!ready) return false;
-      //
-      //   ATRewardedManager.showRewardedVideo(placementID: ad.ad_identifer);
-      // } else {
-      //   ATInterstitialManager.showInterstitialAd(placementID: ad.ad_identifer);
-      // }
+      if (ad.type == "reward") {
+        final ready = await ATRewardedManager.rewardedVideoReady(
+          placementID: ad.ad_identifer,
+        );
+        if (!ready) return false;
+
+        ATRewardedManager.showRewardedVideo(placementID: ad.ad_identifer);
+      } else {
+        ATInterstitialManager.showInterstitialAd(placementID: ad.ad_identifer);
+      }
     }
 
     ad.status = 2;
@@ -441,19 +440,19 @@ extension AdServiceExtension on SJJoyAds {
           if (source == "max") {
             AppLovinMAX.loadInterstitial(adID);
           } else if (source == "topon") {
-            // ATInterstitialManager.loadInterstitialAd(
-            //   placementID: adID,
-            //   extraMap: {},
-            // );
+            ATInterstitialManager.loadInterstitialAd(
+              placementID: adID,
+              extraMap: {},
+            );
           }
         } else if (type == "reward") {
           if (source == "max") {
             AppLovinMAX.loadRewardedAd(adID);
           } else {
-            // ATRewardedManager.loadRewardedVideo(
-            //   placementID: adID,
-            //   extraMap: {},
-            // );
+            ATRewardedManager.loadRewardedVideo(
+              placementID: adID,
+              extraMap: {},
+            );
           }
         }
         "$runtimeType ad requesting [start],status = $status, type is $type, source is $source, id is $adID"
@@ -508,7 +507,7 @@ extension AdServiceExtension on SJJoyAds {
           _adDidFinishLoad(maxAd: ad);
         },
         onAdLoadFailedCallback: (adUnitId, error) {
-          _adDidLoadFailed(adUnitId, error.message);
+          _adDidLoadFailed(adUnitId, error.message, 'max');
         },
         onAdDisplayedCallback: (ad) {
           _adDidDisplayed(adID: ad.adUnitId);
@@ -524,61 +523,61 @@ extension AdServiceExtension on SJJoyAds {
       ),
     );
 
-    // ATListenerManager.interstitialEventHandler.listen((value) {
-    //   switch (value.interstatus) {
-    //     case InterstitialStatus.interstitialAdFailToLoadAD:
-    //       _adDidLoadFailed(value.placementID, value.requestMessage);
-    //       break;
-    //     // interstitial load finish
-    //     case InterstitialStatus.interstitialAdDidFinishLoading:
-    //       _adDidFinishLoad(toponInt: value);
-    //       break;
-    //     // interstitial play start, some AD platforms have this callback.
-    //     case InterstitialStatus.interstitialAdDidStartPlaying:
-    //       break;
-    //     // interstitial play end, some AD platforms have this callback.
-    //     case InterstitialStatus.interstitialAdDidEndPlaying:
-    //       break;
-    //     // interstitial play fail, some AD platforms have this callback.
-    //     case InterstitialStatus.interstitialDidFailToPlayVideo:
-    //       _adDidDisplayedError(value.placementID, value.requestMessage);
-    //       break;
-    //     // interstitial show succeed
-    //     case InterstitialStatus.interstitialDidShowSucceed:
-    //       _adDidDisplayed(adID: value.placementID);
-    //       break;
-    //     // interstitial show fail
-    //     case InterstitialStatus.interstitialFailedToShow:
-    //       break;
-    //     // interstitial clicked
-    //     case InterstitialStatus.interstitialAdDidClick:
-    //       adClicked();
-    //       break;
-    //     // Deeplink
-    //     case InterstitialStatus.interstitialAdDidDeepLink:
-    //       break;
-    //     // interstitial closed
-    //     case InterstitialStatus.interstitialAdDidClose:
-    //       _adDidHidden(adId: value.placementID);
-    //       break;
-    //
-    //     case InterstitialStatus.interstitialUnknown:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidMultipleLoaded:
-    //     case InterstitialStatus.interstitialAdDidAdSourceBiddingAttempt:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidAdSourceBiddingFilled:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidAdSourceBiddingFail:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidAdSourceAttempt:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidAdSourceLoadFilled:
-    //       break;
-    //     case InterstitialStatus.interstitialAdDidAdSourceLoadFail:
-    //       break;
-    //   }
-    // });
+    ATListenerManager.interstitialEventHandler.listen((value) {
+      switch (value.interstatus) {
+        case InterstitialStatus.interstitialAdFailToLoadAD:
+          _adDidLoadFailed(value.placementID, value.requestMessage, 'topon');
+          break;
+        // interstitial load finish
+        case InterstitialStatus.interstitialAdDidFinishLoading:
+          _adDidFinishLoad(toponInt: value);
+          break;
+        // interstitial play start, some AD platforms have this callback.
+        case InterstitialStatus.interstitialAdDidStartPlaying:
+          break;
+        // interstitial play end, some AD platforms have this callback.
+        case InterstitialStatus.interstitialAdDidEndPlaying:
+          break;
+        // interstitial play fail, some AD platforms have this callback.
+        case InterstitialStatus.interstitialDidFailToPlayVideo:
+          _adDidDisplayedError(value.placementID, value.requestMessage);
+          break;
+        // interstitial show succeed
+        case InterstitialStatus.interstitialDidShowSucceed:
+          _adDidDisplayed(adID: value.placementID);
+          break;
+        // interstitial show fail
+        case InterstitialStatus.interstitialFailedToShow:
+          break;
+        // interstitial clicked
+        case InterstitialStatus.interstitialAdDidClick:
+          adClicked();
+          break;
+        // Deeplink
+        case InterstitialStatus.interstitialAdDidDeepLink:
+          break;
+        // interstitial closed
+        case InterstitialStatus.interstitialAdDidClose:
+          _adDidHidden(adId: value.placementID);
+          break;
+
+        case InterstitialStatus.interstitialUnknown:
+          break;
+        case InterstitialStatus.interstitialAdDidMultipleLoaded:
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingAttempt:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingFilled:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingFail:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceAttempt:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceLoadFilled:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceLoadFail:
+          break;
+      }
+    });
   }
 
   void _maxRvListener() async {
@@ -588,7 +587,7 @@ extension AdServiceExtension on SJJoyAds {
           _adDidFinishLoad(maxAd: ad);
         },
         onAdLoadFailedCallback: (adUnitId, error) {
-          _adDidLoadFailed(adUnitId, error.message);
+          _adDidLoadFailed(adUnitId, error.message, 'max');
         },
         onAdDisplayedCallback: (ad) {
           _adDidDisplayed(adID: ad.adUnitId);
@@ -605,77 +604,77 @@ extension AdServiceExtension on SJJoyAds {
       ),
     );
 
-    // ATListenerManager.rewardedVideoEventHandler.listen((value) {
-    //   switch (value.rewardStatus) {
-    //     // ad load fail
-    //     case RewardedStatus.rewardedVideoDidFailToLoad:
-    //       _adDidLoadFailed(value.placementID, value.requestMessage);
-    //       break;
-    //     // ad load finish
-    //     case RewardedStatus.rewardedVideoDidFinishLoading:
-    //       _adDidFinishLoad(toponReward: value);
-    //       break;
-    //     // ad video start play
-    //     case RewardedStatus.rewardedVideoDidStartPlaying:
-    //       _adDidDisplayed(adID: value.placementID);
-    //       break;
-    //     // ad video start end
-    //     case RewardedStatus.rewardedVideoDidEndPlaying:
-    //       break;
-    //     // ad video fail to play
-    //     case RewardedStatus.rewardedVideoDidFailToPlay:
-    //       _adDidDisplayedError(value.placementID, value.requestMessage);
-    //       break;
-    //     // The rewarded is successful, it is recommended to issue the reward in this callback
-    //     case RewardedStatus.rewardedVideoDidRewardSuccess:
-    //       break;
-    //     // ad video clicked
-    //     case RewardedStatus.rewardedVideoDidClick:
-    //       adClicked();
-    //       break;
-    //     //Deeplink
-    //     case RewardedStatus.rewardedVideoDidDeepLink:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidClose:
-    //       _adDidHidden(adId: value.placementID);
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAgainStartPlaying:
-    //       break;
-    //     // ad video again play end(only TT)
-    //     case RewardedStatus.rewardedVideoDidAgainEndPlaying:
-    //       break;
-    //     // ad video again fail to play(only TT)
-    //     case RewardedStatus.rewardedVideoDidAgainFailToPlay:
-    //       break;
-    //     // ad video again rewarded success(only TT)
-    //     case RewardedStatus.rewardedVideoDidAgainRewardSuccess:
-    //       break;
-    //     // ad video again clicked(only TT)
-    //     case RewardedStatus.rewardedVideoDidAgainClick:
-    //     case RewardedStatus.rewardedVideoUnknown:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidMultipleLoaded:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceBiddingAttempt:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceBiddingFilled:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceBiddingFail:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceAttempt:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceLoadFilled:
-    //       break;
-    //     case RewardedStatus.rewardedVideoDidAdSourceLoadFail:
-    //       break;
-    //   }
-    // });
+    ATListenerManager.rewardedVideoEventHandler.listen((value) {
+      switch (value.rewardStatus) {
+        // ad load fail
+        case RewardedStatus.rewardedVideoDidFailToLoad:
+          _adDidLoadFailed(value.placementID, value.requestMessage, 'topon');
+          break;
+        // ad load finish
+        case RewardedStatus.rewardedVideoDidFinishLoading:
+          _adDidFinishLoad(toponReward: value);
+          break;
+        // ad video start play
+        case RewardedStatus.rewardedVideoDidStartPlaying:
+          _adDidDisplayed(adID: value.placementID);
+          break;
+        // ad video start end
+        case RewardedStatus.rewardedVideoDidEndPlaying:
+          break;
+        // ad video fail to play
+        case RewardedStatus.rewardedVideoDidFailToPlay:
+          _adDidDisplayedError(value.placementID, value.requestMessage);
+          break;
+        // The rewarded is successful, it is recommended to issue the reward in this callback
+        case RewardedStatus.rewardedVideoDidRewardSuccess:
+          break;
+        // ad video clicked
+        case RewardedStatus.rewardedVideoDidClick:
+          adClicked();
+          break;
+        //Deeplink
+        case RewardedStatus.rewardedVideoDidDeepLink:
+          break;
+        case RewardedStatus.rewardedVideoDidClose:
+          _adDidHidden(adId: value.placementID);
+          break;
+        case RewardedStatus.rewardedVideoDidAgainStartPlaying:
+          break;
+        // ad video again play end(only TT)
+        case RewardedStatus.rewardedVideoDidAgainEndPlaying:
+          break;
+        // ad video again fail to play(only TT)
+        case RewardedStatus.rewardedVideoDidAgainFailToPlay:
+          break;
+        // ad video again rewarded success(only TT)
+        case RewardedStatus.rewardedVideoDidAgainRewardSuccess:
+          break;
+        // ad video again clicked(only TT)
+        case RewardedStatus.rewardedVideoDidAgainClick:
+        case RewardedStatus.rewardedVideoUnknown:
+          break;
+        case RewardedStatus.rewardedVideoDidMultipleLoaded:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingAttempt:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingFilled:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingFail:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceAttempt:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceLoadFilled:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceLoadFail:
+          break;
+      }
+    });
   }
 
   void _adDidFinishLoad({
     MaxAd? maxAd,
-    // ATInterstitialResponse? toponInt,
-    // ATRewardResponse? toponReward,
+    ATInterstitialResponse? toponInt,
+    ATRewardResponse? toponReward,
   }) async {
     String adID = "";
     double revenue = 0;
@@ -687,41 +686,41 @@ extension AdServiceExtension on SJJoyAds {
       networkName = "max";
       sdk = "applovin_max_sdk";
     }
-    // if (toponInt != null) {
-    //   sdk = "topon_sdk";
-    //   adID = toponInt.placementID;
-    //   revenue = toponInt.extraMap["publisher_revenue"] ?? 0;
-    //   networkName = "topon";
-    //   String intInfo = await ATInterstitialManager.getInterstitialValidAds(
-    //     placementID: adID,
-    //   );
-    //   try {
-    //     List<dynamic> infoMap = json.decode(intInfo);
-    //     if (infoMap.isNotEmpty) {
-    //       Map<String, dynamic> d = infoMap.first;
-    //       revenue = d["publisher_revenue"] ?? 0;
-    //     }
-    //   } catch (error) {
-    //     "$runtimeType decode topon int info error $error".log();
-    //   }
-    // }
-    // if (toponReward != null) {
-    //   sdk = "topon_sdk";
-    //   adID = toponReward.placementID;
-    //   networkName = "topon";
-    //   String intInfo = await ATRewardedManager.getRewardedVideoValidAds(
-    //     placementID: adID,
-    //   );
-    //   try {
-    //     List<dynamic> infoMap = json.decode(intInfo);
-    //     if (infoMap.isNotEmpty) {
-    //       Map<String, dynamic> d = infoMap.first;
-    //       revenue = d["publisher_revenue"] ?? 0;
-    //     }
-    //   } catch (error) {
-    //     "$runtimeType decode topon int info error $error".log();
-    //   }
-    // }
+    if (toponInt != null) {
+      sdk = "topon_sdk";
+      adID = toponInt.placementID;
+      revenue = toponInt.extraMap["publisher_revenue"] ?? 0;
+      networkName = "topon";
+      String intInfo = await ATInterstitialManager.getInterstitialValidAds(
+        placementID: adID,
+      );
+      try {
+        List<dynamic> infoMap = json.decode(intInfo);
+        if (infoMap.isNotEmpty) {
+          Map<String, dynamic> d = infoMap.first;
+          revenue = d["publisher_revenue"] ?? 0;
+        }
+      } catch (error) {
+        "$runtimeType decode topon int info error $error".log();
+      }
+    }
+    if (toponReward != null) {
+      sdk = "topon_sdk";
+      adID = toponReward.placementID;
+      networkName = "topon";
+      String intInfo = await ATRewardedManager.getRewardedVideoValidAds(
+        placementID: adID,
+      );
+      try {
+        List<dynamic> infoMap = json.decode(intInfo);
+        if (infoMap.isNotEmpty) {
+          Map<String, dynamic> d = infoMap.first;
+          revenue = d["publisher_revenue"] ?? 0;
+        }
+      } catch (error) {
+        "$runtimeType decode topon int info error $error".log();
+      }
+    }
 
     if (adID.isEmpty) {
       "$runtimeType ad did loaded but id is empty id = $adID".log();
@@ -753,7 +752,7 @@ extension AdServiceExtension on SJJoyAds {
     );
   }
 
-  void _adDidLoadFailed(String adID, String reason) {
+  void _adDidLoadFailed(String adID, String reason, String type) {
     int index = _ads.indexWhere((test) => test.ad_identifer == adID);
     if (index == -1) {
       "$runtimeType ad did load failed but cant find in ads data from id = $adID"
@@ -766,7 +765,7 @@ extension AdServiceExtension on SJJoyAds {
        {
         "ad_code_id": quizAdPlaceID ?? "",
         "ad_format": _ads[index].getTypeToServer(),
-        "ad_platform": "max",
+        "ad_platform": type,
         "reason": reason,
       },
     );

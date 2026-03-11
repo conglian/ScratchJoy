@@ -16,6 +16,7 @@ import 'package:scratchjoy/SJTool/sj_ad_help.dart';
 import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
+import 'package:thinkup_sdk/at_init.dart';
 import '../SJHome/SJHome.dart';
 import '../SJModel/SJAdModel.dart';
 import '../SJModel/SJFkModel.dart';
@@ -49,10 +50,35 @@ class SJSDKHelpers {
   int sj_remoteConfigTryCount = 0;
 
   Future<void> initSDK() async {
+    _initTopon();
     _initAppMAX();
     _sjinitloadFireBase();
   }
 
+  void _initTopon() async {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // 这里保证在主线程
+      sj_topon_start = DateTime.now();
+      ATInitManger.initAnyThinkSDK(
+          appidStr: 'h69a79baee40f5',
+          appidkeyStr: 'aee5e61d1c23cba13e28d1d4bb1b8eb4d').then((value){
+        // SJJoyAds().init();
+        sj_event_fire('eopjp_ad_initsuc', {
+          'ad_platform' : 'topon',
+          'ad_init_time' : DateTime.now().difference(sj_topon_start).inMilliseconds
+        });
+        'topon init Success'.log();
+      }).catchError((error){
+        'topon init error=$error'.log();
+      });
+      // 打开SDK的Debug log，强烈建议在测试阶段打开，方便排查问题。
+      ATInitManger
+          .setLogEnabled(
+        logEnabled: true,
+      );
+    });
+  }
 
   Future<void> _initAppMAX() async {
     // ump设置
@@ -72,7 +98,7 @@ class SJSDKHelpers {
     // AppLovinMAX.showMediationDebugger();
     //
     if (configuration != null) {
-      SJJoyAds().init();
+      // SJJoyAds().init();
       sj_event_fire('scxji_ad_initsuc', {
         'ad_platform' : 'max',
         'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds
@@ -240,7 +266,7 @@ class SJSDKHelpers {
           SJJoyAds().init(inputAd: fkEntity);
           "app firebase remoteconfig scxji_ad_config data $jsonMap".log();
         } catch (error) {
-          SJJoyAds().init();
+          // SJJoyAds().init();
           print("app firebase remoteconfig scxji_ad_config error ${error}");
         }
       }
@@ -248,12 +274,12 @@ class SJSDKHelpers {
     } catch (e, s) {
       print("RemoteConfig fetch error: $e");
       sj_remoteConfigTryCount += 1;
-      if (sj_remoteConfigTryCount <= 60) {
+      if (sj_remoteConfigTryCount <= 160) {
         Future.delayed(Duration(seconds: 1), () {
           _sjinitloadFireBase();
         });
       } else {
-        SJJoyAds().init();
+        // SJJoyAds().init();
       }
     }
   }
