@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
 import 'package:adjust_sdk/adjust_attribution.dart';
-import 'package:anythink_sdk/at_init.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:facebook_app_events/facebook_app_events.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
@@ -14,6 +13,7 @@ import 'package:scratchjoy/SJTool/sj_ad_manger.dart';
 import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_number_helper.dart';
+import 'package:thinkup_sdk/at_init.dart';
 import '../SJModel/SJAdModel.dart';
 import '../SJModel/SJFkModel.dart';
 import '../SJModel/SJbonus_config.dart';
@@ -90,7 +90,7 @@ class SJSDKHelpers {
     // AppLovinMAX.showMediationDebugger();
     //
     if (configuration != null) {
-      SJJoyAds().init();
+      // SJJoyAds().init();
       sj_event_fire('scxji_ad_initsuc', {
         'ad_platform' : 'max',
         'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds
@@ -247,7 +247,7 @@ class SJSDKHelpers {
           SJJoyAds().init(inputAd: fkEntity);
           "app firebase remoteconfig scxji_ad_config data $jsonMap".log();
         } catch (error) {
-          SJJoyAds().init();
+          // SJJoyAds().init();
           print("app firebase remoteconfig scxji_ad_config error ${error}");
         }
       }
@@ -260,7 +260,7 @@ class SJSDKHelpers {
           _sjinitloadFireBase();
         });
       } else {
-        SJJoyAds().init();
+        // SJJoyAds().init();
       }
     }
   }

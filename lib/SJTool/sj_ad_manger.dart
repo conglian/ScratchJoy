@@ -2,11 +2,6 @@ import 'dart:convert';
 import 'dart:math';
 import 'package:adjust_sdk/adjust.dart';
 import 'package:adjust_sdk/adjust_ad_revenue.dart';
-import 'package:anythink_sdk/at_interstitial.dart';
-import 'package:anythink_sdk/at_interstitial_response.dart';
-import 'package:anythink_sdk/at_listener.dart';
-import 'package:anythink_sdk/at_rewarded.dart';
-import 'package:anythink_sdk/at_rewarded_response.dart';
 import 'package:applovin_max/applovin_max.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +11,11 @@ import 'package:scratchjoy/SJTool/sj_extension_help.dart';
 import 'package:scratchjoy/SJTool/sj_fkmanger.dart';
 import 'package:scratchjoy/SJTool/sj_init_sdk.dart';
 import 'package:scratchjoy/SJTool/sj_mp3_player.dart';
+import 'package:thinkup_sdk/at_interstitial.dart';
+import 'package:thinkup_sdk/at_interstitial_response.dart';
+import 'package:thinkup_sdk/at_listener.dart';
+import 'package:thinkup_sdk/at_rewarded.dart';
+import 'package:thinkup_sdk/at_rewarded_response.dart';
 import '../SJDilaog/SJDialog.dart';
 import '../SJModel/SJAdModel.dart';
 
@@ -531,7 +531,7 @@ extension AdServiceExtension on SJJoyAds {
           _adDidFinishLoad(maxAd: ad);
         },
         onAdLoadFailedCallback: (adUnitId, error) {
-          _adDidLoadFailed(adUnitId, error.message);
+          _adDidLoadFailed(adUnitId, error.message, 'max');
         },
         onAdDisplayedCallback: (ad) {
           _adDidDisplayed(adID: ad.adUnitId);
@@ -550,7 +550,7 @@ extension AdServiceExtension on SJJoyAds {
     ATListenerManager.interstitialEventHandler.listen((value) {
       switch (value.interstatus) {
         case InterstitialStatus.interstitialAdFailToLoadAD:
-          _adDidLoadFailed(value.placementID, value.requestMessage);
+          _adDidLoadFailed(value.placementID, value.requestMessage, 'topon');
           break;
         // interstitial load finish
         case InterstitialStatus.interstitialAdDidFinishLoading:
@@ -587,19 +587,19 @@ extension AdServiceExtension on SJJoyAds {
 
         case InterstitialStatus.interstitialUnknown:
           break;
-        // case InterstitialStatus.interstitialAdDidMultipleLoaded:
-        // case InterstitialStatus.interstitialAdDidAdSourceBiddingAttempt:
-        //   break;
-        // case InterstitialStatus.interstitialAdDidAdSourceBiddingFilled:
-        //   break;
-        // case InterstitialStatus.interstitialAdDidAdSourceBiddingFail:
-        //   break;
-        // case InterstitialStatus.interstitialAdDidAdSourceAttempt:
-        //   break;
-        // case InterstitialStatus.interstitialAdDidAdSourceLoadFilled:
-        //   break;
-        // case InterstitialStatus.interstitialAdDidAdSourceLoadFail:
-        //   break;
+        case InterstitialStatus.interstitialAdDidMultipleLoaded:
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingAttempt:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingFilled:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceBiddingFail:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceAttempt:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceLoadFilled:
+          break;
+        case InterstitialStatus.interstitialAdDidAdSourceLoadFail:
+          break;
       }
     });
   }
@@ -611,7 +611,7 @@ extension AdServiceExtension on SJJoyAds {
           _adDidFinishLoad(maxAd: ad);
         },
         onAdLoadFailedCallback: (adUnitId, error) {
-          _adDidLoadFailed(adUnitId, error.message);
+          _adDidLoadFailed(adUnitId, error.message, 'max');
         },
         onAdDisplayedCallback: (ad) {
           _adDidDisplayed(adID: ad.adUnitId);
@@ -632,7 +632,7 @@ extension AdServiceExtension on SJJoyAds {
       switch (value.rewardStatus) {
         // ad load fail
         case RewardedStatus.rewardedVideoDidFailToLoad:
-          _adDidLoadFailed(value.placementID, value.requestMessage);
+          _adDidLoadFailed(value.placementID, value.requestMessage, 'topon');
           break;
         // ad load finish
         case RewardedStatus.rewardedVideoDidFinishLoading:
@@ -677,20 +677,20 @@ extension AdServiceExtension on SJJoyAds {
         case RewardedStatus.rewardedVideoDidAgainClick:
         case RewardedStatus.rewardedVideoUnknown:
           break;
-        // case RewardedStatus.rewardedVideoDidMultipleLoaded:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceBiddingAttempt:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceBiddingFilled:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceBiddingFail:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceAttempt:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceLoadFilled:
-        //   break;
-        // case RewardedStatus.rewardedVideoDidAdSourceLoadFail:
-        //   break;
+        case RewardedStatus.rewardedVideoDidMultipleLoaded:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingAttempt:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingFilled:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceBiddingFail:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceAttempt:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceLoadFilled:
+          break;
+        case RewardedStatus.rewardedVideoDidAdSourceLoadFail:
+          break;
       }
     });
   }
@@ -776,7 +776,7 @@ extension AdServiceExtension on SJJoyAds {
     );
   }
 
-  void _adDidLoadFailed(String adID, String reason) {
+  void _adDidLoadFailed(String adID, String reason, String type) {
     int index = _ads.indexWhere((test) => test.ad_identifer == adID);
     if (index == -1) {
       "$runtimeType ad did load failed but cant find in ads data from id = $adID"
@@ -789,7 +789,7 @@ extension AdServiceExtension on SJJoyAds {
        {
         "ad_code_id": quizAdPlaceID ?? "",
         "ad_format": _ads[index].getTypeToServer(),
-        "ad_platform": "max",
+        "ad_platform": type,
         "reason": reason,
       },
     );

@@ -62,8 +62,8 @@ dependencies:
   lottie: ^2.3.2
   url_launcher: ^6.3.2
 
-  anythink_sdk:
-    path: sjthrid/anythink_sdk
+  thinkup_sdk:
+    path: sjthrid/thinkup_sdk-1.0.8
   flutter_local_notifications:
     path: sjthrid/common_notifications-master
   ScratchJoyFK:
