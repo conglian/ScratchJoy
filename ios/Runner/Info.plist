@@ -44,6 +44,38 @@
 		<string>UIInterfaceOrientationPortraitUpsideDown</string>
 	</array>
 	<key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>taobao</string>
+      <string>pinduoduo</string>
+      <string>openapp.jdmobile</string>
+      <string>imeituan</string>
+      <string>iosamap</string>
+      <string>alipay</string>
+      <string>baiduboxapp</string>
+      <string>vipshop</string>
+      <string>tmall</string>
+      <string>meituanwaimai</string>
+      <string>kwai</string>
+      <string>eleme</string>
+      <string>xhsdiscover</string>
+      <string>ksnebula</string>
+      <string>sinaweibo</string>
+      <string>fleamarket</string>
+      <string>id6443575749</string>
+      <string>com.pwrd.zhuxian2.zs</string>
+      <string>1235601864</string>
+      <string>1001394201</string>
+      <string>tbopen</string>
+      <string>pddopen</string>
+      <string>baiduboxlite</string>
+      <string>wireless1688</string>
+      <string>iqiyi</string>
+      <string>weixin</string>
+      <string>taobaotravel</string>
+      <string>alipays</string>
+      <string>youku</string>
+    </array>
+	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>taobao</string>
 		<string>pinduoduo</string>
