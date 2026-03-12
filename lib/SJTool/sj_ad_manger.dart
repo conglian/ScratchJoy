@@ -41,7 +41,27 @@ Map<String, dynamic> sj_defaultAdConfig = {
   ]
 };
 
-
+// Map<String, dynamic> sj_defaultAdConfig = {
+//   "xrpaxjqa": 100,
+//   "jotsibno": 100,
+//   "scxji_switch": false,
+//   "scxji_int": [
+//     {
+//       "hnmkuhdz": "n1h10lo71l5avh",
+//       "feytgpub": "topon",
+//       "ggtcworw": "interstitial",
+//       "yemylnvt": 3000
+//     }
+//   ],
+//   "scxji_rv": [
+//     {
+//       "hnmkuhdz": "n1h10lo71l537j",
+//       "feytgpub": "topon",
+//       "ggtcworw": "reward",
+//       "yemylnvt": 3000
+//     }
+//   ]
+// };
 class SJJoyAdModel {
   String type;
   String source;

@@ -90,7 +90,7 @@ class SJSDKHelpers {
     // AppLovinMAX.showMediationDebugger();
     //
     if (configuration != null) {
-      // SJJoyAds().init();
+      SJJoyAds().init();
       sj_event_fire('scxji_ad_initsuc', {
         'ad_platform' : 'max',
         'ad_init_time' : DateTime.now().difference(sj_max_start).inMilliseconds

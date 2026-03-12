@@ -44,7 +44,7 @@ android {
 
     signingConfigs {
         create("release") {
-            storeFile = file("/Users/scratchwindaily/Desktop/scratchjoysings.jks")
+            storeFile = file("/Users/scracthjoy/Desktop/scratchjoysings.jks")
             storePassword = "123456"
             keyAlias = "scratchjoysings"
             keyPassword = "123456"

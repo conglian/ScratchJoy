@@ -5,7 +5,11 @@ allprojects {
         flatDir {
             dirs("libs") // 指定libs目录
         }
+        maven { url  = uri("https://artifactory.bidmachine.io/bidmachine") }
+        maven { url  = uri("https://cboost.jfrog.io/artifactory/chartboost-ads/") }
         maven { url  = uri("https://android-sdk.is.com") }
+        maven { url  = uri("https://dl-maven-android.mintegral.com/repository/mbridge_android_sdk_oversea") }
+        maven { url  = uri("https://artifact.bytedance.com/repository/pangle") }
         maven {
             url  = uri("https://jfrog.anythinktech.com/artifactory/debugger")
         }
